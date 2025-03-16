@@ -1,5 +1,5 @@
 'use server'
-import auth from '@/utils/auth'
+import { hashPassword } from '@/utils/auth'
 import { randomUUID } from 'crypto'
 import path from 'path'
 import fs from 'fs'
@@ -9,7 +9,7 @@ export const createUser = async (formData: CreateUserDTO): Promise<boolean> => {
     const { login, password, email } = formData
     const userId = randomUUID()
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
-    const hashedPassowrd = await auth.hashPassword(password)
+    const hashedPassowrd = await hashPassword(password)
     const user: User = {
         id: userId,
         login,
@@ -101,7 +101,7 @@ export const patchUser = async (formData: PatchUserDTO): Promise<boolean> => {
     }
 
     if (password != undefined) {
-        const hashedPassowrd = await auth.hashPassword(password)
+        const hashedPassowrd = await hashPassword(password)
         user.password = hashedPassowrd
     }
 
