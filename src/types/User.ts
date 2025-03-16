@@ -7,3 +7,15 @@ export type User = {
     email?: string
     sessionId?: UUID
 }
+
+export type PatchUserDTO = {
+    login?: string
+    password?: string
+    email?: string
+}
+
+export type CreateUserDTO = {
+    login: string
+    password: string
+    email?: string
+}
