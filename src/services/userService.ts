@@ -21,7 +21,7 @@ export const createUser = async (
     }
     try {
         fs.mkdirSync(folderPath, { recursive: true })
-    } catch (error) {
+    } catch {
         throw new Error('User with login: ' + login + ' already exists')
     }
     const filePath = path.join(folderPath, 'user.json')
@@ -47,23 +47,23 @@ export const getUser = async (): Promise<User> => {
     let data
     try {
         data = fs.readFileSync(filePath, 'utf8')
-    } catch (error) {
+    } catch {
         throw new Error('Unexpected error')
     }
     const user: User = JSON.parse(data)
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         //check is session and user is correct, reject if its inwalid
         resolve(user)
     })
 }
 
-export const deleteUser = async (): Promise<Boolean> => {
+export const deleteUser = async (): Promise<boolean> => {
     const userLogin = 'test2' //swap this to user id from cookies
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', userLogin)
     try {
         fs.rmdirSync(folderPath, { recursive: true })
-    } catch (error) {
+    } catch {
         throw new Error('Unexpected error')
     }
 
@@ -87,7 +87,7 @@ export const patchUser = async (
         'user.json'
     )
 
-    let user: User = await getUser()
+    const user: User = await getUser()
 
     if (login != undefined) {
         user.login = login
@@ -98,7 +98,7 @@ export const patchUser = async (
 
         try {
             fs.renameSync(oldFolderPath, newFolderPath)
-        } catch (error) {
+        } catch {
             throw new Error('User with login: ' + login + ' already exists')
         }
         filePath = newFilePath
