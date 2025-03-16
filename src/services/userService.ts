@@ -3,13 +3,10 @@ import auth from '@/utils/auth'
 import { randomUUID } from 'crypto'
 import path from 'path'
 import fs from 'fs'
-import { User } from '@/types/User'
+import { CreateUserDTO, PatchUserDTO, User } from '@/types/User'
 
-export const createUser = async (
-    login: string,
-    password: string,
-    email?: string
-): Promise<boolean> => {
+export const createUser = async (formData: CreateUserDTO): Promise<boolean> => {
+    const { login, password, email } = formData
     const userId = randomUUID()
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassowrd = await auth.hashPassword(password)
@@ -72,11 +69,8 @@ export const deleteUser = async (): Promise<boolean> => {
     })
 }
 
-export const patchUser = async (
-    login?: string,
-    password?: string,
-    email?: string
-): Promise<boolean> => {
+export const patchUser = async (formData: PatchUserDTO): Promise<boolean> => {
+    const { login, password, email } = formData
     const userLogin = 'test' //swap this to login from cookies
     let filePath = path.join(
         process.cwd(),
