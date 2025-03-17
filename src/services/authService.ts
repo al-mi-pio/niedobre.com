@@ -14,7 +14,7 @@ export const signIn = async ({ login, password }: SignInDTO): Promise<UUID> => {
     try {
         data = fs.readFileSync(filePath, 'utf8')
     } catch {
-        throw new Error('User with login: ' + login + ' does not exist')
+        throw new Error(`User with login: ${login} does not exist`)
     }
     const user: User = JSON.parse(data)
     const result = await verifyHash(password, user.password)

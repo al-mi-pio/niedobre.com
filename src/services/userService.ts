@@ -24,7 +24,7 @@ export const createUser = async ({
     try {
         fs.mkdirSync(folderPath)
     } catch {
-        throw new Error('User with login: ' + login + ' already exists')
+        throw new Error(`User with login: ${login} already exists`)
     }
     const filePath = path.join(folderPath, 'user.json')
     fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
@@ -47,7 +47,7 @@ export const getUser = async (session: Session): Promise<User> => {
     try {
         data = fs.readFileSync(filePath, 'utf8')
     } catch {
-        throw new Error('User with login:' + session.login + ' does not exist')
+        throw new Error(`User with login: ${session.login} does not exist`)
     }
     const user: User = JSON.parse(data)
     const verification = await verifySession(session)
@@ -96,7 +96,7 @@ export const patchUser = async (
         try {
             fs.renameSync(oldFolderPath, newFolderPath)
         } catch {
-            throw new Error('User with login: ' + login + ' already exists')
+            throw new Error(`User with login: ${login} already exists`)
         }
         filePath = newFilePath
     }

@@ -40,23 +40,16 @@ export const verifyHash = async (text: string, storedHash: string): Promise<bool
     })
 }
 
-export const verifySession = async (userSession: Session): Promise<boolean> => {
-    const filePath = path.join(
-        process.cwd(),
-        'src',
-        'data',
-        'users',
-        userSession.login,
-        'user.json'
-    )
+export const verifySession = async ({ sessionId, login }: Session): Promise<boolean> => {
+    const filePath = path.join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     let data
     try {
         data = fs.readFileSync(filePath, 'utf8')
     } catch {
-        throw new Error('User with login:' + userSession.login + ' does not exist')
+        throw new Error(`User with login: ${login} does not exist`)
     }
     const user: User = JSON.parse(data)
     return new Promise((resolve) => {
-        resolve(user.sessionId == userSession.sessionId)
+        resolve(user.sessionId == sessionId)
     })
 }
