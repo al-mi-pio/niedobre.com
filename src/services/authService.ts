@@ -8,8 +8,7 @@ import { verifyHash, verifySession } from '@/utils/auth'
 
 import { patchUser } from './userService'
 
-export const signIn = async (formData: SignInDTO): Promise<UUID> => {
-    const { login, password } = formData
+export const signIn = async ({ login, password }: SignInDTO): Promise<UUID> => {
     const filePath = path.join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     let data
     try {

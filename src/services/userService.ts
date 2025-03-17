@@ -6,8 +6,11 @@ import fs from 'fs'
 import { CreateUserDTO, PatchUserDTO, User } from '@/types/User'
 import { Session } from '@/types/Auth'
 
-export const createUser = async (formData: CreateUserDTO): Promise<boolean> => {
-    const { login, password, email } = formData
+export const createUser = async ({
+    login,
+    password,
+    email,
+}: CreateUserDTO): Promise<boolean> => {
     const userId = randomUUID()
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassowrd = await hashString(password)
@@ -69,11 +72,9 @@ export const deleteUser = async (session: Session): Promise<boolean> => {
 }
 
 export const patchUser = async (
-    formData: PatchUserDTO,
+    { login, password, email, sessionId }: PatchUserDTO,
     session: Session
 ): Promise<boolean> => {
-    const { login, password, email, sessionId } = formData
-
     let filePath = path.join(
         process.cwd(),
         'src',

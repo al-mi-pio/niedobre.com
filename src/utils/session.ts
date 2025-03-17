@@ -15,9 +15,9 @@ export const getSession = (): Session => {
     }
 }
 
-export const setSession = (userSession: Session) => {
-    localStorage.setItem('session_id', userSession.sessionId)
-    localStorage.setItem('user_login', userSession.login)
+export const setSession = ({ sessionId, login }: Session) => {
+    localStorage.setItem('session_id', sessionId)
+    localStorage.setItem('user_login', login)
 }
 
 export const removeSession = () => {
