@@ -6,11 +6,7 @@ import fs from 'fs'
 import { CreateUserDTO, PatchUserDTO, User } from '@/types/User'
 import { Session } from '@/types/Auth'
 
-export const createUser = async ({
-    login,
-    password,
-    email,
-}: CreateUserDTO): Promise<boolean> => {
+export const createUser = async ({ login, password, email }: CreateUserDTO) => {
     const userId = randomUUID()
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassowrd = await hashString(password)
@@ -29,12 +25,10 @@ export const createUser = async ({
     const filePath = path.join(folderPath, 'user.json')
     fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
 
-    return new Promise((resolve) => {
-        resolve(true)
-    })
+    return true
 }
 
-export const getUser = async (session: Session): Promise<User> => {
+export const getUser = async (session: Session) => {
     const filePath = path.join(
         process.cwd(),
         'src',
@@ -51,30 +45,28 @@ export const getUser = async (session: Session): Promise<User> => {
     }
     const user: User = JSON.parse(data)
     const verification = await verifySession(session)
-    return new Promise((resolve, reject) => {
-        if (verification) {
-            resolve(user)
-        }
-        reject('Session is invalid')
-    })
+
+    if (verification) {
+        return user
+    }
+    throw new Error('Session is invalid')
 }
 
-export const deleteUser = async (session: Session): Promise<boolean> => {
+export const deleteUser = async (session: Session) => {
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', session.login)
     const verification = await verifySession(session)
-    return new Promise((resolve, reject) => {
-        if (verification) {
-            fs.rmdirSync(folderPath, { recursive: true })
-            resolve(true)
-        }
-        reject('Session is invalid')
-    })
+
+    if (verification) {
+        fs.rmdirSync(folderPath, { recursive: true })
+        return true
+    }
+    throw new Error('Session is invalid')
 }
 
 export const patchUser = async (
     { login, password, email, sessionId }: PatchUserDTO,
     session: Session
-): Promise<boolean> => {
+) => {
     let filePath = path.join(
         process.cwd(),
         'src',
@@ -115,11 +107,10 @@ export const patchUser = async (
     }
 
     const verification = await verifySession(session)
-    return new Promise((resolve, reject) => {
-        if (verification) {
-            fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
-            resolve(true)
-        }
-        reject('Session is invalid')
-    })
+
+    if (verification) {
+        fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
+        return true
+    }
+    throw new Error('Session is invalid')
 }
