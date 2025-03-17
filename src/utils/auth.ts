@@ -1,30 +1,33 @@
+'use server'
 import get from '@/utils/config'
 import crypto from 'crypto'
 
-export const hashPassword = async (password: string): Promise<string> => {
+import path from 'path'
+import fs from 'fs'
+import { User } from '@/types/User'
+import { Session } from '@/types/Auth'
+
+export const hashString = async (text: string): Promise<string> => {
     const salt = crypto.randomBytes(16).toString('hex')
     const iterations = get.hashIterations()
     const keyLen = get.keyLength()
     const digest = get.hasAlgorithm()
 
     return new Promise((resolve, reject) => {
-        crypto.pbkdf2(password, salt, iterations, keyLen, digest, (err, derivedKey) => {
+        crypto.pbkdf2(text, salt, iterations, keyLen, digest, (err, derivedKey) => {
             if (err) reject(err)
             resolve(`${salt}:${iterations}:${derivedKey.toString('hex')}`)
         })
     })
 }
 
-export const verifyPassword = async (
-    password: string,
-    storedHash: string
-): Promise<boolean> => {
+export const verifyHash = async (text: string, storedHash: string): Promise<boolean> => {
     const keyLen = get.keyLength()
     const digest = get.hasAlgorithm()
     const [salt, iterations, hash] = storedHash.split(':')
     return new Promise((resolve, reject) => {
         crypto.pbkdf2(
-            password,
+            text,
             salt,
             parseInt(iterations),
             keyLen,
@@ -34,5 +37,26 @@ export const verifyPassword = async (
                 resolve(derivedKey.toString('hex') === hash)
             }
         )
+    })
+}
+
+export const verifySession = async (userSession: Session): Promise<boolean> => {
+    const filePath = path.join(
+        process.cwd(),
+        'src',
+        'data',
+        'users',
+        userSession.login,
+        'user.json'
+    )
+    let data
+    try {
+        data = fs.readFileSync(filePath, 'utf8')
+    } catch {
+        throw new Error('User with login:' + userSession.login + ' does not exist')
+    }
+    const user: User = JSON.parse(data)
+    return new Promise((resolve) => {
+        resolve(user.sessionId == userSession.sessionId)
     })
 }
