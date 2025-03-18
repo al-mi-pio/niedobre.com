@@ -9,13 +9,13 @@ import { Session } from '@/types/Auth'
 export const createUser = async ({ login, password, email }: CreateUserDTO) => {
     const userId = randomUUID()
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
-    const hashedPassowrd = await hashString(password)
+    const hashedPassword = await hashString(password)
 
     const user: User = {
         id: userId,
         login,
         email,
-        password: hashedPassowrd,
+        password: hashedPassword,
     }
     try {
         fs.mkdirSync(folderPath)
