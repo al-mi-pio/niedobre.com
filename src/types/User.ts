@@ -5,13 +5,14 @@ export type User = {
     login: string
     password: string
     email?: string
-    sessionId?: UUID
+    sessionId?: UUID | null
 }
 
 export type PatchUserDTO = {
     login?: string
     password?: string
     email?: string
+    sessionId?: UUID | null
 }
 
 export type CreateUserDTO = {

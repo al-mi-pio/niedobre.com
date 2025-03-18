@@ -1,91 +1,86 @@
 'use server'
-import { hashPassword } from '@/utils/auth'
+import { hashString, verifySession } from '@/utils/auth'
 import { randomUUID } from 'crypto'
 import path from 'path'
 import fs from 'fs'
 import { CreateUserDTO, PatchUserDTO, User } from '@/types/User'
+import { Session } from '@/types/Auth'
 
-export const createUser = async (formData: CreateUserDTO): Promise<boolean> => {
-    const { login, password, email } = formData
+export const createUser = async ({ login, password, email }: CreateUserDTO) => {
     const userId = randomUUID()
     const folderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
-    const hashedPassowrd = await hashPassword(password)
+    const hashedPassword = await hashString(password)
+
     const user: User = {
         id: userId,
         login,
         email,
-        password: hashedPassowrd,
+        password: hashedPassword,
     }
     try {
-        fs.mkdirSync(folderPath, { recursive: true })
+        fs.mkdirSync(folderPath)
     } catch {
-        throw new Error('User with login: ' + login + ' already exists')
+        throw new Error(`User with login: ${login} already exists`)
     }
     const filePath = path.join(folderPath, 'user.json')
     fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
 
-    //add session
-
-    return new Promise((resolve) => {
-        resolve(true)
-    })
+    return true
 }
 
-export const getUser = async (): Promise<User> => {
-    const userLogin = 'test' //swap this to login from cookies
+export const getUser = async (session: Session) => {
     const filePath = path.join(
         process.cwd(),
         'src',
         'data',
         'users',
-        userLogin,
+        session.login,
         'user.json'
     )
     let data
     try {
         data = fs.readFileSync(filePath, 'utf8')
     } catch {
-        throw new Error('Unexpected error')
+        throw new Error(`User with login: ${session.login} does not exist`)
     }
     const user: User = JSON.parse(data)
+    const verification = await verifySession(session)
 
-    return new Promise((resolve) => {
-        //check is session and user is correct, reject if its inwalid
-        resolve(user)
-    })
-}
-
-export const deleteUser = async (): Promise<boolean> => {
-    const userLogin = 'test2' //swap this to user id from cookies
-    const folderPath = path.join(process.cwd(), 'src', 'data', 'users', userLogin)
-    try {
-        fs.rmdirSync(folderPath, { recursive: true })
-    } catch {
-        throw new Error('Unexpected error')
+    if (verification) {
+        return user
     }
-
-    return new Promise((resolve) => {
-        resolve(true)
-    })
+    throw new Error('Session is invalid')
 }
 
-export const patchUser = async (formData: PatchUserDTO): Promise<boolean> => {
-    const { login, password, email } = formData
-    const userLogin = 'test' //swap this to login from cookies
+export const deleteUser = async (session: Session) => {
+    const folderPath = path.join(process.cwd(), 'src', 'data', 'users', session.login)
+    const verification = await verifySession(session)
+
+    if (verification) {
+        fs.rmdirSync(folderPath, { recursive: true })
+        return true
+    }
+    throw new Error('Session is invalid')
+}
+
+export const patchUser = async (
+    { login, password, email, sessionId }: PatchUserDTO,
+    session: Session
+) => {
     let filePath = path.join(
         process.cwd(),
         'src',
         'data',
         'users',
-        userLogin,
+        session.login,
         'user.json'
     )
 
-    const user: User = await getUser()
+    const user: User = await getUser(session)
 
-    if (login != undefined) {
+    if (login !== undefined) {
         user.login = login
-        const oldFolderPath = path.join('src', 'data', 'users', userLogin)
+        const oldFolderPath = path.join('src', 'data', 'users', session.login)
 
         const newFolderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
         const newFilePath = path.join(newFolderPath, 'user.json')
@@ -93,25 +88,29 @@ export const patchUser = async (formData: PatchUserDTO): Promise<boolean> => {
         try {
             fs.renameSync(oldFolderPath, newFolderPath)
         } catch {
-            throw new Error('User with login: ' + login + ' already exists')
+            throw new Error(`User with login: ${login} already exists`)
         }
         filePath = newFilePath
-
-        //change userLogin in session
     }
 
-    if (password != undefined) {
-        const hashedPassowrd = await hashPassword(password)
+    if (password !== undefined) {
+        const hashedPassowrd = await hashString(password)
         user.password = hashedPassowrd
     }
 
-    if (email != undefined) {
+    if (email !== undefined) {
         user.email = email
     }
 
-    fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
+    if (sessionId !== undefined) {
+        user.sessionId = sessionId
+    }
 
-    return new Promise((resolve) => {
-        resolve(true)
-    })
+    const verification = await verifySession(session)
+
+    if (verification) {
+        fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
+        return true
+    }
+    throw new Error('Session is invalid')
 }
