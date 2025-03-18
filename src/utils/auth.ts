@@ -13,21 +13,18 @@ export const hashString = async (text: string) => {
     const keyLen = get.keyLength()
     const digest = get.hasAlgorithm()
 
-    crypto.pbkdf2(text, salt, iterations, keyLen, digest, (err, derivedKey) => {
-        if (err) return err
-        return `${salt}:${iterations}:${derivedKey.toString('hex')}`
-    })
+    return crypto.pbkdf2Sync(text, salt, iterations, keyLen, digest).toString('hex')
 }
-
 export const verifyHash = async (text: string, storedHash: string) => {
     const keyLen = get.keyLength()
     const digest = get.hasAlgorithm()
     const [salt, iterations, hash] = storedHash.split(':')
 
-    crypto.pbkdf2(text, salt, parseInt(iterations), keyLen, digest, (err, derivedKey) => {
-        if (err) return err
-        return derivedKey.toString('hex') === hash
-    })
+    const unhashed = crypto
+        .pbkdf2Sync(text, salt, parseInt(iterations), keyLen, digest)
+        .toString('hex')
+
+    return hash === unhashed
 }
 
 export const verifySession = async ({ sessionId, login }: Session) => {
