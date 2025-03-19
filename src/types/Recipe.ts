@@ -1,7 +1,7 @@
 import { UUID } from 'crypto'
 import { IngredientIdAmount, IngredientAmount } from './Ingredient'
 
-export type PublicResources = (keyof CreateRecipeDTO)[]
+export type PublicResources = [] | ['name', ...(keyof CreateRecipeDTO)[]]
 export type Recipe = {
     id: UUID
     name: string
