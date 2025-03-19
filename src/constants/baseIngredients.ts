@@ -1,4 +1,4 @@
-import { Ingredient } from '@/types/Ingredients'
+import { Ingredient } from '@/types/Ingredient'
 
 export const baseIngredients: Omit<Ingredient, 'id'>[] = [
     {
