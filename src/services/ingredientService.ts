@@ -1,6 +1,6 @@
 'use server'
 import { Session } from '@/types/Auth'
-import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredients'
+import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
 import { verifySession } from '@/utils/auth'
 import { getFromFile, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
@@ -32,12 +32,7 @@ export const createIngredient = async (
     const ingredients = await getIngredients(session)
     const newIngredients = [...ingredients, ingredient]
 
-    const verification = await verifySession(session)
-    if (verification) {
-        await setToFile(filePath, newIngredients)
-        return true
-    }
-    throw new Error('Session is invalid')
+    await setToFile(filePath, newIngredients)
 }
 
 export const getIngredients = async (session: Session) => {
@@ -49,12 +44,22 @@ export const getIngredients = async (session: Session) => {
         session.login,
         'ingredients.json'
     )
-    const ingredients: Ingredient[] = await getFromFile(filePath)
+
     const verification = await verifySession(session)
     if (verification) {
+        const ingredients: Ingredient[] = await getFromFile(filePath)
         return ingredients
     }
     throw new Error('Session is invalid')
+}
+
+export const getIngredientById = async (id: UUID, session: Session) => {
+    const ingredients: Ingredient[] = await getIngredients(session)
+    const ingredient = ingredients.find((ingredient) => ingredient.id === id)
+    if (ingredient === undefined) {
+        throw new Error(`Ingredient with id: ${id} does not exist`)
+    }
+    return ingredient
 }
 
 export const deleteIngredient = async (id: UUID, session: Session) => {
@@ -69,7 +74,6 @@ export const deleteIngredient = async (id: UUID, session: Session) => {
     const ingredients = await getIngredients(session)
     const newIngredients = ingredients.filter((ingredient) => ingredient.id !== id)
     await setToFile(filePath, newIngredients)
-    return true
 }
 
 export const patchIngredient = async (
@@ -99,5 +103,4 @@ export const patchIngredient = async (
 
     const newIngredients = [...unchangedIngredients, toPatchIngredient]
     await setToFile(filePath, newIngredients)
-    return true
 }
