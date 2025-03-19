@@ -11,6 +11,12 @@
     "format:fix": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}'"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.2.5",
+    "@mui/icons-material": "^6.4.7",
+    "@mui/material": "^6.4.7",
+    "@toolpad/core": "^0.13.0",
     "babel-plugin-react-compiler": "^19.0.0-beta-40c6c23-20250301",
     "next": "15.2.1",
     "react": "^19.0.0",

@@ -1,19 +1,20 @@
 import type { Metadata } from 'next'
-import './globals.css'
-import React from 'react'
+import '@/app/globals.css'
+import { ReactNode } from 'react'
+import { appName } from '@/constants/general'
 
 export const metadata: Metadata = {
-    title: 'Niedobre.com',
+    title: appName,
     description: 'Aplikacja do zarządzania przepisami',
 }
 
 export default function RootLayout({
     children,
 }: Readonly<{
-    children: React.ReactNode
+    children: ReactNode
 }>) {
     return (
-        <html lang="pl-PL">
+        <html lang="pl-PL" data-toolpad-color-scheme="dark">
             <body>{children}</body>
         </html>
     )
