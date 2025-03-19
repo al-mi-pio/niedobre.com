@@ -14,7 +14,13 @@ export type Ingredient = {
 }
 
 export type IngredientAmount = {
-    name: string
+    ingredient: Ingredient
+    amount: number
+    unit: Unit
+}
+
+export type IngredientIdAmount = {
+    id: UUID
     amount: number
     unit: Unit
 }
