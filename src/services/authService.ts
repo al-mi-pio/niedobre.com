@@ -1,28 +1,28 @@
 'use server'
 import { Session, SignInDTO } from '@/types/Auth'
-import path from 'path'
-import fs from 'fs'
+import { join } from 'path'
 import { randomUUID } from 'crypto'
 import { User } from '@/types/User'
 import { verifyHash, verifySession } from '@/utils/auth'
 
-import { patchUser } from './userService'
+import { patchUser } from '@/services/userService'
+import { getFromFile, setToFile } from '@/utils/file'
 
 export const signIn = async ({ login, password }: SignInDTO) => {
-    const filePath = path.join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
-    let data
+    const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    let user: User
     try {
-        data = fs.readFileSync(filePath, 'utf8')
+        user = await getFromFile(filePath)
     } catch {
         throw new Error(`User with login: ${login} does not exist`)
     }
-    const user: User = JSON.parse(data)
+
     const result = await verifyHash(password, user.password)
 
     if (result) {
         const sessionId = randomUUID()
         user.sessionId = sessionId
-        fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
+        await setToFile(filePath, user)
         return sessionId
     }
     throw new Error('Password is incorrect')

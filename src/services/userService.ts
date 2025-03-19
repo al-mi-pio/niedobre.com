@@ -1,14 +1,16 @@
 'use server'
 import { hashString, verifySession } from '@/utils/auth'
 import { randomUUID } from 'crypto'
-import path from 'path'
+import { join } from 'path'
 import fs from 'fs'
 import { CreateUserDTO, PatchUserDTO, User } from '@/types/User'
 import { Session } from '@/types/Auth'
+import { getFromFile, setToFile } from '@/utils/file'
+import { baseIngredients } from '@/constants/baseIngredients'
 
 export const createUser = async ({ login, password, email }: CreateUserDTO) => {
     const userId = randomUUID()
-    const folderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
+    const folderPath = join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassword = await hashString(password)
 
     const user: User = {
@@ -22,14 +24,25 @@ export const createUser = async ({ login, password, email }: CreateUserDTO) => {
     } catch {
         throw new Error(`User with login: ${login} already exists`)
     }
-    const filePath = path.join(folderPath, 'user.json')
-    fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
+    const userFilePath = join(folderPath, 'user.json')
+    await setToFile(userFilePath, user)
+    const ingredientFilePath = join(folderPath, 'ingredients.json')
+    const baseIngredientsToInsert = baseIngredients.map((ingredient) => ({
+        id: randomUUID(),
+        name: ingredient.name,
+        type: ingredient.type,
+        conversion: ingredient.conversion,
+        kcal: ingredient.kcal,
+    }))
+    await setToFile(ingredientFilePath, baseIngredientsToInsert)
+    const recipeFilePath = join(folderPath, 'recipes.json')
+    await setToFile(recipeFilePath, [])
 
     return true
 }
 
 export const getUser = async (session: Session) => {
-    const filePath = path.join(
+    const filePath = join(
         process.cwd(),
         'src',
         'data',
@@ -37,13 +50,13 @@ export const getUser = async (session: Session) => {
         session.login,
         'user.json'
     )
-    let data
+    let user: User
     try {
-        data = fs.readFileSync(filePath, 'utf8')
+        user = await getFromFile(filePath)
     } catch {
         throw new Error(`User with login: ${session.login} does not exist`)
     }
-    const user: User = JSON.parse(data)
+
     const verification = await verifySession(session)
 
     if (verification) {
@@ -53,7 +66,7 @@ export const getUser = async (session: Session) => {
 }
 
 export const deleteUser = async (session: Session) => {
-    const folderPath = path.join(process.cwd(), 'src', 'data', 'users', session.login)
+    const folderPath = join(process.cwd(), 'src', 'data', 'users', session.login)
     const verification = await verifySession(session)
 
     if (verification) {
@@ -67,39 +80,15 @@ export const patchUser = async (
     { login, password, email, sessionId }: PatchUserDTO,
     session: Session
 ) => {
-    let filePath = path.join(
-        process.cwd(),
-        'src',
-        'data',
-        'users',
-        session.login,
-        'user.json'
-    )
+    let filePath = join(process.cwd(), 'src', 'data', 'users', session.login, 'user.json')
 
     const user: User = await getUser(session)
-
-    if (login !== undefined) {
-        user.login = login
-        const oldFolderPath = path.join('src', 'data', 'users', session.login)
-
-        const newFolderPath = path.join(process.cwd(), 'src', 'data', 'users', login)
-        const newFilePath = path.join(newFolderPath, 'user.json')
-
-        try {
-            fs.renameSync(oldFolderPath, newFolderPath)
-        } catch {
-            throw new Error(`User with login: ${login} already exists`)
-        }
-        filePath = newFilePath
-    }
+    user.login = login ?? user.login
+    user.email = email ?? user.email
 
     if (password !== undefined) {
         const hashedPassowrd = await hashString(password)
         user.password = hashedPassowrd
-    }
-
-    if (email !== undefined) {
-        user.email = email
     }
 
     if (sessionId !== undefined) {
@@ -109,7 +98,20 @@ export const patchUser = async (
     const verification = await verifySession(session)
 
     if (verification) {
-        fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf8')
+        if (login !== undefined) {
+            const oldFolderPath = join('src', 'data', 'users', session.login)
+
+            const newFolderPath = join(process.cwd(), 'src', 'data', 'users', login)
+            const newFilePath = join(newFolderPath, 'user.json')
+
+            try {
+                fs.renameSync(oldFolderPath, newFolderPath)
+            } catch {
+                throw new Error(`User with login: ${login} already exists`)
+            }
+            filePath = newFilePath
+        }
+        await setToFile(filePath, user)
         return true
     }
     throw new Error('Session is invalid')

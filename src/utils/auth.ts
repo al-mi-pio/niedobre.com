@@ -1,11 +1,10 @@
 'use server'
 import get from '@/utils/config'
 import crypto from 'crypto'
-
-import path from 'path'
-import fs from 'fs'
+import { join } from 'path'
 import { User } from '@/types/User'
 import { Session } from '@/types/Auth'
+import { getFromFile } from './file'
 
 export const hashString = async (text: string) => {
     const salt = crypto.randomBytes(16).toString('hex')
@@ -32,14 +31,13 @@ export const verifyHash = async (text: string, storedHash: string) => {
 }
 
 export const verifySession = async ({ sessionId, login }: Session) => {
-    const filePath = path.join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
-    let data
+    const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    let user: User
     try {
-        data = fs.readFileSync(filePath, 'utf8')
+        user = await getFromFile(filePath)
     } catch {
         throw new Error(`User with login: ${login} does not exist`)
     }
-    const user: User = JSON.parse(data)
 
     return user.sessionId == sessionId
 }
