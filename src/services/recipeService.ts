@@ -6,7 +6,7 @@ import { verifySession } from '@/utils/auth'
 import { getFromFile, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
-import { getIngredientById } from './ingredientService'
+import { getIngredientById } from '@/services/ingredientService'
 
 export const createRecipe = async (
     { name, description, instructions, picture, ingredients, cost }: CreateRecipeDTO,

@@ -1,6 +1,7 @@
 import { UUID } from 'crypto'
 import { IngredientIdAmount, IngredientAmount } from './Ingredient'
 
+export type PublicResources = (keyof CreateRecipeDTO)[]
 export type Recipe = {
     id: UUID
     name: string
@@ -9,9 +10,7 @@ export type Recipe = {
     picture?: string
     ingredients: IngredientIdAmount[]
     cost?: number
-    publicResources:
-        | ['name', 'description', 'instructions', 'picture', 'ingrediants', 'cost']
-        | []
+    publicResources: PublicResources
 }
 
 export type GetRecipeDTO = {
@@ -22,9 +21,7 @@ export type GetRecipeDTO = {
     picture?: string
     ingredients: IngredientAmount[]
     cost?: number
-    publicResources:
-        | ['name', 'description', 'instructions', 'picture', 'ingrediants', 'cost']
-        | []
+    publicResources: PublicResources
 }
 
 export type CreateRecipeDTO = {
@@ -44,7 +41,5 @@ export type PatchRecipeDTO = {
     picture?: string
     ingredients?: IngredientIdAmount[]
     cost?: number
-    publicResources?:
-        | ['name', 'description', 'instructions', 'picture', 'ingrediants', 'cost']
-        | []
+    publicResources?: PublicResources
 }
