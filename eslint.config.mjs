@@ -13,6 +13,16 @@ const eslintConfig = [
     {
         ignores: ['.next', 'package.json', 'package-lock.json', 'node_modules'],
     },
+    {
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: ['@mui/*/*/*'],
+                },
+            ],
+        },
+    },
     ...compat.extends(
         'next/core-web-vitals',
         'next/typescript',
