@@ -43,3 +43,13 @@ export type PatchRecipeDTO = {
     cost?: number
     publicResources?: PublicResources
 }
+
+export type PublicRecipe = {
+    id: UUID
+    name: string
+    description?: string
+    instructions?: string
+    picture?: string
+    ingredients?: IngredientIdAmount[]
+    cost?: number
+}
