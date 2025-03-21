@@ -1,30 +1,20 @@
 'use client'
 
-import EggIcon from '@mui/icons-material/Egg'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
-import { useState, SyntheticEvent, useEffect } from 'react'
+import { Box, Divider, List, Paper, Stack, Tab, Tabs, Typography } from '@mui/material'
+import { autoHideDuration } from '@/constants/general'
 import { Grid } from '@mui/system'
-import {
-    Avatar,
-    Divider,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Paper,
-    Stack,
-    Tab,
-    Tabs,
-    Typography,
-} from '@mui/material'
 import { UUID } from 'crypto'
-import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
 import { GetRecipeDTO } from '@/types/Recipe'
-import { Spinner } from '@/components/Spinner'
-import { RecipeCard } from '@/components/RecipeCard'
+import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
+import { SyntheticEvent, useEffect, useState } from 'react'
+import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
+import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
+import { useNotifications } from '@toolpad/core'
+import { IngredientList } from '@/app/(dashboard)/components/IngredientList'
+import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
 import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
-import { useNotifications } from '@toolpad/core'
+import { Spinner } from '@/components/Spinner'
 
 export type SelectedRecipes = {
     [id: UUID]: {
@@ -33,60 +23,6 @@ export type SelectedRecipes = {
         ingredients: IngredientAmount[]
     }
 }
-
-export const RecipeList = ({ recipes }: { recipes: SelectedRecipes }) =>
-    Object.entries(recipes).map(
-        ([id, recipe]) =>
-            !!recipe.amount && (
-                <ListItem key={id}>
-                    <ListItemAvatar>
-                        <Avatar>
-                            <MenuBookIcon />
-                        </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                        primary={recipe.name}
-                        secondary={`Ilość: x${recipe.amount}`}
-                    />
-                </ListItem>
-            )
-    )
-
-export const IngredientList = ({ ingredients }: { ingredients: IngredientAmount[] }) =>
-    ingredients.map(({ ingredient, amount, unit }, id) => (
-        <ListItem key={id}>
-            <ListItemAvatar>
-                <Avatar>
-                    <EggIcon />
-                </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-                primary={ingredient.name}
-                secondary={`Ilość: ${amount} ${unit}`}
-            />
-        </ListItem>
-    ))
-
-const createSelectedRecipeStructure = (recipes: GetRecipeDTO[]) =>
-    recipes.length
-        ? recipes.reduce(
-              (prev, recipe) => ({
-                  ...prev,
-                  [recipe.id]: {
-                      amount: 0,
-                      name: recipe.name,
-                      ingredients: recipe.ingredients,
-                  },
-              }),
-              {
-                  [recipes[0].id]: {
-                      amount: 0,
-                      name: recipes[0].name,
-                      ingredients: recipes[0].ingredients,
-                  },
-              }
-          )
-        : {}
 
 const Dashboard = () => {
     const toast = useNotifications()
@@ -119,7 +55,7 @@ const Dashboard = () => {
             .catch((e) =>
                 toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
                     severity: 'error',
-                    autoHideDuration: 6000,
+                    autoHideDuration,
                 })
             )
             .finally(() => setLoading(false))
@@ -162,22 +98,12 @@ const Dashboard = () => {
                 {loading ? (
                     <Spinner />
                 ) : (
-                    <>
-                        {recipes.map((recipe) => (
-                            <Grid key={recipe.id} size={3}>
-                                <RecipeCard
-                                    key={recipe.id}
-                                    recipe={recipe}
-                                    amount={selectedRecipes[recipe.id].amount}
-                                    onAddClick={addRecipe}
-                                    onRemoveClick={removeRecipe}
-                                />
-                            </Grid>
-                        ))}
-                        {!recipes.length && (
-                            <Typography>{'Tutaj pojawią się twoje przepisy'}</Typography>
-                        )}
-                    </>
+                    <SelectedRecipeList
+                        recipes={recipes}
+                        selectedRecipes={selectedRecipes}
+                        onAddClick={addRecipe}
+                        onRemoveClick={removeRecipe}
+                    />
                 )}
             </Grid>
 
@@ -191,13 +117,13 @@ const Dashboard = () => {
                             justifyContent: 'space-between',
                         }}
                     >
-                        <div>
+                        <Box>
                             <Tabs value={calcTab} onChange={handleChange}>
                                 <Tab label="Przepisy" />
                                 <Tab label="Składniki" />
                             </Tabs>
                             <Divider />
-                        </div>
+                        </Box>
 
                         {loading ? (
                             <Spinner />
@@ -215,10 +141,10 @@ const Dashboard = () => {
                             </List>
                         )}
 
-                        <div>
+                        <Box>
                             <Divider sx={{ marginBottom: '1rem' }} />
                             <Typography variant="h4">{`Suma: ${sum} zł`}</Typography>
-                        </div>
+                        </Box>
                     </Stack>
                 </Paper>
             </Grid>
