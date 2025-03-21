@@ -2,7 +2,6 @@
 
 import EggIcon from '@mui/icons-material/Egg'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
-import RecipeCard from '@/components/RecipeCard'
 import { useState, SyntheticEvent, useEffect } from 'react'
 import { Grid } from '@mui/system'
 import {
@@ -21,10 +20,11 @@ import {
 import { UUID } from 'crypto'
 import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
 import { GetRecipeDTO } from '@/types/Recipe'
+import { Spinner } from '@/components/Spinner'
+import { RecipeCard } from '@/components/RecipeCard'
 import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
 import { useNotifications } from '@toolpad/core'
-import Spinner from '@/components/Spinner'
 
 export type SelectedRecipes = {
     [id: UUID]: {
@@ -168,11 +168,7 @@ const Dashboard = () => {
                                 <RecipeCard
                                     key={recipe.id}
                                     recipe={recipe}
-                                    amount={
-                                        selectedRecipes[recipe.id]
-                                            ? selectedRecipes[recipe.id].amount
-                                            : -1
-                                    }
+                                    amount={selectedRecipes[recipe.id].amount}
                                     onAddClick={addRecipe}
                                     onRemoveClick={removeRecipe}
                                 />

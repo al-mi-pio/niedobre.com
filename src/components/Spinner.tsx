@@ -1,7 +1,7 @@
 import { Grid } from '@mui/system'
 import { CircularProgress } from '@mui/material'
 
-const Spinner = () => (
+export const Spinner = () => (
     <Grid
         container
         sx={{
@@ -16,5 +16,3 @@ const Spinner = () => (
         </Grid>
     </Grid>
 )
-
-export default Spinner

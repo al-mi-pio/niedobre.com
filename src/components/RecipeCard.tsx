@@ -10,9 +10,22 @@ import {
     IconButton,
     Typography,
 } from '@mui/material'
+import { GetRecipeDTO } from '@/types/Recipe'
+import { UUID } from 'crypto'
 
-// @ts-expect-error TODO: Use correct type
-const RecipeCard = ({ recipe, amount, onAddClick, onRemoveClick }) => {
+export interface RecipeCardProps {
+    recipe: GetRecipeDTO
+    amount: number
+    onAddClick: (recipeId: UUID) => void
+    onRemoveClick: (recipeId: UUID) => void
+}
+
+export const RecipeCard = ({
+    recipe,
+    amount,
+    onAddClick,
+    onRemoveClick,
+}: RecipeCardProps) => {
     return (
         <Card sx={{ maxWidth: 345 }}>
             <CardMedia
@@ -44,5 +57,3 @@ const RecipeCard = ({ recipe, amount, onAddClick, onRemoveClick }) => {
         </Card>
     )
 }
-
-export default RecipeCard
