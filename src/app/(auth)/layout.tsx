@@ -1,9 +1,9 @@
 import '@/app/globals.css'
-import type { Metadata } from 'next'
+import { NotificationsProvider } from '@toolpad/core'
 import { AppProvider } from '@toolpad/core/AppProvider'
+import type { Metadata } from 'next'
 import { ReactNode } from 'react'
 import { appName } from '@/constants/general'
-import { NotificationsProvider } from '@toolpad/core'
 import { Box } from '@mui/material'
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     description: 'Aplikacja do zarządzania przepisami',
 }
 
-const LoginLayout = ({
+const AuthLayout = ({
     children,
 }: Readonly<{
     children: ReactNode
@@ -26,8 +26,7 @@ const LoginLayout = ({
         >
             <Box
                 style={{
-                    maxHeight: '100vh',
-                    minHeight: '100vh',
+                    height: '100vh',
                 }}
             >
                 {children}
@@ -36,4 +35,4 @@ const LoginLayout = ({
     </AppProvider>
 )
 
-export default LoginLayout
+export default AuthLayout
