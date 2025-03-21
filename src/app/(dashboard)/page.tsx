@@ -3,7 +3,7 @@
 import EggIcon from '@mui/icons-material/Egg'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import RecipeCard from '@/components/RecipeCard'
-import { useState, SyntheticEvent } from 'react'
+import { useState, SyntheticEvent, useEffect } from 'react'
 import { Grid } from '@mui/system'
 import {
     Avatar,
@@ -18,71 +18,90 @@ import {
     Tabs,
     Typography,
 } from '@mui/material'
-// @ts-expect-error TODO: Use correct type
-export const RecipeList = ({ recipes }) => (
-    <List style={{ height: '68vh', overflow: 'auto' }}>
-        {Object.entries(recipes).map(
-            ([id, recipe]) =>
-                // @ts-expect-error TODO: Use correct type
-                !!recipe.amount && (
-                    <ListItem key={id}>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <MenuBookIcon />
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                            // @ts-expect-error TODO: Use correct type
-                            primary={recipe.name}
-                            // @ts-expect-error TODO: Use correct type
-                            secondary={`Ilość: x${recipe.amount}`}
-                        />
-                    </ListItem>
-                )
-        )}
-    </List>
-)
-// @ts-expect-error TODO: Use correct type
-export const IngredientList = ({ ingredients }) => (
-    <List style={{ height: '68vh', overflow: 'auto' }}>
-        {ingredients.map(
-            (
-                {
-                    // @ts-expect-error TODO: Use correct type
-                    ingredient,
-                    // @ts-expect-error TODO: Use correct type
-                    amount,
-                    // @ts-expect-error TODO: Use correct type
-                    unit,
-                },
-                // @ts-expect-error TODO: Use correct type
-                id
-            ) => (
+import { UUID } from 'crypto'
+import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
+import { GetRecipeDTO } from '@/types/Recipe'
+import { getRecipes } from '@/services/recipeService'
+import { getSession } from '@/utils/session'
+import { useNotifications } from '@toolpad/core'
+import Spinner from '@/components/Spinner'
+
+export type SelectedRecipes = {
+    [id: UUID]: {
+        amount: number
+        name: string
+        ingredients: IngredientAmount[]
+    }
+}
+
+export const RecipeList = ({ recipes }: { recipes: SelectedRecipes }) =>
+    Object.entries(recipes).map(
+        ([id, recipe]) =>
+            !!recipe.amount && (
                 <ListItem key={id}>
                     <ListItemAvatar>
                         <Avatar>
-                            <EggIcon />
+                            <MenuBookIcon />
                         </Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                        primary={ingredient.name}
-                        secondary={`Ilość: ${amount} ${unit}`}
+                        primary={recipe.name}
+                        secondary={`Ilość: x${recipe.amount}`}
                     />
                 </ListItem>
             )
-        )}
-    </List>
-)
+    )
+
+export const IngredientList = ({ ingredients }: { ingredients: IngredientAmount[] }) =>
+    ingredients.map(({ ingredient, amount, unit }, id) => (
+        <ListItem key={id}>
+            <ListItemAvatar>
+                <Avatar>
+                    <EggIcon />
+                </Avatar>
+            </ListItemAvatar>
+            <ListItemText
+                primary={ingredient.name}
+                secondary={`Ilość: ${amount} ${unit}`}
+            />
+        </ListItem>
+    ))
+
+const createSelectedRecipeStructure = (recipes: GetRecipeDTO[]) =>
+    recipes.length
+        ? recipes.reduce(
+              (prev, recipe) => ({
+                  ...prev,
+                  [recipe.id]: {
+                      amount: 0,
+                      name: recipe.name,
+                      ingredients: recipe.ingredients,
+                  },
+              }),
+              {
+                  [recipes[0].id]: {
+                      amount: 0,
+                      name: recipes[0].name,
+                      ingredients: recipes[0].ingredients,
+                  },
+              }
+          )
+        : {}
 
 const Dashboard = () => {
-    const { sum, ingredients } = {
+    const toast = useNotifications()
+    const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipes>({})
+    const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
+    const [loading, setLoading] = useState(true)
+    const [calcTab, setCalcTab] = useState(0)
+    const { sum, ingredients }: IngredientSum = {
         sum: 0,
         ingredients: [
             {
                 ingredient: {
+                    id: '0-8-8-7-6',
                     name: 'Jajka',
-                    amount: 5,
-                    unit: 'szt.',
+                    type: 'amount',
                 },
                 amount: 5,
                 unit: 'szt.',
@@ -90,59 +109,40 @@ const Dashboard = () => {
         ],
     } //TODO: calculateIngredients()
 
-    const recipes = [
-        {
-            id: '123',
-            name: 'Placek1',
-            description: 'Opis placka',
-            directions: '',
-            picture: '/pictures/temporary_cat.png',
-            ingredients: [],
-            isPublic: true,
-            publicResources: ['name', 'picture'],
-        },
-    ] //TODO: await getRecipes();
+    useEffect(() => {
+        const handleRecipeGet = async () => {
+            const newRecipes = await getRecipes(getSession())
+            setRecipes(() => newRecipes)
+        }
 
-    const [selectedRecipes, setSelectedRecipes] = useState(
-        recipes.length
-            ? recipes.reduce(
-                  (prev, recipe) => ({
-                      ...prev,
-                      [recipe.id]: {
-                          amount: 0,
-                          name: recipe.name,
-                          ingredients: recipe.ingredients,
-                      },
-                  }),
-                  {
-                      [recipes[0].id]: {
-                          amount: 0,
-                          name: recipes[0].name,
-                          ingredients: recipes[0].ingredients,
-                      },
-                  }
-              )
-            : []
-    )
+        handleRecipeGet()
+            .catch((e) =>
+                toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
+                    severity: 'error',
+                    autoHideDuration: 6000,
+                })
+            )
+            .finally(() => setLoading(false))
+    }, [toast])
 
-    const [calcTab, setCalcTab] = useState(0)
+    useEffect(() => {
+        setSelectedRecipes(() => createSelectedRecipeStructure(recipes))
+    }, [recipes])
 
     const handleChange = (_event: SyntheticEvent, newValue: number) => {
         setCalcTab(newValue)
     }
 
-    const addRecipe = (id: string) => {
+    const addRecipe = (id: UUID) => {
         setSelectedRecipes((prev) => ({
             ...prev,
-            // @ts-expect-error TODO: Use correct type
             [id]: { ...prev[id], amount: prev[id].amount + 1 },
         }))
     }
 
-    const removeRecipe = (id: string) => {
+    const removeRecipe = (id: UUID) => {
         setSelectedRecipes((prev) => ({
             ...prev,
-            // @ts-expect-error TODO: Use correct type
             [id]: { ...prev[id], amount: prev[id].amount - 1 },
         }))
     }
@@ -159,22 +159,29 @@ const Dashboard = () => {
                     padding: '2rem 0.5rem 2rem 2rem',
                 }}
             >
-                {recipes.map((recipe) => {
-                    return (
-                        <Grid key={recipe.id} size={3}>
-                            <RecipeCard
-                                key={recipe.id}
-                                recipe={recipe}
-                                // @ts-expect-error TODO: Use correct type
-                                amount={selectedRecipes[recipe.id].amount}
-                                onAddClick={addRecipe}
-                                onRemoveClick={removeRecipe}
-                            />
-                        </Grid>
-                    )
-                })}
-                {!recipes.length && (
-                    <Typography>Tutaj pojawią się twoje przepisy</Typography>
+                {loading ? (
+                    <Spinner />
+                ) : (
+                    <>
+                        {recipes.map((recipe) => (
+                            <Grid key={recipe.id} size={3}>
+                                <RecipeCard
+                                    key={recipe.id}
+                                    recipe={recipe}
+                                    amount={
+                                        selectedRecipes[recipe.id]
+                                            ? selectedRecipes[recipe.id].amount
+                                            : -1
+                                    }
+                                    onAddClick={addRecipe}
+                                    onRemoveClick={removeRecipe}
+                                />
+                            </Grid>
+                        ))}
+                        {!recipes.length && (
+                            <Typography>{'Tutaj pojawią się twoje przepisy'}</Typography>
+                        )}
+                    </>
                 )}
             </Grid>
 
@@ -196,14 +203,20 @@ const Dashboard = () => {
                             <Divider />
                         </div>
 
-                        {!Object.values(selectedRecipes).filter(
-                            (recipe) => !!recipe.amount
-                        ).length ? (
-                            <Typography>{'Wybierz przepisy po lewej'}</Typography>
-                        ) : calcTab === 1 ? (
-                            <IngredientList ingredients={ingredients} />
+                        {loading ? (
+                            <Spinner />
                         ) : (
-                            <RecipeList recipes={selectedRecipes} />
+                            <List style={{ height: '68vh', overflow: 'auto' }}>
+                                {!Object.values(selectedRecipes).filter(
+                                    (recipe) => !!recipe.amount
+                                ).length ? (
+                                    <Typography>{'Wybierz przepisy po lewej'}</Typography>
+                                ) : calcTab === 1 ? (
+                                    <IngredientList ingredients={ingredients} />
+                                ) : (
+                                    <RecipeList recipes={selectedRecipes} />
+                                )}
+                            </List>
                         )}
 
                         <div>
