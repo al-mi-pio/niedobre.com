@@ -1,35 +1,21 @@
-import { Grid } from '@mui/system'
-import { RecipeCard } from '@/app/(dashboard)/components/RecipeCard'
-import { Typography } from '@mui/material'
-import { GetRecipeDTO } from '@/types/Recipe'
+import { Avatar, ListItem, ListItemAvatar, ListItemText } from '@mui/material'
+import MenuBookIcon from '@mui/icons-material/MenuBook'
 import { SelectedRecipes } from '@/app/(dashboard)/page'
-import { UUID } from 'crypto'
 
-export interface RecipeListProps {
-    recipes: GetRecipeDTO[]
-    selectedRecipes: SelectedRecipes
-    onAddClick: (recipeId: UUID) => void
-    onRemoveClick: (recipeId: UUID) => void
-}
-
-export const SelectedRecipeList = ({
-    recipes,
-    selectedRecipes,
-    onAddClick,
-    onRemoveClick,
-}: RecipeListProps) => (
-    <>
-        {recipes.map((recipe) => (
-            <Grid key={recipe.id} size={3}>
-                <RecipeCard
-                    key={recipe.id}
-                    recipe={recipe}
-                    amount={selectedRecipes[recipe.id].amount}
-                    onAddClick={onAddClick}
-                    onRemoveClick={onRemoveClick}
-                />
-            </Grid>
-        ))}
-        {!recipes.length && <Typography>{'Tutaj pojawią się twoje przepisy'}</Typography>}
-    </>
-)
+export const SelectedRecipeList = ({ recipes }: { recipes: SelectedRecipes }) =>
+    Object.entries(recipes).map(
+        ([id, recipe]) =>
+            !!recipe.amount && (
+                <ListItem key={id}>
+                    <ListItemAvatar>
+                        <Avatar>
+                            <MenuBookIcon />
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                        primary={recipe.name}
+                        secondary={`Ilość: x${recipe.amount}`}
+                    />
+                </ListItem>
+            )
+    )

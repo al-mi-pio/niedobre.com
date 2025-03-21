@@ -6,6 +6,7 @@ import { MenuBar } from '@/components/MenuBar'
 import { appName } from '@/constants/general'
 import { NotificationsProvider } from '@toolpad/core'
 import { Box } from '@mui/material'
+import { AuthProvider } from '@/contexts/Auth'
 
 export const metadata: Metadata = {
     title: `Panel - ${appName}`,
@@ -17,25 +18,26 @@ const DashboardLayout = ({
 }: Readonly<{
     children: ReactNode
 }>) => (
-    <AppProvider>
-        <NotificationsProvider
-            slotProps={{
-                snackbar: {
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-                },
-            }}
-        >
-            <Box
-                style={{
-                    maxHeight: '100vh',
-                    minHeight: '100vh',
+    <AuthProvider>
+        <AppProvider>
+            <NotificationsProvider
+                slotProps={{
+                    snackbar: {
+                        anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+                    },
                 }}
             >
-                <MenuBar />
-                {children}
-            </Box>
-        </NotificationsProvider>
-    </AppProvider>
+                <Box
+                    style={{
+                        height: '100vh',
+                    }}
+                >
+                    <MenuBar />
+                    {children}
+                </Box>
+            </NotificationsProvider>
+        </AppProvider>
+    </AuthProvider>
 )
 
 export default DashboardLayout
