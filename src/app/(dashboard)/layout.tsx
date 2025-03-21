@@ -29,8 +29,7 @@ const DashboardLayout = ({
             >
                 <Box
                     style={{
-                        maxHeight: '100vh',
-                        minHeight: '100vh',
+                        height: '100vh',
                     }}
                 >
                     <MenuBar />

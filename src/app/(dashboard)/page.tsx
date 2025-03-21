@@ -8,10 +8,10 @@ import { GetRecipeDTO } from '@/types/Recipe'
 import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
 import { SyntheticEvent, useEffect, useState } from 'react'
 import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
-import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
+import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
 import { useNotifications } from '@toolpad/core'
 import { IngredientList } from '@/app/(dashboard)/components/IngredientList'
-import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
+import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
 import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
 import { Spinner } from '@/components/Spinner'
@@ -98,7 +98,7 @@ const Dashboard = () => {
                 {loading ? (
                     <Spinner />
                 ) : (
-                    <SelectedRecipeList
+                    <RecipeList
                         recipes={recipes}
                         selectedRecipes={selectedRecipes}
                         onAddClick={addRecipe}
@@ -107,7 +107,7 @@ const Dashboard = () => {
                 )}
             </Grid>
 
-            <Grid style={{ minHeight: '89vh' }} size={4}>
+            <Grid style={{ minHeight: '86vh' }} size={4}>
                 <Paper sx={{ height: '100%' }}>
                     <Stack
                         direction="column"
@@ -136,7 +136,7 @@ const Dashboard = () => {
                                 ) : calcTab === 1 ? (
                                     <IngredientList ingredients={ingredients} />
                                 ) : (
-                                    <RecipeList recipes={selectedRecipes} />
+                                    <SelectedRecipeList recipes={selectedRecipes} />
                                 )}
                             </List>
                         )}
