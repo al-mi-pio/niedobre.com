@@ -4,12 +4,12 @@ import { getSession, removeSession } from '@/utils/session'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/Spinner'
-import { singOut } from '@/services/authService'
+import { signOut } from '@/services/authService'
 
 const handleLogout = async () => {
     const session = getSession()
     removeSession()
-    await singOut(session)
+    await signOut(session)
 }
 
 const Logout = () => {
