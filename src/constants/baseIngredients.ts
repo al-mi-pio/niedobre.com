@@ -18,7 +18,7 @@ export const baseIngredients: Omit<Ingredient, 'id'>[] = [
         conversion: 0.76,
     },
     {
-        name: 'kasz manna',
+        name: 'kasza manna',
         type: 'mass',
         conversion: 0.8,
     },
