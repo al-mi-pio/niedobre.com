@@ -28,7 +28,7 @@ export const signIn = async ({ login, password }: SignInDTO) => {
     throw new Error('Password is incorrect')
 }
 
-export const singOut = async (session: Session) => {
+export const signOut = async (session: Session) => {
     const verification = await verifySession(session)
 
     if (verification) {
