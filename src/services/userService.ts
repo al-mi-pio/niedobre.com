@@ -19,12 +19,12 @@ export const createUser = async ({ login, password, email }: CreateUserDTO) => {
         email,
         password: hashedPassword,
     }
-    try {
-        fs.mkdirSync(folderPath)
-    } catch {
-        throw new Error(`User with login: ${login} already exists`)
-    }
+
+    fs.mkdirSync(folderPath, { recursive: true })
     const userFilePath = join(folderPath, 'user.json')
+    if (fs.existsSync(userFilePath)) {
+        throw new Error(`User with login: ${login} does not exist`)
+    }
     await setToFile(userFilePath, user)
     const ingredientFilePath = join(folderPath, 'ingredients.json')
     const baseIngredientsToInsert = baseIngredients.map((ingredient) => ({

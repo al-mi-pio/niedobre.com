@@ -31,6 +31,9 @@ export const verifyHash = async (text: string, storedHash: string) => {
 }
 
 export const verifySession = async ({ sessionId, login }: Session) => {
+    if (!login) {
+        throw new Error('No session found')
+    }
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     let user: User
     try {
