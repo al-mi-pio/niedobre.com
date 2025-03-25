@@ -1,7 +1,9 @@
+import { ingredientTypes, massUnits, volumeUnits } from '@/constants/ingredients'
 import { UUID } from 'crypto'
-export type IngredientType = 'volume' | 'mass' | 'amount'
-export type MassUnit = 'g' | 'dg' | 'kg'
-export type VolumeUnit = 'L' | 'mL' | 'łyż.' | 'łyżecz.' | 'szkl.'
+
+export type IngredientType = (typeof ingredientTypes)[number]
+export type MassUnit = (typeof massUnits)[number]
+export type VolumeUnit = (typeof volumeUnits)[number]
 export type Unit = MassUnit | VolumeUnit | 'szt.'
 
 export type Ingredient = {
@@ -26,7 +28,7 @@ export type IngredientIdAmount = {
 }
 
 export type IngredientSum = {
-    sum?: number
+    sum: number
     ingredients: IngredientAmount[]
 }
 
