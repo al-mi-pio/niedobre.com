@@ -1,4 +1,3 @@
-'use client'
 import { ingredientTypes, massUnits, volumeUnits } from '@/constants/ingredients'
 import { UUID } from 'crypto'
 
