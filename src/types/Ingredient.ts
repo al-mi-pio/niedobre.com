@@ -1,3 +1,4 @@
+'use client'
 import { ingredientTypes, massUnits, volumeUnits } from '@/constants/ingredients'
 import { UUID } from 'crypto'
 
@@ -28,7 +29,7 @@ export type IngredientIdAmount = {
 }
 
 export type IngredientSum = {
-    sum?: number
+    sum: number
     ingredients: IngredientAmount[]
 }
 
