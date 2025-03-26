@@ -7,7 +7,7 @@ export type Recipe = {
     name: string
     description?: string
     instructions?: string
-    picture?: string
+    pictures?: string[]
     ingredients: IngredientIdAmount[]
     cost?: number
     publicResources: PublicResources
@@ -18,7 +18,7 @@ export type GetRecipeDTO = {
     name: string
     description?: string
     instructions?: string
-    picture?: string
+    pictures?: string[]
     ingredients: IngredientAmount[]
     cost?: number
     publicResources: PublicResources
@@ -28,7 +28,6 @@ export type CreateRecipeDTO = {
     name: string
     description?: string
     instructions?: string
-    picture?: string
     ingredients: IngredientIdAmount[]
     cost?: number
 }
@@ -38,7 +37,7 @@ export type PatchRecipeDTO = {
     name?: string
     description?: string
     instructions?: string
-    picture?: string
+    pictures?: string[]
     ingredients?: IngredientIdAmount[]
     cost?: number
     publicResources?: PublicResources
@@ -49,7 +48,7 @@ export type PublicRecipe = {
     name: string
     description?: string
     instructions?: string
-    picture?: string
+    pictures?: string[]
     ingredients?: IngredientIdAmount[]
     cost?: number
 }
