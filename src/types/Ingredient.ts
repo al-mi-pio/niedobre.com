@@ -28,7 +28,7 @@ export type IngredientIdAmount = {
 }
 
 export type IngredientSum = {
-    sum?: number
+    sum: number
     ingredients: IngredientAmount[]
 }
 
