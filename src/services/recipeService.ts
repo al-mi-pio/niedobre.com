@@ -8,7 +8,7 @@ import { join } from 'path'
 import { getIngredientById } from '@/services/ingredientService'
 
 export const createRecipe = async (
-    { name, description, instructions, picture, ingredients, cost }: CreateRecipeDTO,
+    { name, description, instructions, ingredients, cost }: CreateRecipeDTO,
     session: Session
 ) => {
     const recipeId = randomUUID()
@@ -26,7 +26,6 @@ export const createRecipe = async (
         name,
         description,
         instructions,
-        picture,
         ingredients,
         cost,
         publicResources: [],
@@ -63,7 +62,7 @@ export const getRecipes = async (session: Session) => {
             name: recipe.name,
             description: recipe.description,
             instructions: recipe.instructions,
-            picture: recipe.picture,
+            picture: recipe.pictures,
             ingredients: await Promise.all(
                 recipe.ingredients.map(async (ingredient) => ({
                     ingredient: await getIngredientById(ingredient.id, session),
@@ -98,7 +97,7 @@ export const patchRecipe = async (
         name,
         description,
         instructions,
-        picture,
+        pictures,
         ingredients,
         cost,
         publicResources,
@@ -124,7 +123,7 @@ export const patchRecipe = async (
     toPatchRecipe.name = name ?? toPatchRecipe.name
     toPatchRecipe.description = description ?? toPatchRecipe.description
     toPatchRecipe.instructions = instructions ?? toPatchRecipe.instructions
-    toPatchRecipe.picture = picture ?? toPatchRecipe.picture
+    toPatchRecipe.pictures = pictures ?? toPatchRecipe.pictures
     toPatchRecipe.ingredients = ingredients ?? toPatchRecipe.ingredients
     toPatchRecipe.cost = cost ?? toPatchRecipe.cost
     toPatchRecipe.publicResources = publicResources ?? toPatchRecipe.publicResources
