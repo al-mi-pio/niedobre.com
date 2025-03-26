@@ -88,7 +88,7 @@ export const baseIngredients: Omit<Ingredient, 'id'>[] = [
         conversion: 0.66,
     },
     {
-        name: 'Jajko',
+        name: 'jajka',
         type: 'amount',
     },
 ]
