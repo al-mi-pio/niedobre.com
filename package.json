@@ -18,7 +18,7 @@
     "@mui/material": "^6.4.7",
     "@toolpad/core": "^0.13.0",
     "babel-plugin-react-compiler": "^19.0.0-beta-40c6c23-20250301",
-    "next": "15.2.1",
+    "next": "^15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

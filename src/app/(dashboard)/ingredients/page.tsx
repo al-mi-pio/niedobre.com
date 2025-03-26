@@ -104,7 +104,11 @@ const Ingredients = () => {
 
     const loadIngredients = () => {
         getIngredients(getSession())
-            .then((newIngredients) => setIngredients(() => newIngredients))
+            .then((newIngredients) =>
+                setIngredients(() =>
+                    newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1))
+                )
+            )
             .catch((e) =>
                 toast.show(`Problem z załadowaniem składników: ${e.message}`, {
                     severity: 'error',
