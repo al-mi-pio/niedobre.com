@@ -62,7 +62,7 @@ export const getRecipes = async (session: Session) => {
             name: recipe.name,
             description: recipe.description,
             instructions: recipe.instructions,
-            picture: recipe.pictures,
+            pictures: recipe.pictures,
             ingredients: await Promise.all(
                 recipe.ingredients.map(async (ingredient) => ({
                     ingredient: await getIngredientById(ingredient.id, session),
