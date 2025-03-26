@@ -1,8 +1,12 @@
-import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
-import { IngredientForm } from '@/app/(dashboard)/ingredients/page'
+import {
+    CreateIngredientDTO,
+    Ingredient,
+    IngredientFormData,
+    PatchIngredientDTO,
+} from '@/types/Ingredient'
 
 // TODO
-export const ingredientToForm = (ingredient: Ingredient): IngredientForm => {
+export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => {
     return {
         id: ingredient.id,
         name: ingredient.name,
@@ -11,7 +15,9 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientForm => {
 }
 
 // TODO
-export const formToCreateIngredientDTO = (form: IngredientForm): CreateIngredientDTO => {
+export const formToCreateIngredientDTO = (
+    form: IngredientFormData
+): CreateIngredientDTO => {
     return {
         name: form.name,
         type: 'mass',
@@ -19,7 +25,9 @@ export const formToCreateIngredientDTO = (form: IngredientForm): CreateIngredien
 }
 
 // TODO
-export const formToPatchIngredientDTO = (form: IngredientForm): PatchIngredientDTO => {
+export const formToPatchIngredientDTO = (
+    form: IngredientFormData
+): PatchIngredientDTO => {
     if (!form.id) {
         throw new Error('id')
     }
