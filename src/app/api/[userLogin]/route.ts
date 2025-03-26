@@ -31,7 +31,7 @@ export async function GET(
         name: recipe.name,
         description: recipe.description,
         instructions: recipe.instructions,
-        picture: recipe.picture,
+        pictures: recipe.pictures,
         ingredients: recipe.ingredients.map((ingredientId) => {
             const ingredient = ingredients.find((ing) => ing.id === ingredientId.id)
             if (ingredient === undefined) {

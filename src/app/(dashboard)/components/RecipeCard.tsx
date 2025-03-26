@@ -30,7 +30,11 @@ export const RecipeCard = ({
         <Card sx={{ maxWidth: 345 }}>
             <CardMedia
                 sx={{ height: 140 }}
-                image={recipe.picture ?? '/pictures/temporary_cat.png'}
+                image={
+                    recipe.pictures && recipe.pictures[0]
+                        ? `/pictures/${recipe.pictures[0]}`
+                        : '/pictures/temporary_cat.png'
+                }
                 title="Recipe image"
             />
             <CardContent>
