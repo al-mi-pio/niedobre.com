@@ -1,6 +1,6 @@
 import { massUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
-import { ValidationError } from '@/errors/'
+import { ValidationError } from '@/errors/ValidationError'
 import {
     CreateIngredientDTO,
     Ingredient,
