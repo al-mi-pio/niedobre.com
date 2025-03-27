@@ -25,19 +25,16 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
         id: ingredient.id,
         name: ingredient.name,
         kcal: ingredient.kcal,
-        amount: ingredient.conversion === undefined ? undefined : 1,
-        oppositeAmount:
-            ingredient.conversion === undefined
-                ? undefined
-                : parseFloat(ingredient.conversion?.toFixed(3)),
-        costAmount:
-            ingredient.cost === undefined ? undefined : ingredient.cost < 0.01 ? 1000 : 1,
-        cost:
-            ingredient.cost === undefined
-                ? undefined
-                : ingredient.cost < 0.01
-                  ? ingredient.cost * 1000
-                  : ingredient.cost,
+        amount: !ingredient.conversion ? undefined : 1,
+        oppositeAmount: !ingredient.conversion
+            ? undefined
+            : parseFloat(ingredient.conversion?.toFixed(3)),
+        costAmount: !ingredient.cost ? undefined : ingredient.cost < 0.01 ? 1000 : 1,
+        cost: !ingredient.cost
+            ? undefined
+            : ingredient.cost < 0.01
+              ? ingredient.cost * 1000
+              : ingredient.cost,
         ...units,
     }
 }
@@ -56,16 +53,13 @@ export const formToCreateIngredientDTO = (
         type:
             form.unit === 'szt.' ? 'amount' : form.unit in massUnits ? 'mass' : 'volume',
         cost:
-            form.costAmount === undefined || form.cost === undefined
+            !form.costAmount || !form.cost
                 ? undefined
                 : form.cost /
                   (form.costAmount *
                       measurements[form.unit as keyof typeof measurements]),
         conversion:
-            form.unit === undefined ||
-            form.oppositeUnit === undefined ||
-            form.amount === undefined ||
-            form.oppositeAmount === undefined
+            !form.unit || !form.oppositeUnit || !form.amount || !form.oppositeAmount
                 ? undefined
                 : parseFloat(
                       (
@@ -81,7 +75,6 @@ export const formToCreateIngredientDTO = (
     }
 }
 
-// TODO
 export const formToPatchIngredientDTO = (
     form: IngredientFormData
 ): PatchIngredientDTO => {
@@ -100,16 +93,13 @@ export const formToPatchIngredientDTO = (
         type:
             form.unit === 'szt.' ? 'amount' : form.unit in massUnits ? 'mass' : 'volume',
         cost:
-            form.costAmount === undefined || form.cost === undefined
+            !form.costAmount || !form.cost
                 ? undefined
                 : form.cost /
                   (form.costAmount *
                       measurements[form.unit as keyof typeof measurements]),
         conversion:
-            form.unit === undefined ||
-            form.oppositeUnit === undefined ||
-            form.amount === undefined ||
-            form.oppositeAmount === undefined
+            !form.unit || !form.oppositeUnit || !form.amount || !form.oppositeAmount
                 ? undefined
                 : parseFloat(
                       (
