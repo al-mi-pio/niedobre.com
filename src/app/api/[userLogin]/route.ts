@@ -1,3 +1,4 @@
+import { DataError } from '@/errors/dataError'
 import { Ingredient } from '@/types/Ingredient'
 import { GetRecipeDTO, PublicRecipe, Recipe } from '@/types/Recipe'
 import { getFromFile } from '@/utils/file'
@@ -35,7 +36,7 @@ export async function GET(
         ingredients: recipe.ingredients.map((ingredientId) => {
             const ingredient = ingredients.find((ing) => ing.id === ingredientId.id)
             if (ingredient === undefined) {
-                throw new Error(`Ingredient with ID ${ingredientId.id} not found`)
+                throw new DataError(`Składnik z id ${ingredientId.id} nie istnieje`)
             }
             return {
                 ingredient,
