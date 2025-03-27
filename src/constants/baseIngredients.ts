@@ -75,7 +75,7 @@ export const baseIngredients: Omit<Ingredient, 'id'>[] = [
     {
         name: 'bułka tarta',
         type: 'mass',
-        conversion: 1.66,
+        conversion: 0.6,
     },
     {
         name: 'masło',
