@@ -6,12 +6,12 @@ import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
 import { GetRecipeDTO } from '@/types/Recipe'
 import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
-import { SyntheticEvent, useEffect, useState } from 'react'
 import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
-import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
+import { useEffect, useState } from 'react'
+import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
 import { useNotifications } from '@toolpad/core'
 import { IngredientList } from '@/app/(dashboard)/components/IngredientList'
-import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
+import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
 import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
 import { Spinner } from '@/components/Spinner'
@@ -25,11 +25,11 @@ export type SelectedRecipes = {
 }
 
 const Dashboard = () => {
-    const toast = useNotifications()
     const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipes>({})
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
     const [loading, setLoading] = useState(true)
     const [calcTab, setCalcTab] = useState(0)
+    const toast = useNotifications()
     const { sum, ingredients }: IngredientSum = {
         sum: 0,
         ingredients: [
@@ -46,12 +46,11 @@ const Dashboard = () => {
     } //TODO: calculateIngredients()
 
     useEffect(() => {
-        const handleRecipeGet = async () => {
-            const newRecipes = await getRecipes(getSession())
-            setRecipes(() => newRecipes)
-        }
-
-        handleRecipeGet()
+        getRecipes(getSession())
+            .then((newRecipes) => {
+                setRecipes(() => newRecipes)
+                setSelectedRecipes(() => createSelectedRecipeStructure(newRecipes))
+            })
             .catch((e) =>
                 toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
                     severity: 'error',
@@ -60,14 +59,6 @@ const Dashboard = () => {
             )
             .finally(() => setLoading(false))
     }, [toast])
-
-    useEffect(() => {
-        setSelectedRecipes(() => createSelectedRecipeStructure(recipes))
-    }, [recipes])
-
-    const handleChange = (_event: SyntheticEvent, newValue: number) => {
-        setCalcTab(newValue)
-    }
 
     const addRecipe = (id: UUID) => {
         setSelectedRecipes((prev) => ({
@@ -118,7 +109,7 @@ const Dashboard = () => {
                         }}
                     >
                         <Box>
-                            <Tabs value={calcTab} onChange={handleChange}>
+                            <Tabs value={calcTab} onChange={(_e, tab) => setCalcTab(tab)}>
                                 <Tab label="Przepisy" />
                                 <Tab label="Składniki" />
                             </Tabs>
