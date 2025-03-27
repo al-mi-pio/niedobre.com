@@ -52,13 +52,15 @@ export type PatchIngredientDTO = {
 export type IngredientFormData = {
     id?: UUID
     name: string
-    amount?: number
-    oppositeAmount?: number
-    costAmount?: number
-    cost?: number
-    kcal?: number
+    amount?: string
+    oppositeAmount?: string
+    costAmount?: string
+    cost?: string
+    kcal?: string
     isNew?: boolean
-} & (
+} & IngredientFormDataUnits
+
+export type IngredientFormDataUnits =
     | {
           unit?: MassUnit
           oppositeUnit?: VolumeUnit
@@ -71,4 +73,3 @@ export type IngredientFormData = {
           unit?: 'szt.'
           oppositeUnit?: Omit<Unit, 'szt.'>
       }
-)
