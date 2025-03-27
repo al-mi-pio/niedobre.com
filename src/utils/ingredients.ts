@@ -25,6 +25,7 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
         id: ingredient.id,
         name: ingredient.name,
         kcal: ingredient.kcal?.toString(),
+        kcalAmount: '1',
         amount: !ingredient.conversion ? undefined : '1',
         oppositeAmount: !ingredient.conversion
             ? undefined
@@ -55,6 +56,7 @@ export const formToCreateIngredientDTO = (
         ? undefined
         : parseFloat(form.oppositeAmount)
     const kcal = !form.kcal ? undefined : parseFloat(form.kcal)
+    const kcalAmount = !form.kcalAmount ? undefined : parseFloat(form.kcalAmount)
 
     return {
         name: form.name,
@@ -78,7 +80,11 @@ export const formToCreateIngredientDTO = (
                               ])
                       ).toFixed(3)
                   ),
-        kcal,
+        kcal:
+            !kcal || !kcalAmount
+                ? undefined
+                : kcal /
+                  (kcalAmount * measurements[form.unit as keyof typeof measurements]),
     }
 }
 
@@ -101,6 +107,7 @@ export const formToPatchIngredientDTO = (
         ? undefined
         : parseFloat(form.oppositeAmount)
     const kcal = !form.kcal ? undefined : parseFloat(form.kcal)
+    const kcalAmount = !form.kcalAmount ? undefined : parseFloat(form.kcalAmount)
 
     return {
         id: form.id,
@@ -125,6 +132,10 @@ export const formToPatchIngredientDTO = (
                               ])
                       ).toFixed(3)
                   ),
-        kcal,
+        kcal:
+            !kcal || !kcalAmount
+                ? undefined
+                : kcal /
+                  (kcalAmount * measurements[form.unit as keyof typeof measurements]),
     }
 }
