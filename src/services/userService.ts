@@ -10,7 +10,12 @@ import { baseIngredients } from '@/constants/baseIngredients'
 import { DataError } from '@/errors/DataError'
 import { emailValidation, loginValidation, passwordValidation } from '@/utils/validate'
 
-export const createUser = async ({ login, password, email }: CreateUserDTO) => {
+export const createUser = async ({
+    login,
+    password,
+    keepBaseIngredients,
+    email,
+}: CreateUserDTO) => {
     const userId = randomUUID()
     const folderPath = join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassword = await hashString(password)
@@ -39,14 +44,18 @@ export const createUser = async ({ login, password, email }: CreateUserDTO) => {
     }
     await setToFile(userFilePath, user)
     const ingredientFilePath = join(folderPath, 'ingredients.json')
-    const baseIngredientsToInsert = baseIngredients.map((ingredient) => ({
-        id: randomUUID(),
-        name: ingredient.name,
-        type: ingredient.type,
-        conversion: ingredient.conversion,
-        kcal: ingredient.kcal,
-    }))
-    await setToFile(ingredientFilePath, baseIngredientsToInsert)
+    if (keepBaseIngredients) {
+        const baseIngredientsToInsert = baseIngredients.map((ingredient) => ({
+            id: randomUUID(),
+            name: ingredient.name,
+            type: ingredient.type,
+            conversion: ingredient.conversion,
+            kcal: ingredient.kcal,
+        }))
+        await setToFile(ingredientFilePath, baseIngredientsToInsert)
+    } else {
+        await setToFile(ingredientFilePath, [])
+    }
     const recipeFilePath = join(folderPath, 'recipes.json')
     await setToFile(recipeFilePath, [])
 }
