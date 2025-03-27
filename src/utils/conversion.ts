@@ -1,6 +1,6 @@
 import { massUnits, volumeUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
-import { ConversionError } from '@/errors/conversionError'
+import { ConversionError } from '@/errors/ConversionError'
 import { IngredientAmount, IngredientSum, MassUnit, VolumeUnit } from '@/types/Ingredient'
 
 export const calculateIngredients = (ingredients: IngredientAmount[]): IngredientSum => {

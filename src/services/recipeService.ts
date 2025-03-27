@@ -6,7 +6,7 @@ import { getFromFile, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 import { getIngredientById } from '@/services/ingredientService'
-import { DataError } from '@/errors/dataError'
+import { DataError } from '@/errors/DataError'
 
 export const createRecipe = async (
     { name, description, instructions, ingredients, cost }: CreateRecipeDTO,

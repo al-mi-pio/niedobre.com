@@ -7,7 +7,7 @@ import { CreateUserDTO, PatchUserDTO, User } from '@/types/User'
 import { Session } from '@/types/Auth'
 import { getFromFile, setToFile } from '@/utils/file'
 import { baseIngredients } from '@/constants/baseIngredients'
-import { DataError } from '@/errors/dataError'
+import { DataError } from '@/errors/DataError'
 import { emailValidation, loginValidation, passwordValidation } from '@/utils/validate'
 
 export const createUser = async ({ login, password, email }: CreateUserDTO) => {

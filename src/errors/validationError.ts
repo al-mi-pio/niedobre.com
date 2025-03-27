@@ -1,4 +1,4 @@
-import { ValidationErrorPayload } from '@/types/defualt'
+import { ValidationErrorPayload } from '@/types/default'
 
 export class ValidationError extends Error {
     payload: ValidationErrorPayload[]

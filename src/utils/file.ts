@@ -1,5 +1,5 @@
 'use server'
-import { DataError } from '@/errors/dataError'
+import { DataError } from '@/errors/DataError'
 import { getCompressedRecipes, patchRecipe } from '@/services/recipeService'
 import { Session } from '@/types/Auth'
 import { randomUUID, UUID } from 'crypto'

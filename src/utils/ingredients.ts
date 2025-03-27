@@ -1,6 +1,6 @@
 import { massUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
-import { ValidationError } from '@/errors/validationError'
+import { ValidationError } from '@/errors/'
 import {
     CreateIngredientDTO,
     Ingredient,
@@ -8,8 +8,8 @@ import {
     IngredientFormDataUnits,
     PatchIngredientDTO,
 } from '@/types/Ingredient'
-import { positiveFloatValidation } from './validate'
-import { ValidationData, ValidationErrorPayload } from '@/types/defualt'
+import { positiveFloatValidation } from '@/utils/validate'
+import { ValidationData, ValidationErrorPayload } from '@/types/default'
 
 export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => {
     const units: IngredientFormDataUnits =
@@ -131,7 +131,7 @@ export const formToCreateIngredientDTO = (
         ]
     }
 
-    if (errors.length > 0) {
+    if (errors.length) {
         throw new ValidationError(`Napraw błędne pola`, errors)
     }
     return {
@@ -249,7 +249,7 @@ export const formToPatchIngredientDTO = (
         ]
     }
 
-    if (errors.length > 0) {
+    if (errors.length) {
         throw new ValidationError(`Napraw błędne pola`, errors)
     }
     return {

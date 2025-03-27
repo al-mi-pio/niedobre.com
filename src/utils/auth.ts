@@ -5,7 +5,7 @@ import { join } from 'path'
 import { User } from '@/types/User'
 import { Session } from '@/types/Auth'
 import { getFromFile } from './file'
-import { SessionError } from '@/errors/sessionError'
+import { SessionError } from '@/errors/SessionError'
 
 export const hashString = async (text: string) => {
     const salt = crypto.randomBytes(16).toString('hex')

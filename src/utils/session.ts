@@ -1,6 +1,6 @@
 'use client'
 
-import { SessionError } from '@/errors/sessionError'
+import { SessionError } from '@/errors/SessionError'
 import { Session } from '@/types/Auth'
 import { UUID } from 'crypto'
 

@@ -1,5 +1,5 @@
 'use server'
-import { DataError } from '@/errors/dataError'
+import { DataError } from '@/errors/DataError'
 import { Session } from '@/types/Auth'
 import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
 import { verifySession } from '@/utils/auth'

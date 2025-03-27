@@ -1,4 +1,4 @@
-import { DataError } from '@/errors/dataError'
+import { DataError } from '@/errors/DataError'
 import { Ingredient } from '@/types/Ingredient'
 import { GetRecipeDTO, PublicRecipe, Recipe } from '@/types/Recipe'
 import { getFromFile } from '@/utils/file'
@@ -47,7 +47,7 @@ export async function GET(
         cost: recipe.cost,
         publicResources: recipe.publicResources,
     }))
-    const publicRecipes = recipes.filter((recipe) => recipe.publicResources.length > 0)
+    const publicRecipes = recipes.filter((recipe) => recipe.publicResources.length)
 
     return NextResponse.json({
         publicRecipes: publicRecipes.map((recipe) =>

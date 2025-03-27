@@ -4,7 +4,7 @@ import { join } from 'path'
 import { randomUUID } from 'crypto'
 import { User } from '@/types/User'
 import { verifyHash, verifySession } from '@/utils/auth'
-import { DataError } from '@/errors/dataError'
+import { DataError } from '@/errors/DataError'
 import { patchUser } from '@/services/userService'
 import { getFromFile, setToFile } from '@/utils/file'
 
