@@ -13,7 +13,7 @@ import { emailValidation, loginValidation, passwordValidation } from '@/utils/va
 export const createUser = async ({
     login,
     password,
-    baseIngredientOptOut,
+    keepBaseIngredients,
     email,
 }: CreateUserDTO) => {
     const userId = randomUUID()
@@ -44,7 +44,7 @@ export const createUser = async ({
     }
     await setToFile(userFilePath, user)
     const ingredientFilePath = join(folderPath, 'ingredients.json')
-    if (baseIngredientOptOut) {
+    if (keepBaseIngredients) {
         const baseIngredientsToInsert = baseIngredients.map((ingredient) => ({
             id: randomUUID(),
             name: ingredient.name,
