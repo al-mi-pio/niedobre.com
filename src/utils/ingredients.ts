@@ -1,5 +1,6 @@
 import { massUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
+import { ValidationError } from '@/errors/ValidationError'
 import {
     CreateIngredientDTO,
     Ingredient,
@@ -7,6 +8,8 @@ import {
     IngredientFormDataUnits,
     PatchIngredientDTO,
 } from '@/types/Ingredient'
+import { positiveFloatValidation } from '@/utils/validate'
+import { ValidationData, ValidationErrorPayload } from '@/types/default'
 
 export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => {
     const units: IngredientFormDataUnits =
@@ -43,99 +46,236 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
 export const formToCreateIngredientDTO = (
     form: IngredientFormData
 ): CreateIngredientDTO => {
+    let errors: ValidationErrorPayload[] = []
+
     if (!form.unit) {
-        throw new Error('No unit found')
+        errors = [...errors, { name: 'unit', description: 'Nie znaleziono' }]
     }
     if (form.name === '') {
-        throw new Error('Bad name')
+        errors = [...errors, { name: 'name', description: 'Błędna nazwa' }]
     }
-    const cost = !form.cost ? undefined : parseFloat(form.cost)
-    const costAmount = !form.costAmount ? undefined : parseFloat(form.costAmount)
-    const amount = !form.amount ? undefined : parseFloat(form.amount)
-    const oppositeAmount = !form.oppositeAmount
-        ? undefined
-        : parseFloat(form.oppositeAmount)
-    const kcal = !form.kcal ? undefined : parseFloat(form.kcal)
-    const kcalAmount = !form.kcalAmount ? undefined : parseFloat(form.kcalAmount)
+    const floatVariables: ValidationData[] = [
+        { name: 'cost', value: form.cost },
+        { name: 'costAmount', value: form.costAmount },
+        { name: 'amount', value: form.amount },
+        { name: 'oppositeAmount', value: form.oppositeAmount },
+        { name: 'kcal', value: form.kcal },
+        { name: 'kcalAmount', value: form.kcalAmount },
+    ]
+    floatVariables.forEach((variable) => {
+        if (variable.value && !positiveFloatValidation(variable.value)) {
+            errors = [...errors, { name: variable.name, description: 'Błędna wartość' }]
+        }
+    })
 
+    const costVariables = [
+        { name: 'cost', value: form.cost },
+        { name: 'costAmount', value: form.costAmount },
+    ].filter((data) => data.value)
+    const conversionVariables: ValidationData[] = [
+        { name: 'amount', value: form.amount },
+        { name: 'oppositeAmount', value: form.oppositeAmount },
+        { name: 'oppositeUnit', value: form.oppositeUnit as string },
+    ].filter((data) => data.value)
+    const kcalVariables = [
+        { name: 'kcal', value: form.kcal },
+        { name: 'kcalAmount', value: form.kcalAmount },
+    ].filter((data) => data.value)
+
+    const missingCostVariables = [
+        { name: 'cost', value: form.cost },
+        { name: 'costAmount', value: form.costAmount },
+    ].filter((data) => !data.value)
+    const missingConversionVariables: ValidationData[] = [
+        { name: 'amount', value: form.amount },
+        { name: 'oppositeAmount', value: form.oppositeAmount },
+        { name: 'oppositeUnit', value: form.oppositeUnit as string },
+    ].filter((data) => !data.value)
+    const missingKcalVariables = [
+        { name: 'kcal', value: form.kcal },
+        { name: 'kcalAmount', value: form.kcalAmount },
+    ].filter((data) => !data.value)
+
+    if (missingCostVariables.length === 1) {
+        errors = [
+            ...errors,
+            {
+                name: missingCostVariables[0].name,
+                description: 'Brakuje wartości do wyliczenia kosztu',
+            },
+        ]
+    }
+
+    if (
+        missingConversionVariables.length === 1 ||
+        missingConversionVariables.length === 2
+    ) {
+        missingConversionVariables.forEach((missingVairable) => {
+            errors = [
+                ...errors,
+                {
+                    name: missingVairable.name,
+                    description: 'Brakuje wartości do wyliczenia konwerzji',
+                },
+            ]
+        })
+    }
+
+    if (missingKcalVariables.length === 1) {
+        errors = [
+            ...errors,
+            {
+                name: missingKcalVariables[0].name,
+                description: 'Brakuje wartości do wyliczenia kcal',
+            },
+        ]
+    }
+
+    if (errors.length) {
+        throw new ValidationError(`Napraw błędne pola`, errors)
+    }
     return {
         name: form.name,
         type:
-            form.unit === 'szt.' ? 'amount' : form.unit in massUnits ? 'mass' : 'volume',
-        cost:
-            !cost || !costAmount
-                ? undefined
-                : cost /
-                  (costAmount * measurements[form.unit as keyof typeof measurements]),
-        conversion:
-            !form.unit || !form.oppositeUnit || !amount || !oppositeAmount
-                ? undefined
-                : parseFloat(
-                      (
-                          (amount *
-                              measurements[form.unit as keyof typeof measurements]) /
-                          (oppositeAmount *
-                              measurements[
-                                  form.oppositeUnit as keyof typeof measurements
-                              ])
-                      ).toFixed(3)
-                  ),
-        kcal:
-            !kcal || !kcalAmount
-                ? undefined
-                : kcal /
-                  (kcalAmount * measurements[form.unit as keyof typeof measurements]),
+            form.unit === 'szt.' ? 'amount' : form.unit! in massUnits ? 'mass' : 'volume',
+        cost: costVariables.length
+            ? parseFloat(costVariables[0].value!) /
+              (parseFloat(costVariables[1].value!) *
+                  measurements[form.unit as keyof typeof measurements])
+            : undefined,
+        conversion: conversionVariables.length
+            ? parseFloat(
+                  (
+                      (parseFloat(conversionVariables[0].value!) *
+                          measurements[form.unit as keyof typeof measurements]) /
+                      (parseFloat(conversionVariables[1].value!) *
+                          measurements[form.oppositeUnit as keyof typeof measurements])
+                  ).toFixed(3)
+              )
+            : undefined,
+        kcal: kcalVariables.length
+            ? parseFloat(kcalVariables[0].value!) /
+              (parseFloat(kcalVariables[1].value!) *
+                  measurements[form.unit as keyof typeof measurements])
+            : undefined,
     }
 }
 
 export const formToPatchIngredientDTO = (
     form: IngredientFormData
 ): PatchIngredientDTO => {
+    let errors: ValidationErrorPayload[] = []
     if (!form.id) {
-        throw new Error('id')
+        errors = [...errors, { name: 'id', description: 'Nie znaleziono' }]
     }
+
     if (!form.unit) {
-        throw new Error('No unit found')
+        errors = [...errors, { name: 'unit', description: 'Nie znaleziono' }]
     }
     if (form.name === '') {
-        throw new Error('Bad name')
+        errors = [...errors, { name: 'name', description: 'Błędna nazwa' }]
     }
-    const cost = !form.cost ? undefined : parseFloat(form.cost)
-    const costAmount = !form.costAmount ? undefined : parseFloat(form.costAmount)
-    const amount = !form.amount ? undefined : parseFloat(form.amount)
-    const oppositeAmount = !form.oppositeAmount
-        ? undefined
-        : parseFloat(form.oppositeAmount)
-    const kcal = !form.kcal ? undefined : parseFloat(form.kcal)
-    const kcalAmount = !form.kcalAmount ? undefined : parseFloat(form.kcalAmount)
+    const floatVariables: ValidationData[] = [
+        { name: 'cost', value: form.cost },
+        { name: 'costAmount', value: form.costAmount },
+        { name: 'amount', value: form.amount },
+        { name: 'oppositeAmount', value: form.oppositeAmount },
+        { name: 'kcal', value: form.kcal },
+        { name: 'kcalAmount', value: form.kcalAmount },
+    ]
+    floatVariables.forEach((variable) => {
+        if (variable.value && !positiveFloatValidation(variable.value)) {
+            errors = [...errors, { name: variable.name, description: 'Błędna wartość' }]
+        }
+    })
 
+    const costVariables = [
+        { name: 'cost', value: form.cost },
+        { name: 'costAmount', value: form.costAmount },
+    ].filter((data) => data.value)
+    const conversionVariables: ValidationData[] = [
+        { name: 'amount', value: form.amount },
+        { name: 'oppositeAmount', value: form.oppositeAmount },
+        { name: 'oppositeUnit', value: form.oppositeUnit as string },
+    ].filter((data) => data.value)
+    const kcalVariables = [
+        { name: 'kcal', value: form.kcal },
+        { name: 'kcalAmount', value: form.kcalAmount },
+    ].filter((data) => data.value)
+
+    const missingCostVariables = [
+        { name: 'cost', value: form.cost },
+        { name: 'costAmount', value: form.costAmount },
+    ].filter((data) => !data.value)
+    const missingConversionVariables: ValidationData[] = [
+        { name: 'amount', value: form.amount },
+        { name: 'oppositeAmount', value: form.oppositeAmount },
+        { name: 'oppositeUnit', value: form.oppositeUnit as string },
+    ].filter((data) => !data.value)
+    const missingKcalVariables = [
+        { name: 'kcal', value: form.kcal },
+        { name: 'kcalAmount', value: form.kcalAmount },
+    ].filter((data) => !data.value)
+
+    if (missingCostVariables.length === 1) {
+        errors = [
+            ...errors,
+            {
+                name: missingCostVariables[0].name,
+                description: 'Brakuje wartości do wyliczenia kosztu',
+            },
+        ]
+    }
+
+    if (missingConversionVariables.length === 1 || conversionVariables.length === 2) {
+        missingConversionVariables.forEach((missingVairable) => {
+            errors = [
+                ...errors,
+                {
+                    name: missingVairable.name,
+                    description: 'Brakuje wartości do wyliczenia konwerzji',
+                },
+            ]
+        })
+    }
+
+    if (missingKcalVariables.length === 1) {
+        errors = [
+            ...errors,
+            {
+                name: missingKcalVariables[0].name,
+                description: 'Brakuje wartości do wyliczenia kcal',
+            },
+        ]
+    }
+
+    if (errors.length) {
+        throw new ValidationError(`Napraw błędne pola`, errors)
+    }
     return {
-        id: form.id,
+        id: form.id!,
         name: form.name,
         type:
-            form.unit === 'szt.' ? 'amount' : form.unit in massUnits ? 'mass' : 'volume',
-        cost:
-            !cost || !costAmount
-                ? undefined
-                : cost /
-                  (costAmount * measurements[form.unit as keyof typeof measurements]),
-        conversion:
-            !form.unit || !form.oppositeUnit || !amount || !oppositeAmount
-                ? undefined
-                : parseFloat(
-                      (
-                          (amount *
-                              measurements[form.unit as keyof typeof measurements]) /
-                          (oppositeAmount *
-                              measurements[
-                                  form.oppositeUnit as keyof typeof measurements
-                              ])
-                      ).toFixed(3)
-                  ),
-        kcal:
-            !kcal || !kcalAmount
-                ? undefined
-                : kcal /
-                  (kcalAmount * measurements[form.unit as keyof typeof measurements]),
+            form.unit === 'szt.' ? 'amount' : form.unit! in massUnits ? 'mass' : 'volume',
+        cost: costVariables.length
+            ? parseFloat(costVariables[0].value!) /
+              (parseFloat(costVariables[1].value!) *
+                  measurements[form.unit as keyof typeof measurements])
+            : undefined,
+        conversion: costVariables.length
+            ? parseFloat(
+                  (
+                      (parseFloat(costVariables[0].value!) *
+                          measurements[form.unit as keyof typeof measurements]) /
+                      (parseFloat(costVariables[1].value!) *
+                          measurements[form.oppositeUnit as keyof typeof measurements])
+                  ).toFixed(3)
+              )
+            : undefined,
+        kcal: kcalVariables.length
+            ? parseFloat(kcalVariables[0].value!) /
+              (parseFloat(kcalVariables[1].value!) *
+                  measurements[form.unit as keyof typeof measurements])
+            : undefined,
     }
 }

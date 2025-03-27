@@ -1,4 +1,5 @@
 'use server'
+import { DataError } from '@/errors/DataError'
 import { getCompressedRecipes, patchRecipe } from '@/services/recipeService'
 import { Session } from '@/types/Auth'
 import { randomUUID, UUID } from 'crypto'
@@ -19,6 +20,9 @@ export const saveImage = async (
     recipeId: UUID,
     session: Session
 ) => {
+    if (!imageName) {
+        throw new DataError(`Błędna nazwa zdjęcia`)
+    }
     const imageId = randomUUID()
     const folderPath = join(process.cwd(), 'public', 'pictures', imageId)
     fs.mkdirSync(folderPath, { recursive: true })
@@ -64,7 +68,7 @@ export const setDefaultImage = async (
     const recipePictures = recipes.filter((recipe) => recipe.id === recipeId)[0].pictures
     const defaultPicture = recipePictures?.filter((picture) => picture === imagePath)[0]
     if (defaultPicture === undefined) {
-        throw new Error(`Picture with path ${imagePath} not found`)
+        throw new DataError(`Nie znaleziono zdjęcia ${imagePath}`)
     }
     const otherPictures = recipePictures?.filter((picture) => picture !== imagePath)
     await patchRecipe(
