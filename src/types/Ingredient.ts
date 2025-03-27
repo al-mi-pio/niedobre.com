@@ -57,6 +57,7 @@ export type IngredientFormData = {
     costAmount?: string
     cost?: string
     kcal?: string
+    kcalAmount?: string
     isNew?: boolean
 } & IngredientFormDataUnits
 
