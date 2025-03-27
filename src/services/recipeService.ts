@@ -6,6 +6,7 @@ import { getFromFile, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 import { getIngredientById } from '@/services/ingredientService'
+import { DataError } from '@/errors/dataError'
 
 export const createRecipe = async (
     { name, description, instructions, ingredients, cost }: CreateRecipeDTO,
@@ -46,12 +47,10 @@ export const getCompressedRecipes = async (session: Session) => {
         'recipes.json'
     )
 
-    const verification = await verifySession(session)
-    if (verification) {
-        const recipes: Recipe[] = await getFromFile(filePath)
-        return recipes
-    }
-    throw new Error('Session is invalid')
+    await verifySession(session)
+
+    const recipes: Recipe[] = await getFromFile(filePath)
+    return recipes
 }
 
 export const getRecipes = async (session: Session) => {
@@ -117,7 +116,7 @@ export const patchRecipe = async (
     const unchangedRecipes = recipes.filter((recipe) => recipe.id !== id)
     const toPatchRecipe = recipes.find((recipe) => recipe.id === id)
     if (!toPatchRecipe) {
-        throw new Error(`Recipe with id: ${id} does not exist`)
+        throw new DataError(`Przepis z id ${id} nie istnieje`)
     }
 
     toPatchRecipe.name = name ?? toPatchRecipe.name

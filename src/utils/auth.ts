@@ -5,6 +5,7 @@ import { join } from 'path'
 import { User } from '@/types/User'
 import { Session } from '@/types/Auth'
 import { getFromFile } from './file'
+import { SessionError } from '@/errors/sessionError'
 
 export const hashString = async (text: string) => {
     const salt = crypto.randomBytes(16).toString('hex')
@@ -31,16 +32,15 @@ export const verifyHash = async (text: string, storedHash: string) => {
 }
 
 export const verifySession = async ({ sessionId, login }: Session) => {
-    if (!login) {
-        throw new Error('No session found')
-    }
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     let user: User
     try {
         user = await getFromFile(filePath)
     } catch {
-        throw new Error(`User with login: ${login} does not exist`)
+        throw new SessionError(`Użytkownik z loginem ${login} nie istnieje`)
     }
 
-    return user.sessionId == sessionId
+    if (user.sessionId !== sessionId) {
+        throw new SessionError('Nieprawidłowa sesja')
+    }
 }

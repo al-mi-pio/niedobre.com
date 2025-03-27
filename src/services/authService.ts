@@ -4,7 +4,7 @@ import { join } from 'path'
 import { randomUUID } from 'crypto'
 import { User } from '@/types/User'
 import { verifyHash, verifySession } from '@/utils/auth'
-
+import { DataError } from '@/errors/dataError'
 import { patchUser } from '@/services/userService'
 import { getFromFile, setToFile } from '@/utils/file'
 
@@ -14,7 +14,7 @@ export const signIn = async ({ login, password }: SignInDTO) => {
     try {
         user = await getFromFile(filePath)
     } catch {
-        throw new Error(`User with login: ${login} does not exist`)
+        throw new DataError(`Użytkownik z loginem ${login} nie istnieje`)
     }
 
     const result = await verifyHash(password, user.password)
@@ -25,16 +25,10 @@ export const signIn = async ({ login, password }: SignInDTO) => {
         await setToFile(filePath, user)
         return sessionId
     }
-    throw new Error('Password is incorrect')
+    throw new DataError('Hasło jest nieprawidłowe')
 }
 
 export const signOut = async (session: Session) => {
-    const verification = await verifySession(session)
-
-    if (verification) {
-        patchUser({ sessionId: null }, session)
-        return true
-    } else {
-        throw new Error('Session is invalid')
-    }
+    await verifySession(session)
+    patchUser({ sessionId: null }, session)
 }

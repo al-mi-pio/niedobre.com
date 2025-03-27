@@ -1,4 +1,5 @@
 'use server'
+import { DataError } from '@/errors/dataError'
 import { Session } from '@/types/Auth'
 import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
 import { verifySession } from '@/utils/auth'
@@ -45,19 +46,17 @@ export const getIngredients = async (session: Session) => {
         'ingredients.json'
     )
 
-    const verification = await verifySession(session)
-    if (verification) {
-        const ingredients: Ingredient[] = await getFromFile(filePath)
-        return ingredients
-    }
-    throw new Error('Session is invalid')
+    await verifySession(session)
+
+    const ingredients: Ingredient[] = await getFromFile(filePath)
+    return ingredients
 }
 
 export const getIngredientById = async (id: UUID, session: Session) => {
     const ingredients: Ingredient[] = await getIngredients(session)
     const ingredient = ingredients.find((ingredient) => ingredient.id === id)
     if (ingredient === undefined) {
-        throw new Error(`Ingredient with id: ${id} does not exist`)
+        throw new DataError(`Składnik z id ${id} nie istnieje`)
     }
     return ingredient
 }
@@ -92,7 +91,7 @@ export const patchIngredient = async (
     const unchangedIngredients = ingredients.filter((ingredient) => ingredient.id !== id)
     const toPatchIngredient = ingredients.find((ingredient) => ingredient.id === id)
     if (!toPatchIngredient) {
-        throw new Error(`Ingredient with id: ${id} does not exist`)
+        throw new DataError(`Składnik z id ${id} nie istnieje`)
     }
 
     toPatchIngredient.name = name ?? toPatchIngredient.name
