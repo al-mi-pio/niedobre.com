@@ -8,14 +8,22 @@ import { Session } from '@/types/Auth'
 import { getFromFile, setToFile } from '@/utils/file'
 import { baseIngredients } from '@/constants/baseIngredients'
 import { DataError } from '@/errors/dataError'
-import { filePathValidation } from '@/utils/validate'
+import { emailValidation, loginValidation, passwordValidation } from '@/utils/validate'
 
 export const createUser = async ({ login, password, email }: CreateUserDTO) => {
     const userId = randomUUID()
     const folderPath = join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassword = await hashString(password)
-    if (!filePathValidation(login)) {
+    if (!loginValidation(login)) {
         throw new DataError(`Błędny login`)
+    }
+    if (email && !emailValidation(email)) {
+        throw new DataError('Błędny email')
+    }
+    if (!passwordValidation(password)) {
+        throw new DataError(
+            'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
+        )
     }
     const user: User = {
         id: userId,

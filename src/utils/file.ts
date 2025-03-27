@@ -5,7 +5,6 @@ import { Session } from '@/types/Auth'
 import { randomUUID, UUID } from 'crypto'
 import fs from 'fs'
 import { join } from 'path'
-import { filePathValidation } from './validate'
 
 export const getFromFile = async (filePath: string) => {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'))
@@ -21,7 +20,7 @@ export const saveImage = async (
     recipeId: UUID,
     session: Session
 ) => {
-    if (!filePathValidation(imageName)) {
+    if (!imageName) {
         throw new DataError(`Błędna nazwa zdjęcia`)
     }
     const imageId = randomUUID()
