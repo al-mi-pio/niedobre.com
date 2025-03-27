@@ -53,6 +53,7 @@ const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => 
             await createUser({
                 login: formData.get('login')?.toString() ?? '',
                 email: formData.get('email')?.toString() ?? '',
+                keepBaseIngredients: true,
                 password: formData.get('password')?.toString() ?? '',
             })
             await signInHandler(_provider, formData)
