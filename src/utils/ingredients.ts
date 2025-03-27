@@ -24,17 +24,17 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
     return {
         id: ingredient.id,
         name: ingredient.name,
-        kcal: ingredient.kcal,
-        amount: !ingredient.conversion ? undefined : 1,
+        kcal: ingredient.kcal?.toString(),
+        amount: !ingredient.conversion ? undefined : '1',
         oppositeAmount: !ingredient.conversion
             ? undefined
-            : parseFloat(ingredient.conversion?.toFixed(3)),
-        costAmount: !ingredient.cost ? undefined : ingredient.cost < 0.01 ? 1000 : 1,
+            : ingredient.conversion?.toFixed(3),
+        costAmount: !ingredient.cost ? undefined : ingredient.cost < 0.01 ? '1000' : ' 1',
         cost: !ingredient.cost
             ? undefined
             : ingredient.cost < 0.01
-              ? ingredient.cost * 1000
-              : ingredient.cost,
+              ? (ingredient.cost * 1000).toString()
+              : ingredient.cost.toString(),
         ...units,
     }
 }
@@ -48,30 +48,37 @@ export const formToCreateIngredientDTO = (
     if (form.name === '') {
         throw new Error('Bad name')
     }
+    const cost = !form.cost ? undefined : parseFloat(form.cost)
+    const costAmount = !form.costAmount ? undefined : parseFloat(form.costAmount)
+    const amount = !form.amount ? undefined : parseFloat(form.amount)
+    const oppositeAmount = !form.oppositeAmount
+        ? undefined
+        : parseFloat(form.oppositeAmount)
+    const kcal = !form.kcal ? undefined : parseFloat(form.kcal)
+
     return {
         name: form.name,
         type:
             form.unit === 'szt.' ? 'amount' : form.unit in massUnits ? 'mass' : 'volume',
         cost:
-            !form.costAmount || !form.cost
+            !cost || !costAmount
                 ? undefined
-                : form.cost /
-                  (form.costAmount *
-                      measurements[form.unit as keyof typeof measurements]),
+                : cost /
+                  (costAmount * measurements[form.unit as keyof typeof measurements]),
         conversion:
-            !form.unit || !form.oppositeUnit || !form.amount || !form.oppositeAmount
+            !form.unit || !form.oppositeUnit || !amount || !oppositeAmount
                 ? undefined
                 : parseFloat(
                       (
-                          (form.amount *
+                          (amount *
                               measurements[form.unit as keyof typeof measurements]) /
-                          (form.oppositeAmount *
+                          (oppositeAmount *
                               measurements[
                                   form.oppositeUnit as keyof typeof measurements
                               ])
                       ).toFixed(3)
                   ),
-        kcal: form.kcal,
+        kcal,
     }
 }
 
@@ -87,30 +94,37 @@ export const formToPatchIngredientDTO = (
     if (form.name === '') {
         throw new Error('Bad name')
     }
+    const cost = !form.cost ? undefined : parseFloat(form.cost)
+    const costAmount = !form.costAmount ? undefined : parseFloat(form.costAmount)
+    const amount = !form.amount ? undefined : parseFloat(form.amount)
+    const oppositeAmount = !form.oppositeAmount
+        ? undefined
+        : parseFloat(form.oppositeAmount)
+    const kcal = !form.kcal ? undefined : parseFloat(form.kcal)
+
     return {
         id: form.id,
         name: form.name,
         type:
             form.unit === 'szt.' ? 'amount' : form.unit in massUnits ? 'mass' : 'volume',
         cost:
-            !form.costAmount || !form.cost
+            !cost || !costAmount
                 ? undefined
-                : form.cost /
-                  (form.costAmount *
-                      measurements[form.unit as keyof typeof measurements]),
+                : cost /
+                  (costAmount * measurements[form.unit as keyof typeof measurements]),
         conversion:
-            !form.unit || !form.oppositeUnit || !form.amount || !form.oppositeAmount
+            !form.unit || !form.oppositeUnit || !amount || !oppositeAmount
                 ? undefined
                 : parseFloat(
                       (
-                          (form.amount *
+                          (amount *
                               measurements[form.unit as keyof typeof measurements]) /
-                          (form.oppositeAmount *
+                          (oppositeAmount *
                               measurements[
                                   form.oppositeUnit as keyof typeof measurements
                               ])
                       ).toFixed(3)
                   ),
-        kcal: form.kcal,
+        kcal,
     }
 }
