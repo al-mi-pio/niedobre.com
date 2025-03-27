@@ -18,5 +18,6 @@ export type PatchUserDTO = {
 export type CreateUserDTO = {
     login: string
     password: string
+    baseIngredientOptOut: boolean
     email?: string
 }
