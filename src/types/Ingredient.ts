@@ -58,7 +58,9 @@ export type IngredientFormData = {
     cost?: number
     kcal?: number
     isNew?: boolean
-} & (
+} & IngredientFormDataUnits
+
+export type IngredientFormDataUnits =
     | {
           unit?: MassUnit
           oppositeUnit?: VolumeUnit
@@ -71,4 +73,3 @@ export type IngredientFormData = {
           unit?: 'szt.'
           oppositeUnit?: Omit<Unit, 'szt.'>
       }
-)
