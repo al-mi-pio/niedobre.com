@@ -11,7 +11,7 @@ export const hashString = async (text: string) => {
     const salt = crypto.randomBytes(16).toString('hex')
     const iterations = get.hashIterations()
     const keyLen = get.keyLength()
-    const digest = get.hasAlgorithm()
+    const digest = get.hashAlgorithm()
 
     return [
         salt,
@@ -21,7 +21,7 @@ export const hashString = async (text: string) => {
 }
 export const verifyHash = async (text: string, storedHash: string) => {
     const keyLen = get.keyLength()
-    const digest = get.hasAlgorithm()
+    const digest = get.hashAlgorithm()
     const [salt, iterations, hash] = storedHash.split(':')
 
     const hashedText = crypto

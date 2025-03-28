@@ -35,6 +35,7 @@ export const createUser = async ({
         login,
         email,
         password: hashedPassword,
+        passwordReset: null,
     }
 
     fs.mkdirSync(folderPath, { recursive: true })
@@ -99,6 +100,11 @@ export const patchUser = async (
     user.email = email ?? user.email
 
     if (password !== undefined) {
+        if (!passwordValidation(password)) {
+            throw new DataError(
+                'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
+            )
+        }
         const hashedPassowrd = await hashString(password)
         user.password = hashedPassowrd
     }
