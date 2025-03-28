@@ -10,7 +10,7 @@ export type Session = {
     login: string
 }
 
-export type passwordReset = {
+export type PasswordReset = {
     passwordResetToken: UUID
     timestamp: number
 }

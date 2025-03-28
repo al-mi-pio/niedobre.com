@@ -1,5 +1,5 @@
 import { UUID } from 'crypto'
-import { passwordReset } from './Auth'
+import { PasswordReset } from '@/types/Auth'
 
 export type User = {
     id: UUID
@@ -7,7 +7,7 @@ export type User = {
     password: string
     email?: string
     sessionId?: UUID | null
-    passwordReset: passwordReset | null
+    passwordReset: PasswordReset | null
 }
 
 export type PatchUserDTO = {
