@@ -1,4 +1,4 @@
-import { massUnits } from '@/constants/ingredients'
+import { massUnits, units } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
 import { ValidationError } from '@/errors/ValidationError'
 import {
@@ -7,6 +7,7 @@ import {
     IngredientFormData,
     IngredientFormDataUnits,
     PatchIngredientDTO,
+    Unit,
 } from '@/types/Ingredient'
 import { positiveFloatValidation } from '@/utils/validate'
 import { ValidationData, ValidationErrorPayload } from '@/types/default'
@@ -53,6 +54,12 @@ export const formToCreateIngredientDTO = (
     }
     if (form.name === '') {
         errors = [...errors, { name: 'name', description: 'Błędna nazwa' }]
+    }
+    if (form.unit && !units.includes(form.unit)) {
+        errors = [...errors, { name: 'unit', description: 'Zła jednostka' }]
+    }
+    if (form.oppositeUnit && !units.includes(form.oppositeUnit as Unit)) {
+        errors = [...errors, { name: 'oppositeUnit', description: 'Zła jednostka' }]
     }
     const floatVariables: ValidationData[] = [
         { name: 'cost', value: form.cost },
@@ -174,6 +181,12 @@ export const formToPatchIngredientDTO = (
     }
     if (form.name === '') {
         errors = [...errors, { name: 'name', description: 'Błędna nazwa' }]
+    }
+    if (form.unit && !units.includes(form.unit)) {
+        errors = [...errors, { name: 'unit', description: 'Zła jednostka' }]
+    }
+    if (form.oppositeUnit && !units.includes(form.oppositeUnit as Unit)) {
+        errors = [...errors, { name: 'oppositeUnit', description: 'Zła jednostka' }]
     }
     const floatVariables: ValidationData[] = [
         { name: 'cost', value: form.cost },
