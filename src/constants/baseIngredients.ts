@@ -12,7 +12,7 @@ export const baseIngredients: Omit<Ingredient, 'id'>[] = [
         name: 'mąka pszenna',
         type: 'mass',
         conversion: 0.6,
-        foodGroup: 'pieczywo',
+        foodGroup: 'inne',
     },
     {
         name: 'mąka ziemniaczana',
@@ -24,7 +24,7 @@ export const baseIngredients: Omit<Ingredient, 'id'>[] = [
         name: 'kasza manna',
         type: 'mass',
         conversion: 0.8,
-        foodGroup: 'pieczywo',
+        foodGroup: 'inne',
     },
     {
         name: 'cukier',
@@ -78,7 +78,7 @@ export const baseIngredients: Omit<Ingredient, 'id'>[] = [
         name: 'białko',
         type: 'volume',
         conversion: 1,
-        foodGroup: 'inne',
+        foodGroup: 'nabiał',
     },
     {
         name: 'miód',
