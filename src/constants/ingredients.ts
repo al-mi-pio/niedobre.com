@@ -9,13 +9,14 @@ export const volumeUnits = ['L', 'mL', 'łyż.', 'łyżecz.', 'szkl.'] as const
 export const units = [...massUnits, ...volumeUnits, 'szt.'] as const
 
 export const foodGroups = [
-    'owoc',
-    'warzywo',
-    'zboże',
-    'białko',
+    'owoce',
+    'warzywa',
+    'orzechy',
     'nabiał',
-    'tłuszcz',
-    'węglowodany',
+    'mięso',
+    'słodkie',
+    'pieczywo',
+    'tłuszcze',
     'inne',
 ] as const
 

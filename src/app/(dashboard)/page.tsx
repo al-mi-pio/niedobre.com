@@ -38,6 +38,7 @@ const Dashboard = () => {
                     id: '0-8-8-7-6',
                     name: 'Jajka',
                     type: 'amount',
+                    foodGroup: 'nabiał',
                 },
                 amount: 5,
                 unit: 'szt.',
