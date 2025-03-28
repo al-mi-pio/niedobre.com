@@ -6,9 +6,10 @@ import { getFromFile, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 import { getIngredientById } from '@/services/ingredientService'
+import { DataError } from '@/errors/DataError'
 
 export const createRecipe = async (
-    { name, description, instructions, picture, ingredients, cost }: CreateRecipeDTO,
+    { name, description, instructions, ingredients, cost }: CreateRecipeDTO,
     session: Session
 ) => {
     const recipeId = randomUUID()
@@ -26,7 +27,6 @@ export const createRecipe = async (
         name,
         description,
         instructions,
-        picture,
         ingredients,
         cost,
         publicResources: [],
@@ -47,12 +47,10 @@ export const getCompressedRecipes = async (session: Session) => {
         'recipes.json'
     )
 
-    const verification = await verifySession(session)
-    if (verification) {
-        const recipes: Recipe[] = await getFromFile(filePath)
-        return recipes
-    }
-    throw new Error('Session is invalid')
+    await verifySession(session)
+
+    const recipes: Recipe[] = await getFromFile(filePath)
+    return recipes
 }
 
 export const getRecipes = async (session: Session) => {
@@ -63,7 +61,7 @@ export const getRecipes = async (session: Session) => {
             name: recipe.name,
             description: recipe.description,
             instructions: recipe.instructions,
-            picture: recipe.picture,
+            pictures: recipe.pictures,
             ingredients: await Promise.all(
                 recipe.ingredients.map(async (ingredient) => ({
                     ingredient: await getIngredientById(ingredient.id, session),
@@ -98,7 +96,7 @@ export const patchRecipe = async (
         name,
         description,
         instructions,
-        picture,
+        pictures,
         ingredients,
         cost,
         publicResources,
@@ -118,13 +116,13 @@ export const patchRecipe = async (
     const unchangedRecipes = recipes.filter((recipe) => recipe.id !== id)
     const toPatchRecipe = recipes.find((recipe) => recipe.id === id)
     if (!toPatchRecipe) {
-        throw new Error(`Recipe with id: ${id} does not exist`)
+        throw new DataError(`Przepis z id ${id} nie istnieje`)
     }
 
     toPatchRecipe.name = name ?? toPatchRecipe.name
     toPatchRecipe.description = description ?? toPatchRecipe.description
     toPatchRecipe.instructions = instructions ?? toPatchRecipe.instructions
-    toPatchRecipe.picture = picture ?? toPatchRecipe.picture
+    toPatchRecipe.pictures = pictures ?? toPatchRecipe.pictures
     toPatchRecipe.ingredients = ingredients ?? toPatchRecipe.ingredients
     toPatchRecipe.cost = cost ?? toPatchRecipe.cost
     toPatchRecipe.publicResources = publicResources ?? toPatchRecipe.publicResources

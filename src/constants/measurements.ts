@@ -7,4 +7,5 @@ export const measurements = {
     kg: 1000,
     dg: 10,
     g: 1,
+    'szt.': 1,
 }

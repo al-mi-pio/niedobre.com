@@ -1,3 +1,4 @@
+import { DataError } from '@/errors/DataError'
 import { Ingredient } from '@/types/Ingredient'
 import { GetRecipeDTO, PublicRecipe, Recipe } from '@/types/Recipe'
 import { getFromFile } from '@/utils/file'
@@ -31,11 +32,11 @@ export async function GET(
         name: recipe.name,
         description: recipe.description,
         instructions: recipe.instructions,
-        picture: recipe.picture,
+        pictures: recipe.pictures,
         ingredients: recipe.ingredients.map((ingredientId) => {
             const ingredient = ingredients.find((ing) => ing.id === ingredientId.id)
             if (ingredient === undefined) {
-                throw new Error(`Ingredient with ID ${ingredientId.id} not found`)
+                throw new DataError(`Składnik z id ${ingredientId.id} nie istnieje`)
             }
             return {
                 ingredient,
@@ -46,7 +47,7 @@ export async function GET(
         cost: recipe.cost,
         publicResources: recipe.publicResources,
     }))
-    const publicRecipes = recipes.filter((recipe) => recipe.publicResources.length > 0)
+    const publicRecipes = recipes.filter((recipe) => recipe.publicResources.length)
 
     return NextResponse.json({
         publicRecipes: publicRecipes.map((recipe) =>

@@ -1,4 +1,5 @@
 'use server'
+import { DataError } from '@/errors/DataError'
 import { Session } from '@/types/Auth'
 import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
 import { verifySession } from '@/utils/auth'
@@ -8,7 +9,7 @@ import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 
 export const createIngredient = async (
-    { name, type, cost, conversion, kcal }: CreateIngredientDTO,
+    { name, type, cost, conversion, kcal, foodGroup }: CreateIngredientDTO,
     session: Session
 ) => {
     const ingredientId = randomUUID()
@@ -28,6 +29,7 @@ export const createIngredient = async (
         cost,
         conversion,
         kcal,
+        foodGroup: foodGroup ?? 'inne',
     }
     const ingredients = await getIngredients(session)
     const newIngredients = [...ingredients, ingredient]
@@ -45,19 +47,17 @@ export const getIngredients = async (session: Session) => {
         'ingredients.json'
     )
 
-    const verification = await verifySession(session)
-    if (verification) {
-        const ingredients: Ingredient[] = await getFromFile(filePath)
-        return ingredients
-    }
-    throw new Error('Session is invalid')
+    await verifySession(session)
+
+    const ingredients: Ingredient[] = await getFromFile(filePath)
+    return ingredients
 }
 
 export const getIngredientById = async (id: UUID, session: Session) => {
     const ingredients: Ingredient[] = await getIngredients(session)
     const ingredient = ingredients.find((ingredient) => ingredient.id === id)
     if (ingredient === undefined) {
-        throw new Error(`Ingredient with id: ${id} does not exist`)
+        throw new DataError(`Składnik z id ${id} nie istnieje`)
     }
     return ingredient
 }
@@ -77,7 +77,7 @@ export const deleteIngredient = async (id: UUID, session: Session) => {
 }
 
 export const patchIngredient = async (
-    { id, name, type, cost, conversion, kcal }: PatchIngredientDTO,
+    { id, name, type, cost, conversion, kcal, foodGroup }: PatchIngredientDTO,
     session: Session
 ) => {
     const filePath = join(
@@ -92,7 +92,7 @@ export const patchIngredient = async (
     const unchangedIngredients = ingredients.filter((ingredient) => ingredient.id !== id)
     const toPatchIngredient = ingredients.find((ingredient) => ingredient.id === id)
     if (!toPatchIngredient) {
-        throw new Error(`Ingredient with id: ${id} does not exist`)
+        throw new DataError(`Składnik z id ${id} nie istnieje`)
     }
 
     toPatchIngredient.name = name ?? toPatchIngredient.name
@@ -100,6 +100,7 @@ export const patchIngredient = async (
     toPatchIngredient.cost = cost ?? toPatchIngredient.cost
     toPatchIngredient.conversion = conversion ?? toPatchIngredient.conversion
     toPatchIngredient.kcal = kcal ?? toPatchIngredient.kcal
+    toPatchIngredient.foodGroup = foodGroup ?? toPatchIngredient.foodGroup
 
     const newIngredients = [...unchangedIngredients, toPatchIngredient]
     await setToFile(filePath, newIngredients)
