@@ -1,10 +1,16 @@
-import { ingredientTypes, massUnits, volumeUnits } from '@/constants/ingredients'
+import {
+    foodGroups,
+    ingredientTypes,
+    massUnits,
+    volumeUnits,
+} from '@/constants/ingredients'
 import { UUID } from 'crypto'
 
 export type IngredientType = (typeof ingredientTypes)[number]
 export type MassUnit = (typeof massUnits)[number]
 export type VolumeUnit = (typeof volumeUnits)[number]
 export type Unit = MassUnit | VolumeUnit | 'szt.'
+export type FoodGroup = (typeof foodGroups)[number]
 
 export type Ingredient = {
     id: UUID
@@ -13,6 +19,7 @@ export type Ingredient = {
     cost?: number
     conversion?: number
     kcal?: number
+    foodGroup: FoodGroup
 }
 
 export type IngredientAmount = {
@@ -38,6 +45,7 @@ export type CreateIngredientDTO = {
     cost?: number
     conversion?: number
     kcal?: number
+    foodGroup?: FoodGroup
 }
 
 export type PatchIngredientDTO = {
@@ -47,6 +55,7 @@ export type PatchIngredientDTO = {
     cost?: number
     conversion?: number
     kcal?: number
+    foodGroup?: FoodGroup
 }
 
 export type IngredientFormData = {
@@ -58,6 +67,7 @@ export type IngredientFormData = {
     cost?: string
     kcal?: string
     kcalAmount?: string
+    foodGroup?: string
     isNew?: boolean
 } & IngredientFormDataUnits
 

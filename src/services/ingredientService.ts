@@ -9,7 +9,7 @@ import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 
 export const createIngredient = async (
-    { name, type, cost, conversion, kcal }: CreateIngredientDTO,
+    { name, type, cost, conversion, kcal, foodGroup }: CreateIngredientDTO,
     session: Session
 ) => {
     const ingredientId = randomUUID()
@@ -29,6 +29,7 @@ export const createIngredient = async (
         cost,
         conversion,
         kcal,
+        foodGroup: foodGroup ?? 'inne',
     }
     const ingredients = await getIngredients(session)
     const newIngredients = [...ingredients, ingredient]
@@ -76,7 +77,7 @@ export const deleteIngredient = async (id: UUID, session: Session) => {
 }
 
 export const patchIngredient = async (
-    { id, name, type, cost, conversion, kcal }: PatchIngredientDTO,
+    { id, name, type, cost, conversion, kcal, foodGroup }: PatchIngredientDTO,
     session: Session
 ) => {
     const filePath = join(
@@ -99,6 +100,7 @@ export const patchIngredient = async (
     toPatchIngredient.cost = cost ?? toPatchIngredient.cost
     toPatchIngredient.conversion = conversion ?? toPatchIngredient.conversion
     toPatchIngredient.kcal = kcal ?? toPatchIngredient.kcal
+    toPatchIngredient.foodGroup = foodGroup ?? toPatchIngredient.foodGroup
 
     const newIngredients = [...unchangedIngredients, toPatchIngredient]
     await setToFile(filePath, newIngredients)

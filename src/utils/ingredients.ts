@@ -1,11 +1,13 @@
-import { massUnits, units } from '@/constants/ingredients'
+import { foodGroups, massUnits, units } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
 import { ValidationError } from '@/errors/ValidationError'
 import {
     CreateIngredientDTO,
+    FoodGroup,
     Ingredient,
     IngredientFormData,
     IngredientFormDataUnits,
+    MassUnit,
     PatchIngredientDTO,
     Unit,
 } from '@/types/Ingredient'
@@ -60,6 +62,9 @@ export const formToCreateIngredientDTO = (
     }
     if (form.oppositeUnit && !units.includes(form.oppositeUnit as Unit)) {
         errors = [...errors, { name: 'oppositeUnit', description: 'Zła jednostka' }]
+    }
+    if (form.foodGroup && !foodGroups.includes(form.foodGroup as FoodGroup)) {
+        errors = [...errors, { name: 'foodGroup', description: 'Zła grupa jedzenia' }]
     }
     const floatVariables: ValidationData[] = [
         { name: 'cost', value: form.cost },
@@ -144,27 +149,37 @@ export const formToCreateIngredientDTO = (
     return {
         name: form.name,
         type:
-            form.unit === 'szt.' ? 'amount' : form.unit! in massUnits ? 'mass' : 'volume',
+            form.unit === 'szt.'
+                ? 'amount'
+                : massUnits.includes(form.unit! as MassUnit)
+                  ? 'mass'
+                  : 'volume',
         cost: costVariables.length
             ? parseFloat(costVariables[0].value!) /
               (parseFloat(costVariables[1].value!) *
                   measurements[form.unit as keyof typeof measurements])
             : undefined,
-        conversion: conversionVariables.length
-            ? parseFloat(
-                  (
-                      (parseFloat(conversionVariables[0].value!) *
-                          measurements[form.unit as keyof typeof measurements]) /
-                      (parseFloat(conversionVariables[1].value!) *
-                          measurements[form.oppositeUnit as keyof typeof measurements])
-                  ).toFixed(3)
-              )
-            : undefined,
+        conversion:
+            form.unit === 'szt.'
+                ? undefined
+                : conversionVariables.length
+                  ? parseFloat(
+                        (
+                            (parseFloat(conversionVariables[0].value!) *
+                                measurements[form.unit as keyof typeof measurements]) /
+                            (parseFloat(conversionVariables[1].value!) *
+                                measurements[
+                                    form.oppositeUnit as keyof typeof measurements
+                                ])
+                        ).toFixed(3)
+                    )
+                  : undefined,
         kcal: kcalVariables.length
             ? parseFloat(kcalVariables[0].value!) /
               (parseFloat(kcalVariables[1].value!) *
                   measurements[form.unit as keyof typeof measurements])
             : undefined,
+        foodGroup: (form.foodGroup as FoodGroup) ?? 'inne',
     }
 }
 
@@ -188,6 +203,10 @@ export const formToPatchIngredientDTO = (
     if (form.oppositeUnit && !units.includes(form.oppositeUnit as Unit)) {
         errors = [...errors, { name: 'oppositeUnit', description: 'Zła jednostka' }]
     }
+    if (form.foodGroup && !foodGroups.includes(form.foodGroup as FoodGroup)) {
+        errors = [...errors, { name: 'foodGroup', description: 'Zła grupa jedzenia' }]
+    }
+
     const floatVariables: ValidationData[] = [
         { name: 'cost', value: form.cost },
         { name: 'costAmount', value: form.costAmount },
@@ -269,26 +288,36 @@ export const formToPatchIngredientDTO = (
         id: form.id!,
         name: form.name,
         type:
-            form.unit === 'szt.' ? 'amount' : form.unit! in massUnits ? 'mass' : 'volume',
+            form.unit === 'szt.'
+                ? 'amount'
+                : massUnits.includes(form.unit! as MassUnit)
+                  ? 'mass'
+                  : 'volume',
         cost: costVariables.length
             ? parseFloat(costVariables[0].value!) /
               (parseFloat(costVariables[1].value!) *
                   measurements[form.unit as keyof typeof measurements])
             : undefined,
-        conversion: costVariables.length
-            ? parseFloat(
-                  (
-                      (parseFloat(costVariables[0].value!) *
-                          measurements[form.unit as keyof typeof measurements]) /
-                      (parseFloat(costVariables[1].value!) *
-                          measurements[form.oppositeUnit as keyof typeof measurements])
-                  ).toFixed(3)
-              )
-            : undefined,
+        conversion:
+            form.unit === 'szt.'
+                ? undefined
+                : costVariables.length
+                  ? parseFloat(
+                        (
+                            (parseFloat(costVariables[0].value!) *
+                                measurements[form.unit as keyof typeof measurements]) /
+                            (parseFloat(costVariables[1].value!) *
+                                measurements[
+                                    form.oppositeUnit as keyof typeof measurements
+                                ])
+                        ).toFixed(3)
+                    )
+                  : undefined,
         kcal: kcalVariables.length
             ? parseFloat(kcalVariables[0].value!) /
               (parseFloat(kcalVariables[1].value!) *
                   measurements[form.unit as keyof typeof measurements])
             : undefined,
+        foodGroup: form.foodGroup as FoodGroup,
     }
 }
