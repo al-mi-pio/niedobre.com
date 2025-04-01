@@ -1,12 +1,25 @@
 'use client'
 
-import { Box, Divider, List, Paper, Stack, Tab, Tabs, Typography } from '@mui/material'
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded'
+import {
+    Box,
+    Divider,
+    IconButton,
+    List,
+    Paper,
+    Stack,
+    Tab,
+    Tabs,
+    Tooltip,
+    Typography,
+} from '@mui/material'
 import { autoHideDuration } from '@/constants/general'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
 import { GetRecipeDTO } from '@/types/Recipe'
 import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
 import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
+import { calculateIngredients } from '@/utils/conversion'
 import { useEffect, useState } from 'react'
 import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
 import { useNotifications } from '@toolpad/core'
@@ -24,27 +37,20 @@ export type SelectedRecipes = {
     }
 }
 
+const missingIngredientCost = (ingredients: IngredientAmount[]) => {
+    return ingredients.reduce(
+        (prev, curr) => (prev ? true : !curr.ingredient.cost && !!curr.amount),
+        false
+    )
+}
+
 const Dashboard = () => {
     const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipes>({})
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
     const [loading, setLoading] = useState(true)
     const [calcTab, setCalcTab] = useState(0)
     const toast = useNotifications()
-    const { sum, ingredients }: IngredientSum = {
-        sum: 0,
-        ingredients: [
-            {
-                ingredient: {
-                    id: '0-8-8-7-6',
-                    name: 'Jajka',
-                    type: 'amount',
-                    foodGroup: 'nabiał',
-                },
-                amount: 5,
-                unit: 'szt.',
-            },
-        ],
-    } //TODO: calculateIngredients()
+    const { sum, ingredients }: IngredientSum = calculateIngredients(selectedRecipes)
 
     useEffect(() => {
         getRecipes(getSession())
@@ -135,7 +141,19 @@ const Dashboard = () => {
 
                         <Box>
                             <Divider sx={{ marginBottom: '1rem' }} />
-                            <Typography variant="h4">{`Suma: ${sum} zł`}</Typography>
+                            <Stack direction="row" spacing={1}>
+                                <Typography variant="h4">{`Suma: ${sum} zł`}</Typography>
+                                {missingIngredientCost(ingredients) && (
+                                    <Tooltip
+                                        title="Co najmniej jeden ze składników nie posiada ceny. Suma może być niedokładna"
+                                        placement="top"
+                                    >
+                                        <IconButton>
+                                            <WarningRoundedIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                            </Stack>
                         </Box>
                     </Stack>
                 </Paper>
