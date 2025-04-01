@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation'
 import { createUser } from '@/services/userService'
 import { setSession } from '@/utils/session'
 import {
+    BaseIngredientsCheckbox,
     CustomEmailLoginField,
     CustomLoginField,
     CustomPasswordField,
+    RememberMeCheckbox,
     SignInLink,
     SignUpLink,
 } from '@/app/(auth)/Fields'
@@ -53,7 +55,7 @@ const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => 
             await createUser({
                 login: formData.get('login')?.toString() ?? '',
                 email: formData.get('email')?.toString() ?? '',
-                keepBaseIngredients: true,
+                keepBaseIngredients: !!formData.get('ingredients'),
                 password: formData.get('password')?.toString() ?? '',
             })
             await signInHandler(_provider, formData)
@@ -77,12 +79,12 @@ const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => 
                     signUpLink: SignUpLink,
                     emailField: CustomLoginField,
                     passwordField: CustomPasswordField,
+                    rememberMe: RememberMeCheckbox,
                 }}
                 slotProps={{ form: { noValidate: true } }}
                 localeText={{
                     signInTitle: 'Zaloguj się',
                     signInSubtitle: 'Witaj użytkowniku, zaloguj się aby kontynuować',
-                    signInRememberMe: 'Pamiętaj mnie',
                 }}
             />
         )
@@ -95,7 +97,7 @@ const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => 
                     signUpLink: SignInLink,
                     emailField: CustomEmailLoginField,
                     passwordField: CustomPasswordField,
-                    rememberMe: () => <></>,
+                    rememberMe: BaseIngredientsCheckbox,
                 }}
                 slotProps={{ form: { noValidate: true } }}
                 localeText={{

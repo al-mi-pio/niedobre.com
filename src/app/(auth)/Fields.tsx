@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material'
+import { Checkbox, FormControlLabel, TextField } from '@mui/material'
 import Link from 'next/link'
 
 export const SignUpLink = () => <Link href="/register">{'Zarejestruj się'}</Link>
@@ -13,6 +13,20 @@ export const CustomLoginField = () => (
         required
         fullWidth
         variant="outlined"
+    />
+)
+
+export const BaseIngredientsCheckbox = () => (
+    <FormControlLabel
+        control={<Checkbox name="ingredients" size="small" defaultChecked />}
+        label="Dodaj podstawowy zestaw składników"
+    />
+)
+
+export const RememberMeCheckbox = () => (
+    <FormControlLabel
+        control={<Checkbox name="remember" size="small" />}
+        label="Pamiętaj mnie"
     />
 )
 

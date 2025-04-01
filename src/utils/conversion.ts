@@ -2,8 +2,19 @@ import { massUnits, volumeUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
 import { ConversionError } from '@/errors/ConversionError'
 import { IngredientAmount, IngredientSum, MassUnit, VolumeUnit } from '@/types/Ingredient'
+import { SelectedRecipes } from '@/app/(dashboard)/page'
 
-export const calculateIngredients = (ingredients: IngredientAmount[]): IngredientSum => {
+const combineIngredients = (selectedRecipes: SelectedRecipes) => {
+    const ingredients: IngredientAmount[] = []
+    Object.values(selectedRecipes).forEach((recipe) => {
+        ingredients.push(
+            ...recipe.ingredients.map((ing) => ({
+                ...ing,
+                amount: ing.amount * recipe.amount,
+            }))
+        )
+    })
+
     let ingredientAmount: IngredientAmount[] = []
     ingredients.forEach((ingredient) => {
         const ingredientToUpdate = ingredientAmount.find(
@@ -19,7 +30,11 @@ export const calculateIngredients = (ingredients: IngredientAmount[]): Ingredien
             ingredientAmount = [...ingredientAmount, convertToBaseMeasurement(ingredient)]
         }
     })
+    return ingredientAmount
+}
 
+export const calculateIngredients = (selectedRecipes: SelectedRecipes): IngredientSum => {
+    const ingredientAmount: IngredientAmount[] = combineIngredients(selectedRecipes)
     const beautifiedIngredientAmount: IngredientAmount[] = ingredientAmount.map((ing) => {
         if (ing.amount > 1000) {
             return {
@@ -39,23 +54,8 @@ export const calculateIngredients = (ingredients: IngredientAmount[]): Ingredien
     return { sum, ingredients: beautifiedIngredientAmount }
 }
 
-export const calculateKcal = (ingredients: IngredientAmount[]) => {
-    let ingredientAmount: IngredientAmount[] = []
-    ingredients.forEach((ingredient) => {
-        const ingredientToUpdate = ingredientAmount.find(
-            (ing) => ing.ingredient.id === ingredient.ingredient.id
-        )
-        if (ingredientToUpdate) {
-            ingredientToUpdate.amount += convertToBaseMeasurement(ingredient).amount
-            const otherIngredients = ingredientAmount.filter(
-                (ing) => ing.ingredient.id !== ingredient.ingredient.id
-            )
-            ingredientAmount = [...otherIngredients, ingredientToUpdate]
-        } else {
-            ingredientAmount = [...ingredientAmount, convertToBaseMeasurement(ingredient)]
-        }
-    })
-    return ingredientAmount.reduce(
+export const calculateKcal = (selectedRecipes: SelectedRecipes) => {
+    return combineIngredients(selectedRecipes).reduce(
         (acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0),
         0
     )
