@@ -251,6 +251,7 @@ export const IngredientForm = ({
                                     },
                                 }}
                             >
+                                <MenuItem value={undefined}>---</MenuItem>
                                 {oppositeUnits.map((unit) => (
                                     <MenuItem key={unit} value={unit}>
                                         {unit}
