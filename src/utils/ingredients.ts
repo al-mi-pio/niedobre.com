@@ -24,19 +24,19 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
         ingredient.type === 'amount'
             ? {
                   unit: 'szt.',
-                  oppositeUnit: 'szt.',
+                  oppositeUnit: ingredient.conversion ? 'szt.' : undefined,
               }
             : ingredient.type === 'mass'
               ? {
                     unit: 'g',
-                    oppositeUnit: 'mL',
+                    oppositeUnit: ingredient.conversion ? 'mL' : undefined,
                 }
-              : { unit: 'mL', oppositeUnit: 'g' }
+              : { unit: 'mL', oppositeUnit: ingredient.conversion ? 'g' : undefined }
     return {
         id: ingredient.id,
         name: ingredient.name,
         kcal: ingredient.kcal?.toString(),
-        kcalAmount: '1',
+        kcalAmount: !ingredient.kcal ? undefined : '1',
         amount: !ingredient.conversion ? undefined : '1',
         oppositeAmount: !ingredient.conversion
             ? undefined
@@ -55,10 +55,10 @@ const validateFormData = (form: IngredientFormData) => {
     const errors: ValidationErrorPayload = {}
 
     if (!form.unit) {
-        errors['unit'] = 'Nie znaleziono'
+        errors['unit'] = 'Pole wymagane'
     }
-    if (form.name === '') {
-        errors['name'] = 'Błędna nazwa'
+    if (!form.name) {
+        errors['name'] = 'Pole wymagane'
     }
     if (form.unit && !units.includes(form.unit)) {
         errors['unit'] = 'Zła jednostka'
@@ -67,7 +67,7 @@ const validateFormData = (form: IngredientFormData) => {
         errors['oppositeUnit'] = 'Zła jednostka'
     }
     if (form.foodGroup && !foodGroups.includes(form.foodGroup as FoodGroup)) {
-        errors['foodGroup'] = 'Zła grupa jedzenia'
+        errors['foodGroup'] = 'Zła kategoria'
     }
     const floatVariables: ValidationData[] = [
         { name: 'cost', value: form.cost },
@@ -108,13 +108,13 @@ const validateFormData = (form: IngredientFormData) => {
     ) {
         missingConversionVariables.forEach((missingVairable) => {
             errors[missingVairable.name as keyof IngredientFormData] =
-                'Brakuje wartości do wyliczenia konwerzji'
+                'Brakuje wartości do wyliczenia konwersji'
         })
     }
 
     if (missingKcalVariables.length === 1) {
         errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia kcal'
+            'Brakuje wartości do wyliczenia kaloryczności'
     }
 
     if (Object.keys(errors).length) {
