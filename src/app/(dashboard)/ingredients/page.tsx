@@ -125,6 +125,7 @@ const Ingredients = () => {
             if (selectedIngredient?.id)
                 await deleteIngredient(selectedIngredient?.id, session)
 
+            setSelectedIngredient(null)
             loadIngredients()
         } catch (e) {
             if (e instanceof DataError || e instanceof SessionError) {
@@ -230,5 +231,3 @@ const Ingredients = () => {
 }
 
 export default Ingredients
-
-// TODO: try to find a fix for "Blocked aria-hidden on an element because its descendant retained focus."
