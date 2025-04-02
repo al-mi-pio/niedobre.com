@@ -1,5 +1,6 @@
 import {
     TextField,
+    Alert,
     Box,
     Button,
     IconButton,
@@ -8,12 +9,14 @@ import {
     Paper,
     Stack,
     Typography,
+    Popover,
 } from '@mui/material'
 import { massUnits, units, volumeUnits } from '@/constants/ingredients'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import { Ingredient, IngredientFormData } from '@/types/Ingredient'
-import { ChangeEvent, useState } from 'react'
+import { ValidationError } from '@/errors/ValidationError'
+import { ChangeEvent, useState, MouseEvent } from 'react'
 import { selectOutOfScope } from '@/app/(dashboard)/ingredients/utils'
 
 interface IngredientFormProps {
@@ -24,6 +27,7 @@ interface IngredientFormProps {
     onSave: () => Promise<void>
     onDelete: () => void
     onClose: () => void
+    errors: ValidationError | null
 }
 
 const validateIngredientForm = (form: IngredientFormData) => {
@@ -39,8 +43,25 @@ export const IngredientForm = ({
     onSave,
     onDelete,
     onClose,
+    errors,
 }: IngredientFormProps) => {
     const [saving, setSaving] = useState(false)
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+    const [popoverText, setPopoverText] = useState<string | undefined>(undefined)
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>, text?: string) => {
+        onInputChange(e)
+        setPopoverText(text)
+    }
+
+    const handlePopoverOpen = (event: MouseEvent, text?: string) => {
+        setPopoverText(text)
+        setAnchorEl(event.currentTarget)
+    }
+
+    const handlePopoverClose = () => {
+        setAnchorEl(null)
+    }
 
     const handleSave = () => {
         setSaving(true)
@@ -84,12 +105,17 @@ export const IngredientForm = ({
                         </IconButton>
                     </Box>
                 </Stack>
+
+                {!!errors && <Alert severity="error">{errors.message}</Alert>}
+
                 <TextField
                     required
                     label="Nazwa"
                     value={ingredientForm.name ?? ''}
                     name="name"
                     onChange={onInputChange}
+                    error={!!errors?.payload.name}
+                    helperText={errors?.payload.name}
                 />
 
                 <TextField
@@ -100,6 +126,8 @@ export const IngredientForm = ({
                     name="unit"
                     sx={{ width: '22ch' }}
                     onChange={onInputChange}
+                    error={!!errors?.payload.unit}
+                    helperText={errors?.payload.unit}
                 >
                     {units.map((unit) => (
                         <MenuItem key={unit} value={unit}>
@@ -121,6 +149,8 @@ export const IngredientForm = ({
                             value={ingredientForm.amount ?? ''}
                             name="amount"
                             onChange={onInputChange}
+                            error={!!errors?.payload.amount}
+                            helperText={errors?.payload.amount}
                             sx={{ width: '12ch' }}
                             slotProps={{
                                 input: {
@@ -143,6 +173,8 @@ export const IngredientForm = ({
                                 value={ingredientForm.oppositeAmount ?? ''}
                                 name="oppositeAmount"
                                 onChange={onInputChange}
+                                error={!!errors?.payload.oppositeAmount}
+                                helperText={errors?.payload.oppositeAmount}
                                 sx={{ width: '8ch' }}
                             />
 
@@ -156,6 +188,8 @@ export const IngredientForm = ({
                                         : ''
                                 }
                                 name="oppositeUnit"
+                                error={!!errors?.payload.oppositeUnit}
+                                helperText={errors?.payload.oppositeUnit}
                                 sx={{ width: 'fit-content' }}
                                 onChange={onInputChange}
                             >
@@ -169,12 +203,55 @@ export const IngredientForm = ({
                     </Stack>
                 )}
 
-                <TextField
-                    label="Wartość kaloryczna"
-                    value={ingredientForm.kcal ?? ''}
-                    name="kcal"
-                    onChange={onInputChange}
-                />
+                <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{
+                        alignItems: 'center',
+                    }}
+                >
+                    <TextField
+                        required
+                        value={ingredientForm.kcalAmount ?? ''}
+                        name="kcalAmount"
+                        onChange={onInputChange}
+                        error={!!errors?.payload.kcalAmount}
+                        helperText={errors?.payload.kcalAmount}
+                        sx={{ width: '12ch' }}
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        {ingredientForm.unit}
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                    />
+
+                    <Typography variant="body1" color="textPrimary">
+                        {'ma'}
+                    </Typography>
+
+                    <TextField
+                        required
+                        value={ingredientForm.kcal ?? ''}
+                        name="kcal"
+                        onChange={onInputChange}
+                        error={!!errors?.payload.kcal}
+                        helperText={errors?.payload.kcal}
+                        sx={{ width: '12ch' }}
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        {'kcal'}
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                    />
+                </Stack>
 
                 <Stack
                     direction="row"
@@ -188,6 +265,8 @@ export const IngredientForm = ({
                         value={ingredientForm.costAmount ?? ''}
                         name="costAmount"
                         onChange={onInputChange}
+                        error={!!errors?.payload.costAmount}
+                        helperText={errors?.payload.costAmount}
                         sx={{ width: '12ch' }}
                         slotProps={{
                             input: {
@@ -208,7 +287,10 @@ export const IngredientForm = ({
                         required
                         value={ingredientForm.cost ?? ''}
                         name="cost"
-                        onChange={onInputChange}
+                        onChange={(e) => handleInputChange(e, errors?.payload.cost)}
+                        error={!!errors?.payload.cost}
+                        onMouseEnter={(e) => handlePopoverOpen(e, errors?.payload.cost)}
+                        onMouseLeave={handlePopoverClose}
                         sx={{ width: '12ch' }}
                         slotProps={{
                             input: {
@@ -221,13 +303,30 @@ export const IngredientForm = ({
                 </Stack>
                 <Button
                     onClick={handleSave}
-                    disabled={!validateIngredientForm(ingredientForm)}
+                    disabled={!validateIngredientForm(ingredientForm) || !!errors}
                     loading={saving}
                     variant="contained"
                     sx={{ marginTop: 'auto' }}
                 >
                     {'Zapisz'}
                 </Button>
+                <Popover
+                    sx={{ pointerEvents: 'none' }}
+                    open={Boolean(anchorEl) && !!popoverText}
+                    anchorEl={anchorEl}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    onClose={handlePopoverClose}
+                    disableAutoFocus
+                >
+                    <Typography sx={{ p: 1 }}>{popoverText}</Typography>
+                </Popover>
             </Stack>
         </Paper>
     )
