@@ -244,7 +244,9 @@ export const IngredientForm = ({
                                                     : 'hidden',
                                             textOverflow: 'ellipsis',
                                             visibility:
-                                                hoveredErroredField !== 'oppositeAmount'
+                                                hoveredErroredField !==
+                                                    'oppositeAmount' ||
+                                                !errors?.payload.oppositeAmount
                                                     ? 'visible'
                                                     : 'hidden',
                                         },
@@ -330,6 +332,11 @@ export const IngredientForm = ({
                                             ? 'visible'
                                             : 'hidden',
                                     textOverflow: 'ellipsis',
+                                    visibility:
+                                        hoveredErroredField !== 'kcalAmount' ||
+                                        ingredientForm.kcalAmount
+                                            ? 'visible'
+                                            : 'hidden',
                                 },
                             },
                         }}
@@ -402,6 +409,11 @@ export const IngredientForm = ({
                                             ? 'visible'
                                             : 'hidden',
                                     textOverflow: 'ellipsis',
+                                    visibility:
+                                        hoveredErroredField !== 'costAmount' ||
+                                        ingredientForm.costAmount
+                                            ? 'visible'
+                                            : 'hidden',
                                 },
                             },
                         }}
