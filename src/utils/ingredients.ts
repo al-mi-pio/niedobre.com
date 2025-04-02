@@ -51,9 +51,7 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
     }
 }
 
-export const formToCreateIngredientDTO = (
-    form: IngredientFormData
-): CreateIngredientDTO => {
+const validateFormData = (form: IngredientFormData) => {
     const errors: ValidationErrorPayload = {}
 
     if (!form.unit) {
@@ -84,20 +82,6 @@ export const formToCreateIngredientDTO = (
             errors[variable.name as keyof IngredientFormData] = 'Błędna wartość'
         }
     })
-
-    const costVariables = [
-        { name: 'cost', value: form.cost },
-        { name: 'costAmount', value: form.costAmount },
-    ].filter((data) => data.value)
-    const conversionVariables: ValidationData[] = [
-        { name: 'amount', value: form.amount },
-        { name: 'oppositeAmount', value: form.oppositeAmount },
-        { name: 'oppositeUnit', value: form.oppositeUnit as string },
-    ].filter((data) => data.value)
-    const kcalVariables = [
-        { name: 'kcal', value: form.kcal },
-        { name: 'kcalAmount', value: form.kcalAmount },
-    ].filter((data) => data.value)
 
     const missingCostVariables = [
         { name: 'cost', value: form.cost },
@@ -136,6 +120,26 @@ export const formToCreateIngredientDTO = (
     if (Object.keys(errors).length) {
         throw new ValidationError('Napraw błędne pola', errors)
     }
+}
+
+export const formToCreateIngredientDTO = (
+    form: IngredientFormData
+): CreateIngredientDTO => {
+    validateFormData(form)
+    const costVariables = [
+        { name: 'cost', value: form.cost },
+        { name: 'costAmount', value: form.costAmount },
+    ].filter((data) => data.value)
+    const conversionVariables: ValidationData[] = [
+        { name: 'amount', value: form.amount },
+        { name: 'oppositeAmount', value: form.oppositeAmount },
+        { name: 'oppositeUnit', value: form.oppositeUnit as string },
+    ].filter((data) => data.value)
+    const kcalVariables = [
+        { name: 'kcal', value: form.kcal },
+        { name: 'kcalAmount', value: form.kcalAmount },
+    ].filter((data) => data.value)
+
     return {
         name: form.name,
         type:
@@ -176,37 +180,7 @@ export const formToCreateIngredientDTO = (
 export const formToPatchIngredientDTO = (
     form: IngredientFormData
 ): PatchIngredientDTO => {
-    const errors: ValidationErrorPayload = {}
-
-    if (!form.unit) {
-        errors['unit'] = 'Nie znaleziono'
-    }
-    if (form.name === '') {
-        errors['name'] = 'Błędna nazwa'
-    }
-    if (form.unit && !units.includes(form.unit)) {
-        errors['unit'] = 'Zła jednostka'
-    }
-    if (form.oppositeUnit && !units.includes(form.oppositeUnit as Unit)) {
-        errors['oppositeUnit'] = 'Zła jednostka'
-    }
-    if (form.foodGroup && !foodGroups.includes(form.foodGroup as FoodGroup)) {
-        errors['foodGroup'] = 'Zła grupa jedzenia'
-    }
-
-    const floatVariables: ValidationData[] = [
-        { name: 'cost', value: form.cost },
-        { name: 'costAmount', value: form.costAmount },
-        { name: 'amount', value: form.amount },
-        { name: 'oppositeAmount', value: form.oppositeAmount },
-        { name: 'kcal', value: form.kcal },
-        { name: 'kcalAmount', value: form.kcalAmount },
-    ]
-    floatVariables.forEach((variable) => {
-        if (variable.value && !positiveFloatValidation(variable.value)) {
-            errors[variable.name as keyof IngredientFormData] = 'Błędna wartość'
-        }
-    })
+    validateFormData(form)
 
     const costVariables = [
         { name: 'cost', value: form.cost },
@@ -222,40 +196,6 @@ export const formToPatchIngredientDTO = (
         { name: 'kcalAmount', value: form.kcalAmount },
     ].filter((data) => data.value)
 
-    const missingCostVariables = [
-        { name: 'cost', value: form.cost },
-        { name: 'costAmount', value: form.costAmount },
-    ].filter((data) => !data.value)
-    const missingConversionVariables: ValidationData[] = [
-        { name: 'amount', value: form.amount },
-        { name: 'oppositeAmount', value: form.oppositeAmount },
-        { name: 'oppositeUnit', value: form.oppositeUnit as string },
-    ].filter((data) => !data.value)
-    const missingKcalVariables = [
-        { name: 'kcal', value: form.kcal },
-        { name: 'kcalAmount', value: form.kcalAmount },
-    ].filter((data) => !data.value)
-
-    if (missingCostVariables.length === 1) {
-        errors[missingCostVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia kosztu'
-    }
-
-    if (missingConversionVariables.length === 1 || conversionVariables.length === 2) {
-        missingConversionVariables.forEach((missingVairable) => {
-            errors[missingVairable.name as keyof IngredientFormData] =
-                'Brakuje wartości do wyliczenia konwerzji'
-        })
-    }
-
-    if (missingKcalVariables.length === 1) {
-        errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia kcal'
-    }
-
-    if (Object.keys(errors).length) {
-        throw new ValidationError('Napraw błędne pola', errors)
-    }
     return {
         id: form.id ?? emptyUUID,
         name: form.name,
@@ -273,12 +213,12 @@ export const formToPatchIngredientDTO = (
         conversion:
             form.unit === 'szt.'
                 ? undefined
-                : costVariables.length
+                : conversionVariables.length
                   ? parseFloat(
                         (
-                            (parseFloat(costVariables[0].value!) *
+                            (parseFloat(conversionVariables[0].value!) *
                                 measurements[form.unit as keyof typeof measurements]) /
-                            (parseFloat(costVariables[1].value!) *
+                            (parseFloat(conversionVariables[1].value!) *
                                 measurements[
                                     form.oppositeUnit as keyof typeof measurements
                                 ])
