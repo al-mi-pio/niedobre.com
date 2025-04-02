@@ -23,6 +23,8 @@ import { Grid } from '@mui/system'
 import { autoHideDuration } from '@/constants/general'
 import { emptyForm, massUnits, newForm, volumeUnits } from '@/constants/ingredients'
 import { Ingredient, IngredientFormData, MassUnit } from '@/types/Ingredient'
+import { ValidationError } from '@/errors/ValidationError'
+import { DataError } from '@/errors/DataError'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { IngredientSelectableList } from '@/app/(dashboard)/ingredients/components/IngredientSelectableList'
 import { selectOutOfScope } from '@/app/(dashboard)/ingredients/utils'
@@ -30,9 +32,11 @@ import { useNotifications } from '@toolpad/core'
 import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm'
 import { getSession } from '@/utils/session'
 import { Spinner } from '@/components/Spinner'
+import { SessionError } from '@/errors/SessionError'
 
 const Ingredients = () => {
     const toast = useNotifications()
+    const [errors, setErrors] = useState<ValidationError | null>(null)
     const [ingredients, setIngredients] = useState<Ingredient[]>([])
     const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null)
     const [ingredientForm, setIngredientForm] = useState<IngredientFormData>(emptyForm)
@@ -43,23 +47,46 @@ const Ingredients = () => {
         ? volumeUnits
         : massUnits
 
+    const handleIngredientSelected = (ingredient: Ingredient | null) => {
+        setSelectedIngredient(ingredient)
+        setErrors(null)
+    }
+
     const handleOnClose = () => {
-        setSelectedIngredient(null)
+        handleIngredientSelected(null)
         setIngredientForm(emptyForm)
     }
 
     const handleOnNew = () => {
-        setSelectedIngredient(null)
+        handleIngredientSelected(null)
         setIngredientForm(newForm)
     }
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setIngredientForm((prevForm) => ({
-            ...prevForm,
-            oppositeUnit: selectOutOfScope(prevForm) ? '' : prevForm.oppositeUnit,
-            costAmount: e.target.name === 'amount' ? e.target.value : prevForm.costAmount,
-            [e.target.name]: e.target.value,
-        }))
+        setIngredientForm((prevForm) => {
+            const newForm = {
+                ...prevForm,
+                oppositeUnit: selectOutOfScope(prevForm) ? '' : prevForm.oppositeUnit,
+                costAmount:
+                    e.target.name === 'amount' ? e.target.value : prevForm.costAmount,
+                kcalAmount:
+                    e.target.name === 'amount' ? e.target.value : prevForm.kcalAmount,
+                [e.target.name]: e.target.value,
+            } as IngredientFormData
+            if (errors) {
+                try {
+                    if (selectedIngredient) formToPatchIngredientDTO(newForm)
+                    else formToCreateIngredientDTO(newForm)
+
+                    setErrors(null)
+                } catch (e) {
+                    if (e instanceof ValidationError) {
+                        setErrors(e)
+                    }
+                }
+            }
+            return newForm
+        })
     }
 
     const handleSave = async () => {
@@ -72,13 +99,21 @@ const Ingredients = () => {
 
             setLoading(true)
             loadIngredients()
-            // TODO: Add errors handling
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-            toast.show(`Problem`, {
-                severity: 'error',
-                autoHideDuration,
-            })
+            if (e instanceof ValidationError) {
+                setErrors(e)
+            } else if (e instanceof DataError) {
+                toast.show(e.message, {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            } else {
+                console.log(e)
+                toast.show('Wystąpił nieznany problem', {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            }
         }
     }
 
@@ -91,13 +126,19 @@ const Ingredients = () => {
                 await deleteIngredient(selectedIngredient?.id, session)
 
             loadIngredients()
-            // TODO: Add errors handling
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-            toast.show(`Problem`, {
-                severity: 'error',
-                autoHideDuration,
-            })
+            if (e instanceof DataError || e instanceof SessionError) {
+                toast.show(e.message, {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            } else {
+                console.log(e)
+                toast.show('Wystąpił nieznany problem', {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            }
             setLoading(false)
         }
     }
@@ -150,7 +191,7 @@ const Ingredients = () => {
                     <IngredientSelectableList
                         ingredients={ingredients}
                         selectedIngredientId={selectedIngredient?.id}
-                        onClick={(ingredient) => setSelectedIngredient(ingredient)}
+                        onClick={(ingredient) => handleIngredientSelected(ingredient)}
                         onNew={handleOnNew}
                     />
                 )}
@@ -166,6 +207,7 @@ const Ingredients = () => {
                         onSave={handleSave}
                         onDelete={() => setModalOpen(true)}
                         onClose={handleOnClose}
+                        errors={errors}
                     />
                 )}
             </Grid>
