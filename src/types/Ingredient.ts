@@ -35,7 +35,7 @@ export type IngredientIdAmount = {
 }
 
 export type IngredientSum = {
-    sum: number
+    sum: string
     ingredients: IngredientAmount[]
 }
 
