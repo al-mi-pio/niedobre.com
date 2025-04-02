@@ -1,6 +1,7 @@
+import { IngredientFormData } from '@/types/Ingredient'
+
 export type ValidationErrorPayload = {
-    name: string
-    description: string
+    [Field in keyof IngredientFormData]?: string
 }
 
 export type ValidationData = { name: string; value: string | undefined }
