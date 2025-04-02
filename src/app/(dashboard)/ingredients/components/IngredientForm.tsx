@@ -9,14 +9,13 @@ import {
     Paper,
     Stack,
     Typography,
-    Popover,
 } from '@mui/material'
 import { massUnits, units, volumeUnits } from '@/constants/ingredients'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import { Ingredient, IngredientFormData } from '@/types/Ingredient'
 import { ValidationError } from '@/errors/ValidationError'
-import { ChangeEvent, useState, MouseEvent } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { selectOutOfScope } from '@/app/(dashboard)/ingredients/utils'
 
 interface IngredientFormProps {
@@ -31,7 +30,6 @@ interface IngredientFormProps {
 }
 
 const validateIngredientForm = (form: IngredientFormData) => {
-    // TODO: Proper validation
     return !!form.name && !!form.unit
 }
 
@@ -46,22 +44,9 @@ export const IngredientForm = ({
     errors,
 }: IngredientFormProps) => {
     const [saving, setSaving] = useState(false)
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-    const [popoverText, setPopoverText] = useState<string | undefined>(undefined)
-
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>, text?: string) => {
-        onInputChange(e)
-        setPopoverText(text)
-    }
-
-    const handlePopoverOpen = (event: MouseEvent, text?: string) => {
-        setPopoverText(text)
-        setAnchorEl(event.currentTarget)
-    }
-
-    const handlePopoverClose = () => {
-        setAnchorEl(null)
-    }
+    const [hoveredErroredField, setHoveredErroredField] = useState<
+        keyof IngredientFormData | undefined
+    >(undefined)
 
     const handleSave = () => {
         setSaving(true)
@@ -116,6 +101,18 @@ export const IngredientForm = ({
                     onChange={onInputChange}
                     error={!!errors?.payload.name}
                     helperText={errors?.payload.name}
+                    onMouseEnter={() => setHoveredErroredField('name')}
+                    onMouseLeave={() => setHoveredErroredField(undefined)}
+                    slotProps={{
+                        formHelperText: {
+                            sx: {
+                                whiteSpace: 'nowrap',
+                                overflow:
+                                    hoveredErroredField === 'name' ? 'visible' : 'hidden',
+                                textOverflow: 'ellipsis',
+                            },
+                        },
+                    }}
                 />
 
                 <TextField
@@ -128,6 +125,18 @@ export const IngredientForm = ({
                     onChange={onInputChange}
                     error={!!errors?.payload.unit}
                     helperText={errors?.payload.unit}
+                    onMouseEnter={() => setHoveredErroredField('unit')}
+                    onMouseLeave={() => setHoveredErroredField(undefined)}
+                    slotProps={{
+                        formHelperText: {
+                            sx: {
+                                whiteSpace: 'nowrap',
+                                overflow:
+                                    hoveredErroredField === 'unit' ? 'visible' : 'hidden',
+                                textOverflow: 'ellipsis',
+                            },
+                        },
+                    }}
                 >
                     {units.map((unit) => (
                         <MenuItem key={unit} value={unit}>
@@ -151,6 +160,8 @@ export const IngredientForm = ({
                             onChange={onInputChange}
                             error={!!errors?.payload.amount}
                             helperText={errors?.payload.amount}
+                            onMouseEnter={() => setHoveredErroredField('amount')}
+                            onMouseLeave={() => setHoveredErroredField(undefined)}
                             sx={{ width: '12ch' }}
                             slotProps={{
                                 input: {
@@ -160,6 +171,16 @@ export const IngredientForm = ({
                                         </InputAdornment>
                                     ),
                                 },
+                                formHelperText: {
+                                    sx: {
+                                        whiteSpace: 'nowrap',
+                                        overflow:
+                                            hoveredErroredField === 'amount'
+                                                ? 'visible'
+                                                : 'hidden',
+                                        textOverflow: 'ellipsis',
+                                    },
+                                },
                             }}
                         />
 
@@ -167,7 +188,7 @@ export const IngredientForm = ({
                             {'jest równoważne'}
                         </Typography>
 
-                        <Box>
+                        <Stack direction="row" spacing={1}>
                             <TextField
                                 required
                                 value={ingredientForm.oppositeAmount ?? ''}
@@ -175,7 +196,24 @@ export const IngredientForm = ({
                                 onChange={onInputChange}
                                 error={!!errors?.payload.oppositeAmount}
                                 helperText={errors?.payload.oppositeAmount}
+                                onMouseEnter={() =>
+                                    setHoveredErroredField('oppositeAmount')
+                                }
+                                onMouseLeave={() => setHoveredErroredField(undefined)}
                                 sx={{ width: '8ch' }}
+                                slotProps={{
+                                    formHelperText: {
+                                        sx: {
+                                            width: '8ch',
+                                            whiteSpace: 'nowrap',
+                                            overflow:
+                                                hoveredErroredField === 'oppositeAmount'
+                                                    ? 'visible'
+                                                    : 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        },
+                                    },
+                                }}
                             />
 
                             <TextField
@@ -190,8 +228,28 @@ export const IngredientForm = ({
                                 name="oppositeUnit"
                                 error={!!errors?.payload.oppositeUnit}
                                 helperText={errors?.payload.oppositeUnit}
-                                sx={{ width: 'fit-content' }}
+                                onMouseEnter={() =>
+                                    setHoveredErroredField('oppositeUnit')
+                                }
+                                onMouseLeave={() => setHoveredErroredField(undefined)}
+                                sx={{ width: 'fit-content', maxWidth: '11ch' }}
                                 onChange={onInputChange}
+                                slotProps={{
+                                    formHelperText: {
+                                        sx: {
+                                            whiteSpace: 'nowrap',
+                                            overflow:
+                                                hoveredErroredField === 'oppositeUnit'
+                                                    ? 'visible'
+                                                    : 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            visibility:
+                                                hoveredErroredField !== 'oppositeAmount'
+                                                    ? 'visible'
+                                                    : 'hidden',
+                                        },
+                                    },
+                                }}
                             >
                                 {oppositeUnits.map((unit) => (
                                     <MenuItem key={unit} value={unit}>
@@ -199,7 +257,7 @@ export const IngredientForm = ({
                                     </MenuItem>
                                 ))}
                             </TextField>
-                        </Box>
+                        </Stack>
                     </Stack>
                 )}
 
@@ -217,6 +275,8 @@ export const IngredientForm = ({
                         onChange={onInputChange}
                         error={!!errors?.payload.kcalAmount}
                         helperText={errors?.payload.kcalAmount}
+                        onMouseEnter={() => setHoveredErroredField('kcalAmount')}
+                        onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
                         slotProps={{
                             input: {
@@ -225,6 +285,16 @@ export const IngredientForm = ({
                                         {ingredientForm.unit}
                                     </InputAdornment>
                                 ),
+                            },
+                            formHelperText: {
+                                sx: {
+                                    whiteSpace: 'nowrap',
+                                    overflow:
+                                        hoveredErroredField === 'kcalAmount'
+                                            ? 'visible'
+                                            : 'hidden',
+                                    textOverflow: 'ellipsis',
+                                },
                             },
                         }}
                     />
@@ -240,6 +310,8 @@ export const IngredientForm = ({
                         onChange={onInputChange}
                         error={!!errors?.payload.kcal}
                         helperText={errors?.payload.kcal}
+                        onMouseEnter={() => setHoveredErroredField('kcal')}
+                        onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
                         slotProps={{
                             input: {
@@ -248,6 +320,16 @@ export const IngredientForm = ({
                                         {'kcal'}
                                     </InputAdornment>
                                 ),
+                            },
+                            formHelperText: {
+                                sx: {
+                                    whiteSpace: 'nowrap',
+                                    overflow:
+                                        hoveredErroredField === 'kcal'
+                                            ? 'visible'
+                                            : 'hidden',
+                                    textOverflow: 'ellipsis',
+                                },
                             },
                         }}
                     />
@@ -267,6 +349,8 @@ export const IngredientForm = ({
                         onChange={onInputChange}
                         error={!!errors?.payload.costAmount}
                         helperText={errors?.payload.costAmount}
+                        onMouseEnter={() => setHoveredErroredField('costAmount')}
+                        onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
                         slotProps={{
                             input: {
@@ -275,6 +359,16 @@ export const IngredientForm = ({
                                         {ingredientForm.unit}
                                     </InputAdornment>
                                 ),
+                            },
+                            formHelperText: {
+                                sx: {
+                                    whiteSpace: 'nowrap',
+                                    overflow:
+                                        hoveredErroredField === 'costAmount'
+                                            ? 'visible'
+                                            : 'hidden',
+                                    textOverflow: 'ellipsis',
+                                },
                             },
                         }}
                     />
@@ -287,16 +381,27 @@ export const IngredientForm = ({
                         required
                         value={ingredientForm.cost ?? ''}
                         name="cost"
-                        onChange={(e) => handleInputChange(e, errors?.payload.cost)}
+                        onChange={onInputChange}
                         error={!!errors?.payload.cost}
-                        onMouseEnter={(e) => handlePopoverOpen(e, errors?.payload.cost)}
-                        onMouseLeave={handlePopoverClose}
+                        helperText={errors?.payload.cost}
+                        onMouseEnter={() => setHoveredErroredField('cost')}
+                        onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
                         slotProps={{
                             input: {
                                 endAdornment: (
                                     <InputAdornment position="end">{'zł'}</InputAdornment>
                                 ),
+                            },
+                            formHelperText: {
+                                sx: {
+                                    whiteSpace: 'nowrap',
+                                    overflow:
+                                        hoveredErroredField === 'cost'
+                                            ? 'visible'
+                                            : 'hidden',
+                                    textOverflow: 'ellipsis',
+                                },
                             },
                         }}
                     />
@@ -310,23 +415,6 @@ export const IngredientForm = ({
                 >
                     {'Zapisz'}
                 </Button>
-                <Popover
-                    sx={{ pointerEvents: 'none' }}
-                    open={Boolean(anchorEl) && !!popoverText}
-                    anchorEl={anchorEl}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                    onClose={handlePopoverClose}
-                    disableAutoFocus
-                >
-                    <Typography sx={{ p: 1 }}>{popoverText}</Typography>
-                </Popover>
             </Stack>
         </Paper>
     )
