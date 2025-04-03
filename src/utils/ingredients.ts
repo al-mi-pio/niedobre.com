@@ -13,6 +13,10 @@ import {
 } from '@/types/Ingredient'
 import { positiveFloatValidation } from '@/utils/validate'
 import { ValidationData, ValidationErrorPayload } from '@/types/default'
+import { UUID } from 'crypto'
+import { getCompressedRecipes, patchRecipe } from '@/services/recipeService'
+import { Session } from '@/types/Auth'
+import { deleteIngredient } from '@/services/ingredientService'
 
 export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => {
     const units: IngredientFormDataUnits =
@@ -320,4 +324,36 @@ export const formToPatchIngredientDTO = (
             : undefined,
         foodGroup: form.foodGroup as FoodGroup,
     }
+}
+
+export const safeIngredientDeletion = async (
+    ingredientId: UUID,
+    session: Session,
+    commitDeleteion?: boolean
+) => {
+    const recipes = await getCompressedRecipes(session)
+    const recipesWithIngredients = recipes.filter(
+        (recipe) =>
+            recipe.ingredients.filter((ingredient) => ingredient.id === ingredientId)
+                .length
+    )
+    if (!commitDeleteion) {
+        return recipesWithIngredients.reduce(
+            (prev, curr) => [...prev, curr.name],
+            [] as string[]
+        )
+    }
+
+    await deleteIngredient(ingredientId, session)
+    recipesWithIngredients.forEach((recipe) =>
+        patchRecipe(
+            {
+                id: recipe.id,
+                ingredients: recipe.ingredients.filter(
+                    (ingredient) => ingredient.id !== ingredientId
+                ),
+            },
+            session
+        )
+    )
 }
