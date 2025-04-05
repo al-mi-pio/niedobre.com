@@ -3,7 +3,6 @@
 import {
     DialogContentText,
     DialogTitle,
-    Typography,
     ListItem,
     Button,
     List,
@@ -28,7 +27,7 @@ import {
 import { Grid } from '@mui/system'
 import { autoHideDuration } from '@/constants/general'
 import { emptyForm, massUnits, newForm, volumeUnits } from '@/constants/ingredients'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import { Ingredient, IngredientFormData, MassUnit } from '@/types/Ingredient'
 import { ValidationError } from '@/errors/ValidationError'
 import { SessionError } from '@/errors/SessionError'
@@ -72,7 +71,7 @@ const Ingredients = () => {
 
     const handleModalClose = () => {
         setModalOpen(false)
-        setRecipesWithIngredient([])
+        setTimeout(() => setRecipesWithIngredient([]), 200)
     }
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -240,25 +239,30 @@ const Ingredients = () => {
 
             {recipesWithIngredient.length ? (
                 <Dialog open={modalOpen} onClose={handleModalClose}>
-                    <DialogTitle>{`Składnik ${selectedIngredient?.name} jest używany`}</DialogTitle>
-                    <DialogContent>
-                        <DialogContent dividers>
-                            <Typography>{`Składnik o nazwie ${selectedIngredient?.name} jest używany w następujących przepisach: `}</Typography>
-                            <List>
-                                {recipesWithIngredient.map((ingredient, i) => (
-                                    <ListItem key={i}>
-                                        <ListItemIcon>
-                                            <ChevronRightIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary={ingredient} />
-                                    </ListItem>
-                                ))}
-                            </List>
-                            <Typography>
-                                {'Czy zezwalasz na usunięcie go z tych przepisów?'}
-                            </Typography>
-                        </DialogContent>
+                    <DialogTitle>{`${selectedIngredient?.name} jest w użyciu`}</DialogTitle>
+
+                    <DialogContent dividers>
+                        <DialogContentText>{`Składnik o nazwie ${selectedIngredient?.name} jest używany w następujących przepisach: `}</DialogContentText>
+                        <List>
+                            {recipesWithIngredient.map((ingredient, i) => (
+                                <ListItem key={i}>
+                                    <ListItemIcon>
+                                        <FiberManualRecordIcon
+                                            sx={{ fontSize: '10px' }}
+                                        />
+                                    </ListItemIcon>
+                                    <ListItemText primary={ingredient} />
+                                </ListItem>
+                            ))}
+                        </List>
                     </DialogContent>
+
+                    <DialogContent sx={{ overflowY: 'visible' }}>
+                        <DialogContentText>
+                            {'Czy zezwalasz na usunięcie go z tych przepisów?'}
+                        </DialogContentText>
+                    </DialogContent>
+
                     <DialogActions>
                         <Button onClick={handleModalClose}>{'Nie'}</Button>
                         <Button onClick={handleDelete} autoFocus>
