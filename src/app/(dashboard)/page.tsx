@@ -18,12 +18,13 @@ import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
 import { GetRecipeDTO } from '@/types/Recipe'
 import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
+import { calculateIngredients, calculateKcal } from '@/utils/conversion'
 import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
-import { calculateIngredients } from '@/utils/conversion'
 import { useEffect, useState } from 'react'
 import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
 import { useNotifications } from '@toolpad/core'
 import { IngredientList } from '@/app/(dashboard)/components/IngredientList'
+import { PropertiesList } from '@/app/(dashboard)/components/PropertiesList'
 import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
 import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
@@ -49,8 +50,9 @@ const Dashboard = () => {
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
     const [loading, setLoading] = useState(true)
     const [calcTab, setCalcTab] = useState(0)
-    const toast = useNotifications()
     const { sum, ingredients }: IngredientSum = calculateIngredients(selectedRecipes)
+    const properties = { kcal: calculateKcal(selectedRecipes) }
+    const toast = useNotifications()
 
     useEffect(() => {
         getRecipes(getSession())
@@ -119,6 +121,7 @@ const Dashboard = () => {
                             <Tabs value={calcTab} onChange={(_e, tab) => setCalcTab(tab)}>
                                 <Tab label="Przepisy" />
                                 <Tab label="Składniki" />
+                                <Tab label="Właściwości" />
                             </Tabs>
                             <Divider />
                         </Box>
@@ -133,6 +136,12 @@ const Dashboard = () => {
                                     <Typography>{'Wybierz przepisy po lewej'}</Typography>
                                 ) : calcTab === 1 ? (
                                     <IngredientList ingredients={ingredients} />
+                                ) : calcTab === 2 ? (
+                                    !!properties.kcal ? (
+                                        <PropertiesList properties={properties} />
+                                    ) : (
+                                        <Typography>{'Brak właściwości'}</Typography>
+                                    )
                                 ) : (
                                     <SelectedRecipeList recipes={selectedRecipes} />
                                 )}
