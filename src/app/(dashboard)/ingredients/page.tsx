@@ -3,10 +3,15 @@
 import {
     DialogContentText,
     DialogTitle,
+    Typography,
+    ListItem,
     Button,
+    List,
+    Dialog,
+    ListItemIcon,
+    ListItemText,
     DialogContent,
     DialogActions,
-    Dialog,
 } from '@mui/material'
 import {
     createIngredient,
@@ -18,12 +23,15 @@ import {
     formToCreateIngredientDTO,
     formToPatchIngredientDTO,
     ingredientToForm,
+    safeIngredientDeletion,
 } from '@/utils/ingredients'
 import { Grid } from '@mui/system'
 import { autoHideDuration } from '@/constants/general'
 import { emptyForm, massUnits, newForm, volumeUnits } from '@/constants/ingredients'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { Ingredient, IngredientFormData, MassUnit } from '@/types/Ingredient'
 import { ValidationError } from '@/errors/ValidationError'
+import { SessionError } from '@/errors/SessionError'
 import { DataError } from '@/errors/DataError'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { IngredientSelectableList } from '@/app/(dashboard)/ingredients/components/IngredientSelectableList'
@@ -32,7 +40,6 @@ import { useNotifications } from '@toolpad/core'
 import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm'
 import { getSession } from '@/utils/session'
 import { Spinner } from '@/components/Spinner'
-import { SessionError } from '@/errors/SessionError'
 
 const Ingredients = () => {
     const toast = useNotifications()
@@ -40,6 +47,7 @@ const Ingredients = () => {
     const [ingredients, setIngredients] = useState<Ingredient[]>([])
     const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null)
     const [ingredientForm, setIngredientForm] = useState<IngredientFormData>(emptyForm)
+    const [recipesWithIngredient, setRecipesWithIngredient] = useState<string[]>([])
     const [modalOpen, setModalOpen] = useState(false)
     const [loading, setLoading] = useState(true)
 
@@ -60,6 +68,11 @@ const Ingredients = () => {
     const handleOnNew = () => {
         handleIngredientSelected(null)
         setIngredientForm(newForm)
+    }
+
+    const handleModalClose = () => {
+        setModalOpen(false)
+        setRecipesWithIngredient([])
     }
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -122,8 +135,20 @@ const Ingredients = () => {
         setLoading(true)
         try {
             const session = getSession()
-            if (selectedIngredient?.id)
-                await deleteIngredient(selectedIngredient?.id, session)
+            if (selectedIngredient?.id) {
+                const recipes = await safeIngredientDeletion(
+                    selectedIngredient.id,
+                    session,
+                    !!recipesWithIngredient.length
+                )
+                if (recipes.length) {
+                    setRecipesWithIngredient(recipes)
+                    setLoading(false)
+                    setModalOpen(true)
+                    return
+                }
+                await deleteIngredient(selectedIngredient.id, session)
+            }
 
             setSelectedIngredient(null)
             loadIngredients()
@@ -212,20 +237,51 @@ const Ingredients = () => {
                     />
                 )}
             </Grid>
-            <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-                <DialogTitle>{`Usunąć ${selectedIngredient?.name}?`}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        {`Czy aby napewno chcesz usunąć składnik o nazwie ${selectedIngredient?.name}?`}
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setModalOpen(false)}>{'Nie'}</Button>
-                    <Button onClick={handleDelete} autoFocus>
-                        {'Tak'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+
+            {recipesWithIngredient.length ? (
+                <Dialog open={modalOpen} onClose={handleModalClose}>
+                    <DialogTitle>{`Składnik ${selectedIngredient?.name} jest używany`}</DialogTitle>
+                    <DialogContent>
+                        <DialogContent dividers>
+                            <Typography>{`Składnik o nazwie ${selectedIngredient?.name} jest używany w następujących przepisach: `}</Typography>
+                            <List>
+                                {recipesWithIngredient.map((ingredient, i) => (
+                                    <ListItem key={i}>
+                                        <ListItemIcon>
+                                            <ChevronRightIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary={ingredient} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                            <Typography>
+                                {'Czy zezwalasz na usunięcie go z tych przepisów?'}
+                            </Typography>
+                        </DialogContent>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleModalClose}>{'Nie'}</Button>
+                        <Button onClick={handleDelete} autoFocus>
+                            {'Tak'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            ) : (
+                <Dialog open={modalOpen} onClose={handleModalClose}>
+                    <DialogTitle>{`Usunąć ${selectedIngredient?.name}?`}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            {`Czy aby napewno chcesz usunąć składnik o nazwie ${selectedIngredient?.name}?`}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleModalClose}>{'Nie'}</Button>
+                        <Button onClick={handleDelete} autoFocus>
+                            {'Tak'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            )}
         </Grid>
     )
 }

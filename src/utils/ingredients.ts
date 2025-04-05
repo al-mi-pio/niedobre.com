@@ -264,4 +264,5 @@ export const safeIngredientDeletion = async (
             session
         )
     )
+    return []
 }
