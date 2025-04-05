@@ -1,18 +1,6 @@
 'use client'
 
 import {
-    DialogContentText,
-    DialogTitle,
-    ListItem,
-    Button,
-    List,
-    Dialog,
-    ListItemIcon,
-    ListItemText,
-    DialogContent,
-    DialogActions,
-} from '@mui/material'
-import {
     createIngredient,
     deleteIngredient,
     getIngredients,
@@ -27,7 +15,6 @@ import {
 import { Grid } from '@mui/system'
 import { autoHideDuration } from '@/constants/general'
 import { emptyForm, massUnits, newForm, volumeUnits } from '@/constants/ingredients'
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import { Ingredient, IngredientFormData, MassUnit } from '@/types/Ingredient'
 import { ValidationError } from '@/errors/ValidationError'
 import { SessionError } from '@/errors/SessionError'
@@ -36,6 +23,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { IngredientSelectableList } from '@/app/(dashboard)/ingredients/components/IngredientSelectableList'
 import { selectOutOfScope } from '@/app/(dashboard)/ingredients/utils'
 import { useNotifications } from '@toolpad/core'
+import { IngredientModal } from '@/app/(dashboard)/ingredients/components/IngredientModal'
 import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm'
 import { getSession } from '@/utils/session'
 import { Spinner } from '@/components/Spinner'
@@ -237,55 +225,14 @@ const Ingredients = () => {
                 )}
             </Grid>
 
-            {recipesWithIngredient.length ? (
-                <Dialog open={modalOpen} onClose={handleModalClose}>
-                    <DialogTitle>{`${selectedIngredient?.name} jest w użyciu`}</DialogTitle>
-
-                    <DialogContent dividers>
-                        <DialogContentText>{`Składnik o nazwie ${selectedIngredient?.name} jest używany w następujących przepisach: `}</DialogContentText>
-                        <List>
-                            {recipesWithIngredient.map((ingredient, i) => (
-                                <ListItem key={i}>
-                                    <ListItemIcon>
-                                        <FiberManualRecordIcon
-                                            sx={{ fontSize: '10px' }}
-                                        />
-                                    </ListItemIcon>
-                                    <ListItemText primary={ingredient} />
-                                </ListItem>
-                            ))}
-                        </List>
-                    </DialogContent>
-
-                    <DialogContent sx={{ overflowY: 'visible' }}>
-                        <DialogContentText>
-                            {'Czy zezwalasz na usunięcie go z tych przepisów?'}
-                        </DialogContentText>
-                    </DialogContent>
-
-                    <DialogActions>
-                        <Button onClick={handleModalClose}>{'Nie'}</Button>
-                        <Button onClick={handleDelete} autoFocus>
-                            {'Tak'}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            ) : (
-                <Dialog open={modalOpen} onClose={handleModalClose}>
-                    <DialogTitle>{`Usunąć ${selectedIngredient?.name}?`}</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            {`Czy aby napewno chcesz usunąć składnik o nazwie ${selectedIngredient?.name}?`}
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleModalClose}>{'Nie'}</Button>
-                        <Button onClick={handleDelete} autoFocus>
-                            {'Tak'}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
+            <IngredientModal
+                which={recipesWithIngredient.length ? 2 : 1}
+                open={modalOpen}
+                onClose={handleModalClose}
+                onAction={handleDelete}
+                ingredientName={selectedIngredient?.name}
+                recipes={recipesWithIngredient}
+            />
         </Grid>
     )
 }
