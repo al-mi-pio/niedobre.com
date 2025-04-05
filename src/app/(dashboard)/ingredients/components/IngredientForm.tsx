@@ -10,7 +10,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material'
-import { massUnits, units, volumeUnits } from '@/constants/ingredients'
+import { foodGroups, massUnits, units, volumeUnits } from '@/constants/ingredients'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import { Ingredient, IngredientFormData } from '@/types/Ingredient'
@@ -114,6 +114,37 @@ export const IngredientForm = ({
                         },
                     }}
                 />
+
+                <TextField
+                    select
+                    label="Kategoria"
+                    value={ingredientForm.foodGroup ?? ''}
+                    name="foodGroup"
+                    sx={{ width: '16ch' }}
+                    onChange={onInputChange}
+                    error={!!errors?.payload.foodGroup}
+                    helperText={errors?.payload.foodGroup}
+                    onMouseEnter={() => setHoveredErroredField('foodGroup')}
+                    onMouseLeave={() => setHoveredErroredField(undefined)}
+                    slotProps={{
+                        formHelperText: {
+                            sx: {
+                                whiteSpace: 'nowrap',
+                                overflow:
+                                    hoveredErroredField === 'foodGroup'
+                                        ? 'visible'
+                                        : 'hidden',
+                                textOverflow: 'ellipsis',
+                            },
+                        },
+                    }}
+                >
+                    {foodGroups.map((group) => (
+                        <MenuItem key={group} value={group}>
+                            {group}
+                        </MenuItem>
+                    ))}
+                </TextField>
 
                 <TextField
                     select

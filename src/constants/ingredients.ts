@@ -21,4 +21,4 @@ export const foodGroups = [
 ] as const
 
 export const emptyForm: IngredientFormData = { name: '' }
-export const newForm: IngredientFormData = { name: '', isNew: true }
+export const newForm: IngredientFormData = { name: '', foodGroup: 'inne', isNew: true }
