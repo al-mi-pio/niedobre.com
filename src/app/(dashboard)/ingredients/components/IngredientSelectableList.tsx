@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import IngredientIcon from '@/app/(dashboard)/ingredients/components/IngredientIcon'
 import { SearchField } from '@/components/SearchField'
+import { useState } from 'react'
 import {
     ListItemAvatar,
     ListItemText,
@@ -9,7 +10,6 @@ import {
     Avatar,
     ListItemButton,
 } from '@mui/material'
-import EggIcon from '@mui/icons-material/Egg'
 import AddIcon from '@mui/icons-material/Add'
 import { Ingredient } from '@/types/Ingredient'
 import { UUID } from 'crypto'
@@ -56,7 +56,7 @@ export const IngredientSelectableList = ({
                     >
                         <ListItemAvatar>
                             <Avatar>
-                                <EggIcon />
+                                <IngredientIcon group={ingredient.foodGroup} />
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText primary={ingredient.name} />
