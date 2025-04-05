@@ -46,10 +46,10 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes): Ingredie
         }
         return ing
     })
-    const sum: number = ingredientAmount.reduce(
-        (acc, ing) => acc + ing.amount * (ing.ingredient.cost ?? 0),
-        0
-    )
+    const sum = ingredientAmount
+        .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.cost ?? 0), 0)
+        .toFixed(2)
+        .replace('.', ',')
 
     return { sum, ingredients: beautifiedIngredientAmount }
 }

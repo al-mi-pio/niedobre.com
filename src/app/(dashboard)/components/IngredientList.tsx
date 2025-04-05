@@ -1,6 +1,6 @@
 import { IngredientAmount } from '@/types/Ingredient'
 import { Avatar, ListItem, ListItemAvatar, ListItemText } from '@mui/material'
-import EggIcon from '@mui/icons-material/Egg'
+import IngredientIcon from '@/app/(dashboard)/ingredients/components/IngredientIcon'
 
 export const IngredientList = ({ ingredients }: { ingredients: IngredientAmount[] }) =>
     ingredients.map(
@@ -9,7 +9,7 @@ export const IngredientList = ({ ingredients }: { ingredients: IngredientAmount[
                 <ListItem key={id}>
                     <ListItemAvatar>
                         <Avatar>
-                            <EggIcon />
+                            <IngredientIcon group={ingredient.foodGroup} />
                         </Avatar>
                     </ListItemAvatar>
                     <ListItemText
