@@ -36,7 +36,7 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
         id: ingredient.id,
         name: ingredient.name,
         kcal: ingredient.kcal?.toString(),
-        kcalAmount: !ingredient.kcal ? undefined : '1',
+        kcalAmount: ingredient.kcal === undefined ? undefined : '1',
         amount: !ingredient.conversion ? undefined : '1',
         oppositeAmount: !ingredient.conversion
             ? undefined
@@ -48,6 +48,7 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
               ? (ingredient.cost * 1000).toString()
               : ingredient.cost.toString(),
         ...units,
+        foodGroup: ingredient.foodGroup,
     }
 }
 
@@ -169,9 +170,13 @@ export const formToCreateIngredientDTO = (
                     )
                   : undefined,
         kcal: kcalVariables.length
-            ? parseFloat(kcalVariables[0].value!) /
-              (parseFloat(kcalVariables[1].value!) *
-                  measurements[form.unit as keyof typeof measurements])
+            ? parseFloat(
+                  (
+                      parseFloat(kcalVariables[0].value!) /
+                      (parseFloat(kcalVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
             : undefined,
         foodGroup: (form.foodGroup as FoodGroup) ?? 'inne',
     }
@@ -226,9 +231,13 @@ export const formToPatchIngredientDTO = (
                     )
                   : undefined,
         kcal: kcalVariables.length
-            ? parseFloat(kcalVariables[0].value!) /
-              (parseFloat(kcalVariables[1].value!) *
-                  measurements[form.unit as keyof typeof measurements])
+            ? parseFloat(
+                  (
+                      parseFloat(kcalVariables[0].value!) /
+                      (parseFloat(kcalVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
             : undefined,
         foodGroup: form.foodGroup as FoodGroup,
     }
