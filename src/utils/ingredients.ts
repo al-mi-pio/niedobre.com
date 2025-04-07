@@ -32,6 +32,12 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
                     oppositeUnit: ingredient.conversion ? 'mL' : undefined,
                 }
               : { unit: 'mL', oppositeUnit: ingredient.conversion ? 'g' : undefined }
+    const requiredNutrientAmount =
+        ingredient.kcal !== undefined ||
+        ingredient.fat !== undefined ||
+        ingredient.protein !== undefined ||
+        ingredient.carbohydrates !== undefined ||
+        ingredient.salt !== undefined
     return {
         id: ingredient.id,
         name: ingredient.name,
@@ -40,7 +46,7 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
         fat: ingredient.fat?.toString(),
         carbohydrates: ingredient.carbohydrates?.toString(),
         salt: ingredient.salt?.toString(),
-        nutrientAmount: ingredient.kcal === undefined ? undefined : '1',
+        nutrientAmount: requiredNutrientAmount ? '1' : undefined,
         amount: !ingredient.conversion ? undefined : '1',
         oppositeAmount: !ingredient.conversion
             ? undefined
