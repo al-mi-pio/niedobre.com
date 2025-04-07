@@ -17,12 +17,7 @@ import { autoHideDuration } from '@/constants/general'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
 import { GetRecipeDTO } from '@/types/Recipe'
-import {
-    IngredientAmount,
-    IngredientSum,
-    missingValues,
-    nutrientValues,
-} from '@/types/Ingredient'
+import { IngredientAmount, IngredientSum, MissingValues } from '@/types/Ingredient'
 import { calculateIngredients, calculateNutrients } from '@/utils/conversion'
 import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
 import { useEffect, useState } from 'react'
@@ -45,7 +40,7 @@ export type SelectedRecipes = {
 
 const missingIngredientAndNutritionalValues = (
     ingredients: IngredientAmount[]
-): missingValues => {
+): MissingValues => {
     return {
         cost: ingredients.reduce(
             (prev, curr) => (prev ? true : !curr.ingredient.cost && !!curr.amount),

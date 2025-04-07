@@ -5,7 +5,7 @@ import {
     IngredientAmount,
     IngredientSum,
     MassUnit,
-    nutrientValues,
+    NutrientValues,
     VolumeUnit,
 } from '@/types/Ingredient'
 import { SelectedRecipes } from '@/app/(dashboard)/page'
@@ -60,7 +60,7 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes): Ingredie
     return { sum, ingredients: beautifiedIngredientAmount }
 }
 
-export const calculateNutrients = (selectedRecipes: SelectedRecipes): nutrientValues => {
+export const calculateNutrients = (selectedRecipes: SelectedRecipes): NutrientValues => {
     const ingredients = combineIngredients(selectedRecipes)
     return {
         kcal: ingredients.reduce(

@@ -1,7 +1,7 @@
 import { ListItem, ListItemText } from '@mui/material'
-import { nutrientValues } from '@/types/Ingredient'
+import { NutrientValues } from '@/types/Ingredient'
 
-export const PropertiesList = ({ properties }: { properties: nutrientValues }) => (
+export const PropertiesList = ({ properties }: { properties: NutrientValues }) => (
     <ListItem>
         {!!properties.kcal && (
             <ListItemText
