@@ -9,7 +9,18 @@ import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 
 export const createIngredient = async (
-    { name, type, cost, conversion, kcal, foodGroup }: CreateIngredientDTO,
+    {
+        name,
+        type,
+        cost,
+        conversion,
+        kcal,
+        foodGroup,
+        fat,
+        protein,
+        carbohydrates,
+        salt,
+    }: CreateIngredientDTO,
     session: Session
 ) => {
     const ingredientId = randomUUID()
@@ -30,6 +41,10 @@ export const createIngredient = async (
         conversion,
         kcal,
         foodGroup: foodGroup ?? 'inne',
+        salt,
+        carbohydrates,
+        fat,
+        protein,
     }
     const ingredients = await getIngredients(session)
     const newIngredients = [...ingredients, ingredient]
@@ -77,7 +92,19 @@ export const deleteIngredient = async (id: UUID, session: Session) => {
 }
 
 export const patchIngredient = async (
-    { id, name, type, cost, conversion, kcal, foodGroup }: PatchIngredientDTO,
+    {
+        id,
+        name,
+        type,
+        cost,
+        conversion,
+        kcal,
+        foodGroup,
+        fat,
+        protein,
+        carbohydrates,
+        salt,
+    }: PatchIngredientDTO,
     session: Session
 ) => {
     const filePath = join(
@@ -101,6 +128,10 @@ export const patchIngredient = async (
     toPatchIngredient.conversion = conversion ?? toPatchIngredient.conversion
     toPatchIngredient.kcal = kcal ?? toPatchIngredient.kcal
     toPatchIngredient.foodGroup = foodGroup ?? toPatchIngredient.foodGroup
+    toPatchIngredient.carbohydrates = carbohydrates ?? toPatchIngredient.carbohydrates
+    toPatchIngredient.salt = salt ?? toPatchIngredient.salt
+    toPatchIngredient.fat = fat ?? toPatchIngredient.fat
+    toPatchIngredient.protein = protein ?? toPatchIngredient.protein
 
     const newIngredients = [...unchangedIngredients, toPatchIngredient]
     await setToFile(filePath, newIngredients)
