@@ -33,7 +33,7 @@ export const signIn = async ({ login, password }: SignInDTO) => {
 
 export const signOut = async (session: Session) => {
     await verifySession(session)
-    patchUser({ sessionId: null }, session)
+    await patchUser({ sessionId: null }, session)
 }
 
 export const resetPasswordRequest = async (login: string, url: string) => {
@@ -105,8 +105,7 @@ export const changePassword = async (
                 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
             )
         }
-        const hashedPassowrd = await hashString(newPassword)
-        user.password = hashedPassowrd
+        user.password = await hashString(newPassword)
         await setToFile(filePath, user)
     } else {
         throw new DataError('Link wygasł')
