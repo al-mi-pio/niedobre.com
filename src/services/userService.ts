@@ -105,8 +105,7 @@ export const patchUser = async (
                 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
             )
         }
-        const hashedPassowrd = await hashString(password)
-        user.password = hashedPassowrd
+        user.password = await hashString(password)
     }
 
     if (sessionId !== undefined) {

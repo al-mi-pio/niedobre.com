@@ -1,7 +1,13 @@
 import { massUnits, volumeUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
 import { ConversionError } from '@/errors/ConversionError'
-import { IngredientAmount, IngredientSum, MassUnit, VolumeUnit } from '@/types/Ingredient'
+import {
+    IngredientAmount,
+    IngredientSum,
+    MassUnit,
+    NutrientValues,
+    VolumeUnit,
+} from '@/types/Ingredient'
 import { SelectedRecipes } from '@/app/(dashboard)/page'
 
 const combineIngredients = (selectedRecipes: SelectedRecipes) => {
@@ -54,11 +60,30 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes): Ingredie
     return { sum, ingredients: beautifiedIngredientAmount }
 }
 
-export const calculateKcal = (selectedRecipes: SelectedRecipes) => {
-    return combineIngredients(selectedRecipes).reduce(
-        (acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0),
-        0
-    )
+export const calculateNutrients = (selectedRecipes: SelectedRecipes): NutrientValues => {
+    const ingredients = combineIngredients(selectedRecipes)
+    return {
+        kcal: ingredients.reduce(
+            (acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0),
+            0
+        ),
+        protein: ingredients.reduce(
+            (acc, ing) => acc + ing.amount * (ing.ingredient.protein ?? 0),
+            0
+        ),
+        fat: ingredients.reduce(
+            (acc, ing) => acc + ing.amount * (ing.ingredient.fat ?? 0),
+            0
+        ),
+        carbohydrates: ingredients.reduce(
+            (acc, ing) => acc + ing.amount * (ing.ingredient.carbohydrates ?? 0),
+            0
+        ),
+        salt: ingredients.reduce(
+            (acc, ing) => acc + ing.amount * (ing.ingredient.salt ?? 0),
+            0
+        ),
+    }
 }
 
 const convertToBaseMeasurement = (ingredient: IngredientAmount): IngredientAmount => {

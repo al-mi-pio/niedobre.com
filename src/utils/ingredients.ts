@@ -32,11 +32,21 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
                     oppositeUnit: ingredient.conversion ? 'mL' : undefined,
                 }
               : { unit: 'mL', oppositeUnit: ingredient.conversion ? 'g' : undefined }
+    const requiredNutrientAmount =
+        ingredient.kcal !== undefined ||
+        ingredient.fat !== undefined ||
+        ingredient.protein !== undefined ||
+        ingredient.carbohydrates !== undefined ||
+        ingredient.salt !== undefined
     return {
         id: ingredient.id,
         name: ingredient.name,
         kcal: ingredient.kcal?.toString(),
-        kcalAmount: ingredient.kcal === undefined ? undefined : '1',
+        protein: ingredient.protein?.toString(),
+        fat: ingredient.fat?.toString(),
+        carbohydrates: ingredient.carbohydrates?.toString(),
+        salt: ingredient.salt?.toString(),
+        nutrientAmount: requiredNutrientAmount ? '1' : undefined,
         amount: !ingredient.conversion ? undefined : '1',
         oppositeAmount: !ingredient.conversion
             ? undefined
@@ -75,8 +85,15 @@ const validateFormData = (form: IngredientFormData) => {
         { name: 'costAmount', value: form.costAmount },
         { name: 'amount', value: form.amount },
         { name: 'oppositeAmount', value: form.oppositeAmount },
-        { name: 'kcal', value: form.kcal },
-        { name: 'kcalAmount', value: form.kcalAmount },
+        { name: 'nutrientAmount', value: form.nutrientAmount },
+        { name: 'kcal', value: form.kcal !== '0' ? form.kcal : '1' },
+        { name: 'fat', value: form.fat !== '0' ? form.fat : '1' },
+        { name: 'protein', value: form.protein !== '0' ? form.protein : '1' },
+        {
+            name: 'carbohydrates',
+            value: form.carbohydrates !== '0' ? form.carbohydrates : '1',
+        },
+        { name: 'salt', value: form.salt !== '0' ? form.salt : '1' },
     ]
     floatVariables.forEach((variable) => {
         if (variable.value && !positiveFloatValidation(variable.value)) {
@@ -92,10 +109,6 @@ const validateFormData = (form: IngredientFormData) => {
         { name: 'amount', value: form.amount },
         { name: 'oppositeAmount', value: form.oppositeAmount },
         { name: 'oppositeUnit', value: form.oppositeUnit as string },
-    ].filter((data) => !data.value)
-    const missingKcalVariables = [
-        { name: 'kcal', value: form.kcal },
-        { name: 'kcalAmount', value: form.kcalAmount },
     ].filter((data) => !data.value)
 
     if (missingCostVariables.length === 1) {
@@ -113,9 +126,12 @@ const validateFormData = (form: IngredientFormData) => {
         })
     }
 
-    if (missingKcalVariables.length === 1) {
-        errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia kaloryczności'
+    if (
+        !form.nutrientAmount &&
+        (!!form.kcal || !!form.protein || form.fat || form.carbohydrates || form.salt)
+    ) {
+        errors['nutrientAmount' as keyof IngredientFormData] =
+            'Brakuje wartości do wyliczenia składników odżywczych'
     }
 
     if (Object.keys(errors).length) {
@@ -123,10 +139,7 @@ const validateFormData = (form: IngredientFormData) => {
     }
 }
 
-export const formToCreateIngredientDTO = (
-    form: IngredientFormData
-): CreateIngredientDTO => {
-    validateFormData(form)
+const variables = (form: IngredientFormData) => {
     const costVariables = [
         { name: 'cost', value: form.cost },
         { name: 'costAmount', value: form.costAmount },
@@ -138,8 +151,47 @@ export const formToCreateIngredientDTO = (
     ].filter((data) => data.value)
     const kcalVariables = [
         { name: 'kcal', value: form.kcal },
-        { name: 'kcalAmount', value: form.kcalAmount },
+        { name: 'nutrientAmount', value: form.nutrientAmount },
     ].filter((data) => data.value)
+    const proteinVariables = [
+        { name: 'protein', value: form.protein },
+        { name: 'nutrientAmount', value: form.nutrientAmount },
+    ].filter((data) => data.value)
+    const fatVariables = [
+        { name: 'fat', value: form.fat },
+        { name: 'nutrientAmount', value: form.nutrientAmount },
+    ].filter((data) => data.value)
+    const carbohydratesVariables = [
+        { name: 'carbohydrates', value: form.carbohydrates },
+        { name: 'nutrientAmount', value: form.nutrientAmount },
+    ].filter((data) => data.value)
+    const saltVariables = [
+        { name: 'salt', value: form.salt },
+        { name: 'nutrientAmount', value: form.nutrientAmount },
+    ].filter((data) => data.value)
+    return {
+        costVariables,
+        conversionVariables,
+        kcalVariables,
+        proteinVariables,
+        fatVariables,
+        carbohydratesVariables,
+        saltVariables,
+    }
+}
+export const formToCreateIngredientDTO = (
+    form: IngredientFormData
+): CreateIngredientDTO => {
+    validateFormData(form)
+    const {
+        costVariables,
+        conversionVariables,
+        kcalVariables,
+        proteinVariables,
+        fatVariables,
+        carbohydratesVariables,
+        saltVariables,
+    } = variables(form)
 
     return {
         name: form.name,
@@ -178,6 +230,42 @@ export const formToCreateIngredientDTO = (
                   ).toFixed(0)
               )
             : undefined,
+        protein: proteinVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(proteinVariables[0].value!) /
+                      (parseFloat(proteinVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
+        fat: fatVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(fatVariables[0].value!) /
+                      (parseFloat(fatVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
+        carbohydrates: carbohydratesVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(carbohydratesVariables[0].value!) /
+                      (parseFloat(carbohydratesVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
+        salt: saltVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(saltVariables[0].value!) /
+                      (parseFloat(saltVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
         foodGroup: (form.foodGroup as FoodGroup) ?? 'inne',
     }
 }
@@ -187,19 +275,15 @@ export const formToPatchIngredientDTO = (
 ): PatchIngredientDTO => {
     validateFormData(form)
 
-    const costVariables = [
-        { name: 'cost', value: form.cost },
-        { name: 'costAmount', value: form.costAmount },
-    ].filter((data) => data.value)
-    const conversionVariables: ValidationData[] = [
-        { name: 'amount', value: form.amount },
-        { name: 'oppositeAmount', value: form.oppositeAmount },
-        { name: 'oppositeUnit', value: form.oppositeUnit as string },
-    ].filter((data) => data.value)
-    const kcalVariables = [
-        { name: 'kcal', value: form.kcal },
-        { name: 'kcalAmount', value: form.kcalAmount },
-    ].filter((data) => data.value)
+    const {
+        costVariables,
+        conversionVariables,
+        kcalVariables,
+        proteinVariables,
+        fatVariables,
+        carbohydratesVariables,
+        saltVariables,
+    } = variables(form)
 
     return {
         id: form.id ?? emptyUUID,
@@ -235,6 +319,42 @@ export const formToPatchIngredientDTO = (
                   (
                       parseFloat(kcalVariables[0].value!) /
                       (parseFloat(kcalVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
+        protein: proteinVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(proteinVariables[0].value!) /
+                      (parseFloat(proteinVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
+        fat: fatVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(fatVariables[0].value!) /
+                      (parseFloat(fatVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
+        carbohydrates: carbohydratesVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(carbohydratesVariables[0].value!) /
+                      (parseFloat(carbohydratesVariables[1].value!) *
+                          measurements[form.unit as keyof typeof measurements])
+                  ).toFixed(0)
+              )
+            : undefined,
+        salt: saltVariables.length
+            ? parseFloat(
+                  (
+                      parseFloat(saltVariables[0].value!) /
+                      (parseFloat(saltVariables[1].value!) *
                           measurements[form.unit as keyof typeof measurements])
                   ).toFixed(0)
               )

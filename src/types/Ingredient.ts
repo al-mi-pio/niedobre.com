@@ -18,8 +18,12 @@ export type Ingredient = {
     type: IngredientType
     cost?: number
     conversion?: number
-    kcal?: number
     foodGroup: FoodGroup
+    kcal?: number
+    protein?: number
+    fat?: number
+    carbohydrates?: number
+    salt?: number
 }
 
 export type IngredientAmount = {
@@ -44,8 +48,12 @@ export type CreateIngredientDTO = {
     type: IngredientType
     cost?: number
     conversion?: number
-    kcal?: number
     foodGroup?: FoodGroup
+    kcal?: number
+    protein?: number
+    fat?: number
+    carbohydrates?: number
+    salt?: number
 }
 
 export type PatchIngredientDTO = {
@@ -54,8 +62,12 @@ export type PatchIngredientDTO = {
     type?: IngredientType
     cost?: number
     conversion?: number
-    kcal?: number
     foodGroup?: FoodGroup
+    kcal?: number
+    protein?: number
+    fat?: number
+    carbohydrates?: number
+    salt?: number
 }
 
 export type IngredientFormData = {
@@ -65,9 +77,13 @@ export type IngredientFormData = {
     oppositeAmount?: string
     costAmount?: string
     cost?: string
-    kcal?: string
-    kcalAmount?: string
     foodGroup?: string
+    nutrientAmount?: string
+    kcal?: string
+    protein?: string
+    fat?: string
+    carbohydrates?: string
+    salt?: string
     isNew?: boolean
 } & IngredientFormDataUnits
 
@@ -84,3 +100,23 @@ export type IngredientFormDataUnits =
           unit?: 'szt.'
           oppositeUnit?: Omit<Unit, 'szt.'>
       }
+
+export type NutrientValues = {
+    [Field in keyof Omit<MissingValues, 'cost'>]?: number
+}
+
+export type MissingValues = {
+    [Field in keyof Omit<
+        IngredientFormData,
+        | 'id'
+        | 'name'
+        | 'amount'
+        | 'oppositeAmount'
+        | 'costAmount'
+        | 'foodGroup'
+        | 'isNew'
+        | 'unit'
+        | 'oppositeUnit'
+        | 'nutrientAmount'
+    >]?: boolean
+}

@@ -69,8 +69,6 @@ const Ingredients = () => {
                 oppositeUnit: selectOutOfScope(prevForm) ? '' : prevForm.oppositeUnit,
                 costAmount:
                     e.target.name === 'amount' ? e.target.value : prevForm.costAmount,
-                kcalAmount:
-                    e.target.name === 'amount' ? e.target.value : prevForm.kcalAmount,
                 [e.target.name]: e.target.value,
             } as IngredientFormData
             if (errors) {

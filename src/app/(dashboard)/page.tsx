@@ -17,8 +17,8 @@ import { autoHideDuration } from '@/constants/general'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
 import { GetRecipeDTO } from '@/types/Recipe'
-import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
-import { calculateIngredients, calculateKcal } from '@/utils/conversion'
+import { IngredientAmount, IngredientSum, MissingValues } from '@/types/Ingredient'
+import { calculateIngredients, calculateNutrients } from '@/utils/conversion'
 import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
 import { useEffect, useState } from 'react'
 import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
@@ -38,11 +38,36 @@ export type SelectedRecipes = {
     }
 }
 
-const missingIngredientCost = (ingredients: IngredientAmount[]) => {
-    return ingredients.reduce(
-        (prev, curr) => (prev ? true : !curr.ingredient.cost && !!curr.amount),
-        false
-    )
+const missingIngredientAndNutritionalValues = (
+    ingredients: IngredientAmount[]
+): MissingValues => {
+    return {
+        cost: ingredients.reduce(
+            (prev, curr) => (prev ? true : !curr.ingredient.cost && !!curr.amount),
+            false
+        ),
+        kcal: ingredients.reduce(
+            (prev, curr) => (prev ? true : !curr.ingredient.kcal && !!curr.amount),
+            false
+        ),
+        protein: ingredients.reduce(
+            (prev, curr) => (prev ? true : !curr.ingredient.protein && !!curr.amount),
+            false
+        ),
+        fat: ingredients.reduce(
+            (prev, curr) => (prev ? true : !curr.ingredient.fat && !!curr.amount),
+            false
+        ),
+        carbohydrates: ingredients.reduce(
+            (prev, curr) =>
+                prev ? true : !curr.ingredient.carbohydrates && !!curr.amount,
+            false
+        ),
+        salt: ingredients.reduce(
+            (prev, curr) => (prev ? true : !curr.ingredient.salt && !!curr.amount),
+            false
+        ),
+    }
 }
 
 const Dashboard = () => {
@@ -51,7 +76,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true)
     const [calcTab, setCalcTab] = useState(0)
     const { sum, ingredients }: IngredientSum = calculateIngredients(selectedRecipes)
-    const properties = { kcal: calculateKcal(selectedRecipes) }
+    const properties = calculateNutrients(selectedRecipes)
     const toast = useNotifications()
 
     useEffect(() => {
@@ -152,7 +177,7 @@ const Dashboard = () => {
                             <Divider sx={{ marginBottom: '1rem' }} />
                             <Stack direction="row" spacing={1}>
                                 <Typography variant="h4">{`Suma: ${sum} zł`}</Typography>
-                                {missingIngredientCost(ingredients) && (
+                                {missingIngredientAndNutritionalValues(ingredients) && (
                                     <Tooltip
                                         title="Co najmniej jeden ze składników nie posiada ceny. Suma może być niedokładna"
                                         placement="top"
