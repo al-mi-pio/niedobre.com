@@ -104,26 +104,6 @@ const validateFormData = (form: IngredientFormData) => {
         { name: 'oppositeAmount', value: form.oppositeAmount },
         { name: 'oppositeUnit', value: form.oppositeUnit as string },
     ].filter((data) => !data.value)
-    const missingKcalVariables = [
-        { name: 'kcal', value: form.kcal },
-        { name: 'nutrientAmount', value: form.nutrientAmount },
-    ].filter((data) => !data.value)
-    const missingProteinVariables = [
-        { name: 'protein', value: form.protein },
-        { name: 'nutrientAmount', value: form.nutrientAmount },
-    ].filter((data) => !data.value)
-    const missingFatVariables = [
-        { name: 'fat', value: form.fat },
-        { name: 'nutrientAmount', value: form.nutrientAmount },
-    ].filter((data) => !data.value)
-    const missingCarbohydratesVariables = [
-        { name: 'carbohydrates', value: form.carbohydrates },
-        { name: 'nutrientAmount', value: form.nutrientAmount },
-    ].filter((data) => !data.value)
-    const missingSaltVariables = [
-        { name: 'salt', value: form.salt },
-        { name: 'nutrientAmount', value: form.nutrientAmount },
-    ].filter((data) => !data.value)
 
     if (missingCostVariables.length === 1) {
         errors[missingCostVariables[0].name as keyof IngredientFormData] =
@@ -140,25 +120,12 @@ const validateFormData = (form: IngredientFormData) => {
         })
     }
 
-    if (missingKcalVariables.length === 1) {
-        errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia kaloryczności'
-    }
-    if (missingProteinVariables.length === 1) {
-        errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia proteiny'
-    }
-    if (missingFatVariables.length === 1) {
-        errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia tłuszczu'
-    }
-    if (missingCarbohydratesVariables.length === 1) {
-        errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia węglowodanych'
-    }
-    if (missingSaltVariables.length === 1) {
-        errors[missingKcalVariables[0].name as keyof IngredientFormData] =
-            'Brakuje wartości do wyliczenia soli'
+    if (
+        !form.nutrientAmount &&
+        (!!form.kcal || !!form.protein || form.fat || form.carbohydrates || form.salt)
+    ) {
+        errors['nutrientAmount' as keyof IngredientFormData] =
+            'Brakuje wartości do wyliczenia składników odżywczych'
     }
 
     if (Object.keys(errors).length) {
