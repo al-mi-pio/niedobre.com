@@ -101,11 +101,11 @@ export type IngredientFormDataUnits =
           oppositeUnit?: Omit<Unit, 'szt.'>
       }
 
-export type nutrientValues = {
-    [Field in keyof Omit<missingValues, 'cost'>]?: number
+export type NutrientValues = {
+    [Field in keyof Omit<MissingValues, 'cost'>]?: number
 }
 
-export type missingValues = {
+export type MissingValues = {
     [Field in keyof Omit<
         IngredientFormData,
         | 'id'
