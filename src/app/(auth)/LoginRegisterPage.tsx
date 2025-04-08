@@ -1,8 +1,8 @@
 'use client'
 
 import { AuthProvider, SignInPage } from '@toolpad/core'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { signIn } from '@/services/authService'
-import { useRouter } from 'next/navigation'
 import { createUser } from '@/services/userService'
 import { setSession } from '@/utils/session'
 import {
@@ -19,6 +19,7 @@ const providers = [{ id: 'credentials', name: 'Email and Password' }]
 
 const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => {
     const router = useRouter()
+    const reason = useSearchParams().get('reason')
 
     const signInHandler = async (_provider: AuthProvider, formData: FormData) => {
         const login = formData.get('login')?.toString() ?? ''
@@ -84,7 +85,10 @@ const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => 
                 slotProps={{ form: { noValidate: true } }}
                 localeText={{
                     signInTitle: 'Zaloguj się',
-                    signInSubtitle: 'Witaj użytkowniku, zaloguj się aby kontynuować',
+                    signInSubtitle:
+                        reason === 'expired'
+                            ? 'Sesja wygasła. Zaloguj się ponownie'
+                            : 'Witaj użytkowniku, zaloguj się aby kontynuować',
                 }}
             />
         )

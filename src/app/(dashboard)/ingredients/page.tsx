@@ -13,7 +13,7 @@ import {
     safeIngredientDeletion,
 } from '@/utils/ingredients'
 import { Grid } from '@mui/system'
-import { autoHideDuration } from '@/constants/general'
+import { autoHideDuration, unknownErrorMessage } from '@/constants/general'
 import { emptyForm, massUnits, newForm, volumeUnits } from '@/constants/ingredients'
 import { Ingredient, IngredientFormData, MassUnit } from '@/types/Ingredient'
 import { ValidationError } from '@/errors/ValidationError'
@@ -26,9 +26,11 @@ import { useNotifications } from '@toolpad/core'
 import { IngredientModal } from '@/app/(dashboard)/ingredients/components/IngredientModal'
 import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm'
 import { getSession } from '@/utils/session'
+import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/Spinner'
 
 const Ingredients = () => {
+    const router = useRouter()
     const toast = useNotifications()
     const [errors, setErrors] = useState<ValidationError | null>(null)
     const [ingredients, setIngredients] = useState<Ingredient[]>([])
@@ -107,9 +109,11 @@ const Ingredients = () => {
                     severity: 'error',
                     autoHideDuration,
                 })
+            } else if (e instanceof SessionError) {
+                router.push('/login?reason=expired')
             } else {
                 console.log(e)
-                toast.show('Wystąpił nieznany problem', {
+                toast.show(unknownErrorMessage, {
                     severity: 'error',
                     autoHideDuration,
                 })
@@ -145,9 +149,11 @@ const Ingredients = () => {
                     severity: 'error',
                     autoHideDuration,
                 })
+            } else if (e instanceof SessionError) {
+                router.push('/login?reason=expired')
             } else {
                 console.log(e)
-                toast.show('Wystąpił nieznany problem', {
+                toast.show(unknownErrorMessage, {
                     severity: 'error',
                     autoHideDuration,
                 })
