@@ -51,7 +51,12 @@ export const createUser = async ({
             name: ingredient.name,
             type: ingredient.type,
             conversion: ingredient.conversion,
+            foodGroup: ingredient.foodGroup,
             kcal: ingredient.kcal,
+            protein: ingredient.protein,
+            fat: ingredient.fat,
+            carbohydrates: ingredient.carbohydrates,
+            salt: ingredient.salt,
         }))
         await setToFile(ingredientFilePath, baseIngredientsToInsert)
     } else {
