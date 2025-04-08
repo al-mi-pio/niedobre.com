@@ -1,12 +1,13 @@
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
+import { unknownRecipeImage } from '@/constants/recipes'
 import {
+    CardContent,
+    Typography,
+    IconButton,
+    CardMedia,
     Card,
     CardActions,
-    CardContent,
-    CardMedia,
-    IconButton,
-    Typography,
 } from '@mui/material'
 import { GetRecipeDTO } from '@/types/Recipe'
 import { UUID } from 'crypto'
@@ -31,7 +32,7 @@ export const RecipeCard = ({
                 image={
                     recipe.pictures && recipe.pictures[0]
                         ? `/pictures/${recipe.pictures[0]}`
-                        : '/pictures/temporary_cat.png'
+                        : unknownRecipeImage
                 }
                 title="Recipe image"
             />
