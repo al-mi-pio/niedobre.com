@@ -52,3 +52,19 @@ export type PublicRecipe = {
     ingredients?: IngredientIdAmount[]
     cost?: number
 }
+
+export type RecipeFormData = {
+    id?: UUID
+    name: string
+    description?: string
+    instructions?: string
+    pictures?: string[]
+    ingredients?: {
+        id?: UUID
+        amount?: string
+        unit?: string
+    }[]
+    cost?: string
+    publicResources?: PublicResources
+    isNew?: boolean
+}
