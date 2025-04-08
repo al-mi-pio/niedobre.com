@@ -1,5 +1,6 @@
 'use client'
 
+import { unknownErrorMessage } from '@/constants/general'
 import { AuthProvider, SignInPage } from '@toolpad/core'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { signIn } from '@/services/authService'
@@ -43,7 +44,7 @@ const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => 
             } else {
                 return {
                     type: 'error',
-                    error: 'Nieznany błąd',
+                    error: unknownErrorMessage,
                 }
             }
         }
