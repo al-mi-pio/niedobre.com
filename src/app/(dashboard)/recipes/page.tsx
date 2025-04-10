@@ -6,13 +6,14 @@ import { Grid } from '@mui/system'
 import { DataError } from '@/errors/DataError'
 import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
+import { SelectChangeEvent } from '@mui/material'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { deleteRecipe, getRecipes } from '@/services/recipeService'
 import { RecipeSelectableList } from '@/app/(dashboard)/recipes/components/RecipeSelectableList'
 import { useNotifications } from '@toolpad/core'
 import { RecipeModal } from '@/app/(dashboard)/recipes/components/RecipeModal'
-import { RecipeForm } from '@/app/(dashboard)/recipes/components/RecipeForm'
+import { RecipeForm } from '@/app/(dashboard)/recipes/components/RecipeForm/RecipeForm'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/Spinner'
@@ -42,11 +43,13 @@ const Recipes = () => {
         setRecipeForm(newForm)
     }
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => {
+        const event = e as ChangeEvent<HTMLInputElement>
+
         setRecipeForm((prevForm) => {
             const newForm = {
                 ...prevForm,
-                [e.target.name]: e.target.value,
+                [event.target.name]: event.target.value,
             } as RecipeFormData
             if (errors) {
                 try {
