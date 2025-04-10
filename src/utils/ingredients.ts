@@ -246,7 +246,7 @@ export const formToPatchIngredientDTO = (
 export const safeIngredientDeletion = async (
     ingredientId: UUID,
     session: Session,
-    commitDeleteion?: boolean
+    commitDeletion?: boolean
 ) => {
     const recipes = await getCompressedRecipes(session)
     const recipesWithIngredients = recipes.filter(
@@ -254,7 +254,7 @@ export const safeIngredientDeletion = async (
             recipe.ingredients.filter((ingredient) => ingredient.id === ingredientId)
                 .length
     )
-    if (!commitDeleteion) {
+    if (!commitDeletion) {
         return recipesWithIngredients.reduce(
             (prev, curr) => [...prev, curr.name],
             [] as string[]
@@ -273,5 +273,5 @@ export const safeIngredientDeletion = async (
             session
         )
     )
-    return []
+    return [] as string[]
 }
