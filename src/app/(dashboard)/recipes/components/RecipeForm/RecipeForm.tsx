@@ -3,21 +3,25 @@ import CloseIcon from '@mui/icons-material/Close'
 import {
     Typography,
     IconButton,
+    Divider,
     Button,
     Paper,
     Stack,
+    Tabs,
     Box,
+    Tab,
     Alert,
-    TextField,
+    SelectChangeEvent,
 } from '@mui/material'
-import { ChangeEvent, useState } from 'react'
-import { ValidationError } from '@/errors/ValidationError'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
+import { ValidationError } from '@/errors/ValidationError'
+import { ChangeEvent, useState } from 'react'
+import { MainForm } from '@/app/(dashboard)/recipes/components/RecipeForm/MainForm'
 
 interface RecipeFormProps {
     selectedRecipe: GetRecipeDTO | null
     recipeForm: RecipeFormData
-    onInputChange: (e: ChangeEvent<HTMLInputElement>) => void
+    onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
     onSave: () => Promise<void>
     onDelete: () => void
     onClose: () => void
@@ -34,6 +38,7 @@ export const RecipeForm = ({
     errors,
 }: RecipeFormProps) => {
     const [saving, setSaving] = useState(false)
+    const [recipeTab, setRecipeTab] = useState(0)
     const [hoveredErroredField, setHoveredErroredField] = useState<
         keyof RecipeFormData | undefined
     >(undefined)
@@ -81,29 +86,26 @@ export const RecipeForm = ({
                     </Box>
                 </Stack>
 
+                <Box>
+                    <Tabs value={recipeTab} onChange={(_e, tab) => setRecipeTab(tab)}>
+                        <Tab label="Główne" />
+                        <Tab label="Składniki" />
+                        <Tab label="Zdjęcia" />
+                    </Tabs>
+                    <Divider />
+                </Box>
+
                 {!!errors && <Alert severity="error">{errors.message}</Alert>}
 
-                <TextField
-                    required
-                    label="Nazwa"
-                    value={recipeForm.name ?? ''}
-                    name="name"
-                    onChange={onInputChange}
-                    error={!!errors?.payload.name}
-                    helperText={errors?.payload.name}
-                    onMouseEnter={() => setHoveredErroredField('name')}
-                    onMouseLeave={() => setHoveredErroredField(undefined)}
-                    slotProps={{
-                        formHelperText: {
-                            sx: {
-                                whiteSpace: 'nowrap',
-                                overflow:
-                                    hoveredErroredField === 'name' ? 'visible' : 'hidden',
-                                textOverflow: 'ellipsis',
-                            },
-                        },
-                    }}
-                />
+                {recipeTab === 1 ? null : (
+                    <MainForm
+                        recipeForm={recipeForm}
+                        onInputChange={onInputChange}
+                        errors={errors}
+                        hoveredErroredField={hoveredErroredField}
+                        setHoveredErroredField={setHoveredErroredField}
+                    />
+                )}
 
                 <Button
                     onClick={handleSave}
