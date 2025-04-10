@@ -1,11 +1,11 @@
 export const filePathValidation = (string: string) => {
     const regex = /^[^<>:"/\\|?*\x00-\x1F]+$/
-    return regex.test(string) && string.length
+    return regex.test(string) && !!string.length
 }
 
 export const loginValidation = (login: string) => {
     const regex = /^[a-zA-Z0-9]+$/
-    return regex.test(login) && login.length
+    return regex.test(login) && !!login.length
 }
 
 export const positiveFloatValidation = (number: string) => {
@@ -15,7 +15,7 @@ export const positiveFloatValidation = (number: string) => {
 
 export const emailValidation = (email: string) => {
     const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    return regex.test(email) && email.length
+    return regex.test(email) && !!email.length
 }
 
 export const passwordValidation = (password: string) => {
