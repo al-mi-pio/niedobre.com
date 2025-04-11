@@ -19,7 +19,7 @@ const MenuProps = {
 
 export interface ChipDropdownProps extends BaseSelectProps {
     id: string
-    elements: { [key: string]: string }
+    elements: { [key: string]: string } | string[]
     isChecked: (element: string) => boolean
     label: string
     helperText?: string
@@ -47,8 +47,18 @@ export const ChipDropdown = ({
                 aria-describedby={`${id}-helper-text`}
                 multiple
                 renderValue={(selected) =>
-                    noChips ? (
-                        (selected as []).join(', ')
+                    elements instanceof Array ? (
+                        noChips ? (
+                            (selected as []).join(', ')
+                        ) : (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {(selected as []).map((value) => (
+                                    <Chip key={value} label={value} />
+                                ))}
+                            </Box>
+                        )
+                    ) : noChips ? (
+                        (selected as []).map((e) => elements[e]).join(', ')
                     ) : (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                             {(selected as []).map((value) => (
@@ -60,12 +70,19 @@ export const ChipDropdown = ({
                 MenuProps={MenuProps}
                 {...rest}
             >
-                {Object.entries(elements).map((element) => (
-                    <MenuItem key={element[0]} value={element[0]}>
-                        <Checkbox checked={isChecked(element[0])} />
-                        <ListItemText primary={element[1]} />
-                    </MenuItem>
-                ))}
+                {elements instanceof Array
+                    ? elements.map((element) => (
+                          <MenuItem key={element} value={element}>
+                              <Checkbox checked={isChecked(element)} />
+                              <ListItemText primary={element} />
+                          </MenuItem>
+                      ))
+                    : Object.entries(elements).map((element) => (
+                          <MenuItem key={element[0]} value={element[0]}>
+                              <Checkbox checked={isChecked(element[0])} />
+                              <ListItemText primary={element[1]} />
+                          </MenuItem>
+                      ))}
             </Select>
             <FormHelperText id={`${id}-helper-text`}>{helperText}</FormHelperText>
         </FormControl>
