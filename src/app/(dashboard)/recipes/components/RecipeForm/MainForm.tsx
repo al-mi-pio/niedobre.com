@@ -1,9 +1,16 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import { RecipeFormData } from '@/types/Recipe'
 import { ValidationError } from '@/errors/ValidationError'
-import { SelectChangeEvent, TextField } from '@mui/material'
+import {
+    SelectChangeEvent,
+    InputAdornment,
+    Stack,
+    Checkbox,
+    TextField,
+    FormControlLabel,
+} from '@mui/material'
 import { ChipDropdown } from '@/components/ChipDropdown'
-import { publicResources } from '@/constants/recipes'
+import { publicResources, publicResourcesLabels } from '@/constants/recipes'
 
 interface Props {
     recipeForm: RecipeFormData
@@ -21,29 +28,65 @@ export const MainForm = ({
     setHoveredErroredField,
 }: Props) => (
     <>
-        <TextField
-            required
-            label="Nazwa"
-            value={recipeForm.name ?? ''}
-            name="name"
-            onChange={onInputChange}
-            error={!!errors?.payload.name}
-            helperText={errors?.payload.name}
-            onMouseEnter={() => setHoveredErroredField('name')}
-            onMouseLeave={() => setHoveredErroredField(undefined)}
-            slotProps={{
-                formHelperText: {
-                    sx: {
-                        whiteSpace: 'nowrap',
-                        overflow: hoveredErroredField === 'name' ? 'visible' : 'hidden',
-                        textOverflow: 'ellipsis',
-                    },
-                },
+        <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+                alignItems: 'center',
             }}
-        />
+        >
+            <TextField
+                required
+                label="Nazwa"
+                value={recipeForm.name ?? ''}
+                name="name"
+                onChange={onInputChange}
+                error={!!errors?.payload.name}
+                helperText={errors?.payload.name}
+                onMouseEnter={() => setHoveredErroredField('name')}
+                onMouseLeave={() => setHoveredErroredField(undefined)}
+                sx={{ width: '100%' }}
+                slotProps={{
+                    formHelperText: {
+                        sx: {
+                            whiteSpace: 'nowrap',
+                            overflow:
+                                hoveredErroredField === 'name' ? 'visible' : 'hidden',
+                            textOverflow: 'ellipsis',
+                        },
+                    },
+                }}
+            />
+
+            <TextField
+                label="Cena"
+                value={recipeForm.cost ?? ''}
+                name="cost"
+                onChange={onInputChange}
+                error={!!errors?.payload.cost}
+                helperText={errors?.payload.cost}
+                onMouseEnter={() => setHoveredErroredField('cost')}
+                onMouseLeave={() => setHoveredErroredField(undefined)}
+                sx={{ width: '14ch' }}
+                slotProps={{
+                    input: {
+                        endAdornment: (
+                            <InputAdornment position="end">{'zł'}</InputAdornment>
+                        ),
+                    },
+                    formHelperText: {
+                        sx: {
+                            whiteSpace: 'nowrap',
+                            overflow:
+                                hoveredErroredField === 'cost' ? 'visible' : 'hidden',
+                            textOverflow: 'ellipsis',
+                        },
+                    },
+                }}
+            />
+        </Stack>
 
         <TextField
-            required
             multiline
             label="Opis"
             maxRows={2}
@@ -67,7 +110,6 @@ export const MainForm = ({
         />
 
         <TextField
-            required
             multiline
             rows={4}
             label="Instrukcje"
@@ -90,24 +132,38 @@ export const MainForm = ({
             }}
         />
 
-        <ChipDropdown
-            label="Parametry publiczne"
-            id="publicResources"
-            elements={[...publicResources]}
-            isChecked={(elem) =>
-                recipeForm.publicResources
-                    ? recipeForm.publicResources.includes(
-                          elem as keyof (typeof publicResources)[keyof typeof publicResources]
-                      )
-                    : false
+        <FormControlLabel
+            control={
+                <Checkbox
+                    checked={recipeForm.isPublic ?? false}
+                    onChange={onInputChange}
+                    name="isPublic"
+                />
             }
-            value={recipeForm.publicResources ?? []}
-            name="publicResources"
-            onChange={onInputChange}
-            error={!!errors?.payload.publicResources}
-            helperText={errors?.payload.publicResources}
-            onMouseEnter={() => setHoveredErroredField('publicResources')}
-            onMouseLeave={() => setHoveredErroredField(undefined)}
+            label="Udostępnij przepis"
         />
+
+        {recipeForm.isPublic && (
+            <ChipDropdown
+                label="Parametry publiczne"
+                id="publicResources"
+                elements={publicResourcesLabels}
+                isChecked={(elem) =>
+                    recipeForm.publicResources
+                        ? recipeForm.publicResources.includes(
+                              elem as keyof (typeof publicResources)[keyof typeof publicResources]
+                          )
+                        : false
+                }
+                value={recipeForm.publicResources ?? []}
+                name="publicResources"
+                onChange={onInputChange}
+                error={!!errors?.payload.publicResources}
+                helperText={errors?.payload.publicResources}
+                onMouseEnter={() => setHoveredErroredField('publicResources')}
+                onMouseLeave={() => setHoveredErroredField(undefined)}
+                leftMargin="2em"
+            />
+        )}
     </>
 )
