@@ -19,11 +19,12 @@ const MenuProps = {
 
 export interface ChipDropdownProps extends BaseSelectProps {
     id: string
-    elements: string[]
+    elements: { [key: string]: string }
     isChecked: (element: string) => boolean
     label: string
     helperText?: string
     noChips?: boolean
+    leftMargin?: string
 }
 
 export const ChipDropdown = ({
@@ -33,10 +34,11 @@ export const ChipDropdown = ({
     label,
     helperText,
     noChips = false,
+    leftMargin,
     ...rest
 }: ChipDropdownProps) => {
     return (
-        <FormControl>
+        <FormControl sx={leftMargin ? { marginLeft: leftMargin } : {}}>
             <InputLabel id={`${id}-label`}>{label}</InputLabel>
             <Select
                 labelId={`${id}-label`}
@@ -50,7 +52,7 @@ export const ChipDropdown = ({
                     ) : (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                             {(selected as []).map((value) => (
-                                <Chip key={value} label={value} />
+                                <Chip key={value} label={elements[value]} />
                             ))}
                         </Box>
                     )
@@ -58,10 +60,10 @@ export const ChipDropdown = ({
                 MenuProps={MenuProps}
                 {...rest}
             >
-                {elements.map((element) => (
-                    <MenuItem key={element} value={element}>
-                        <Checkbox checked={isChecked(element)} />
-                        <ListItemText primary={element} />
+                {Object.entries(elements).map((element) => (
+                    <MenuItem key={element[0]} value={element[0]}>
+                        <Checkbox checked={isChecked(element[0])} />
+                        <ListItemText primary={element[1]} />
                     </MenuItem>
                 ))}
             </Select>

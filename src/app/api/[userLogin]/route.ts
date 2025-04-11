@@ -52,7 +52,7 @@ export async function GET(
     return NextResponse.json({
         publicRecipes: publicRecipes.map((recipe) =>
             recipe.publicResources.reduce(
-                (acc, key) => ({ ...acc, [key]: recipe[key] }),
+                (acc, key) => ({ ...acc, [key]: recipe[key as keyof PublicRecipe] }),
                 {
                     id: recipe.id,
                 } as PublicRecipe

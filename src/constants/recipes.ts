@@ -6,9 +6,10 @@ export const unknownRecipeImage = '/assets/unknown_recipe.webp'
 export const emptyForm: RecipeFormData = { name: '' }
 export const newForm: RecipeFormData = { name: '', isNew: true }
 
-export const publicResources = [
-    'description',
-    'instructions',
-    'ingredients',
-    'cost',
-] as const
+export const publicResourcesLabels = {
+    description: 'Opis',
+    instructions: 'Instrukcje',
+    ingredients: 'Składniki',
+    cost: 'Cena',
+}
+export const publicResources = [...Object.keys(publicResourcesLabels)] as const
