@@ -63,6 +63,7 @@ export type RecipeFormData = {
     description?: string
     instructions?: string
     pictures?: string[]
+    selectedIngredients?: UUID[]
     ingredients?: {
         id?: UUID
         amount?: string
