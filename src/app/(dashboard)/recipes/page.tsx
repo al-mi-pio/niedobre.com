@@ -114,7 +114,7 @@ const Recipes = () => {
             setSelectedRecipe(null)
             loadRecipes()
         } catch (e) {
-            if (e instanceof DataError || e instanceof SessionError) {
+            if (e instanceof DataError) {
                 toast.show(e.message, {
                     severity: 'error',
                     autoHideDuration,
@@ -122,7 +122,6 @@ const Recipes = () => {
             } else if (e instanceof SessionError) {
                 router.push('/login?reason=expired')
             } else {
-                console.log(e)
                 toast.show(unknownErrorMessage, {
                     severity: 'error',
                     autoHideDuration,
