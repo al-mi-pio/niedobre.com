@@ -1,8 +1,6 @@
-import { ChangeEvent, Dispatch, SetStateAction } from 'react'
-import { RecipeFormData } from '@/types/Recipe'
-import { ValidationError } from '@/errors/ValidationError'
+import { RecipeFormTabProps } from '@/types/Recipe'
+import { publicResources, publicResourcesLabels } from '@/constants/recipes'
 import {
-    SelectChangeEvent,
     InputAdornment,
     Stack,
     Checkbox,
@@ -10,15 +8,6 @@ import {
     FormControlLabel,
 } from '@mui/material'
 import { ChipDropdown } from '@/components/ChipDropdown'
-import { publicResources, publicResourcesLabels } from '@/constants/recipes'
-
-interface Props {
-    recipeForm: RecipeFormData
-    onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
-    errors: ValidationError | null
-    hoveredErroredField?: string
-    setHoveredErroredField: Dispatch<SetStateAction<keyof RecipeFormData | undefined>>
-}
 
 export const MainTab = ({
     recipeForm,
@@ -26,7 +15,7 @@ export const MainTab = ({
     errors,
     hoveredErroredField,
     setHoveredErroredField,
-}: Props) => (
+}: RecipeFormTabProps) => (
     <>
         <Stack
             direction="row"

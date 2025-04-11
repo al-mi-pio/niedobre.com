@@ -1,5 +1,8 @@
+import { ChangeEvent, Dispatch, SetStateAction } from 'react'
+import { IngredientAmount, IngredientIdAmount } from './Ingredient'
+import { SelectChangeEvent } from '@mui/material'
+import { ValidationError } from '@/errors/ValidationError'
 import { UUID } from 'crypto'
-import { IngredientIdAmount, IngredientAmount } from './Ingredient'
 import { publicResources } from '@/constants/recipes'
 
 export type PublicResources = [] | ['name', (typeof publicResources)[number]]
@@ -69,4 +72,12 @@ export type RecipeFormData = {
     isPublic?: boolean
     publicResources?: (typeof publicResources)[]
     isNew?: boolean
+}
+
+export interface RecipeFormTabProps {
+    recipeForm: RecipeFormData
+    onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
+    errors: ValidationError | null
+    hoveredErroredField?: string
+    setHoveredErroredField: Dispatch<SetStateAction<keyof RecipeFormData | undefined>>
 }
