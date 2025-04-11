@@ -16,7 +16,7 @@ import {
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
 import { ValidationError } from '@/errors/ValidationError'
 import { ChangeEvent, useState } from 'react'
-import { MainForm } from '@/app/(dashboard)/recipes/components/RecipeForm/MainForm'
+import { MainTab } from '@/app/(dashboard)/recipes/components/RecipeForm/MainTab'
 
 interface RecipeFormProps {
     selectedRecipe: GetRecipeDTO | null
@@ -97,8 +97,8 @@ export const RecipeForm = ({
 
                 {!!errors && <Alert severity="error">{errors.message}</Alert>}
 
-                {recipeTab === 1 ? null : (
-                    <MainForm
+                {recipeTab === 1 ? null : recipeTab === 2 ? null : (
+                    <MainTab
                         recipeForm={recipeForm}
                         onInputChange={onInputChange}
                         errors={errors}

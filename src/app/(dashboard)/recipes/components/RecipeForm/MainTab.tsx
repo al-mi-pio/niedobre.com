@@ -20,7 +20,7 @@ interface Props {
     setHoveredErroredField: Dispatch<SetStateAction<keyof RecipeFormData | undefined>>
 }
 
-export const MainForm = ({
+export const MainTab = ({
     recipeForm,
     onInputChange,
     errors,
