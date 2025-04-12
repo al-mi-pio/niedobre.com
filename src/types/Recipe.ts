@@ -57,6 +57,12 @@ export type PublicRecipe = {
     cost?: number
 }
 
+export type RecipeFormIngredient = {
+    id: UUID
+    amount?: string
+    unit?: string
+}
+
 export type RecipeFormData = {
     id?: UUID
     name: string
@@ -64,11 +70,7 @@ export type RecipeFormData = {
     instructions?: string
     pictures?: string[]
     selectedIngredients?: UUID[]
-    ingredients?: {
-        id?: UUID
-        amount?: string
-        unit?: string
-    }[]
+    ingredients?: RecipeFormIngredient[]
     cost?: string
     isPublic?: boolean
     publicResources?: (typeof publicResources)[]

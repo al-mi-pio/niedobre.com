@@ -100,7 +100,7 @@ export const IngredientForm = ({
                     name="name"
                     onChange={onInputChange}
                     error={!!errors?.payload.name}
-                    helperText={errors?.payload.name}
+                    helperText={errors?.payload.name as string}
                     onMouseEnter={() => setHoveredErroredField('name')}
                     onMouseLeave={() => setHoveredErroredField(undefined)}
                     slotProps={{
@@ -123,7 +123,7 @@ export const IngredientForm = ({
                     sx={{ width: '16ch' }}
                     onChange={onInputChange}
                     error={!!errors?.payload.foodGroup}
-                    helperText={errors?.payload.foodGroup}
+                    helperText={errors?.payload.foodGroup as string}
                     onMouseEnter={() => setHoveredErroredField('foodGroup')}
                     onMouseLeave={() => setHoveredErroredField(undefined)}
                     slotProps={{
@@ -155,7 +155,7 @@ export const IngredientForm = ({
                     sx={{ width: '22ch' }}
                     onChange={onInputChange}
                     error={!!errors?.payload.unit}
-                    helperText={errors?.payload.unit}
+                    helperText={errors?.payload.unit as string}
                     onMouseEnter={() => setHoveredErroredField('unit')}
                     onMouseLeave={() => setHoveredErroredField(undefined)}
                     slotProps={{
@@ -190,7 +190,7 @@ export const IngredientForm = ({
                             name="amount"
                             onChange={onInputChange}
                             error={!!errors?.payload.amount}
-                            helperText={errors?.payload.amount}
+                            helperText={errors?.payload.amount as string}
                             onMouseEnter={() => setHoveredErroredField('amount')}
                             onMouseLeave={() => setHoveredErroredField(undefined)}
                             sx={{ width: '12ch' }}
@@ -226,7 +226,7 @@ export const IngredientForm = ({
                                 name="oppositeAmount"
                                 onChange={onInputChange}
                                 error={!!errors?.payload.oppositeAmount}
-                                helperText={errors?.payload.oppositeAmount}
+                                helperText={errors?.payload.oppositeAmount as string}
                                 onMouseEnter={() =>
                                     setHoveredErroredField('oppositeAmount')
                                 }
@@ -258,7 +258,7 @@ export const IngredientForm = ({
                                 }
                                 name="oppositeUnit"
                                 error={!!errors?.payload.oppositeUnit}
-                                helperText={errors?.payload.oppositeUnit}
+                                helperText={errors?.payload.oppositeUnit as string}
                                 onMouseEnter={() =>
                                     setHoveredErroredField('oppositeUnit')
                                 }
@@ -308,7 +308,7 @@ export const IngredientForm = ({
                         name="kcalAmount"
                         onChange={onInputChange}
                         error={!!errors?.payload.kcalAmount}
-                        helperText={errors?.payload.kcalAmount}
+                        helperText={errors?.payload.kcalAmount as string}
                         onMouseEnter={() => setHoveredErroredField('kcalAmount')}
                         onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
@@ -343,7 +343,7 @@ export const IngredientForm = ({
                         name="kcal"
                         onChange={onInputChange}
                         error={!!errors?.payload.kcal}
-                        helperText={errors?.payload.kcal}
+                        helperText={errors?.payload.kcal as string}
                         onMouseEnter={() => setHoveredErroredField('kcal')}
                         onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
@@ -387,7 +387,7 @@ export const IngredientForm = ({
                         name="costAmount"
                         onChange={onInputChange}
                         error={!!errors?.payload.costAmount}
-                        helperText={errors?.payload.costAmount}
+                        helperText={errors?.payload.costAmount as string}
                         onMouseEnter={() => setHoveredErroredField('costAmount')}
                         onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
@@ -422,7 +422,7 @@ export const IngredientForm = ({
                         name="cost"
                         onChange={onInputChange}
                         error={!!errors?.payload.cost}
-                        helperText={errors?.payload.cost}
+                        helperText={errors?.payload.cost as string}
                         onMouseEnter={() => setHoveredErroredField('cost')}
                         onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}

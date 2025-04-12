@@ -31,7 +31,7 @@ export const MainTab = ({
                 name="name"
                 onChange={onInputChange}
                 error={!!errors?.payload.name}
-                helperText={errors?.payload.name}
+                helperText={errors?.payload.name as string}
                 onMouseEnter={() => setHoveredErroredField('name')}
                 onMouseLeave={() => setHoveredErroredField(undefined)}
                 sx={{ width: '100%' }}
@@ -53,7 +53,7 @@ export const MainTab = ({
                 name="cost"
                 onChange={onInputChange}
                 error={!!errors?.payload.cost}
-                helperText={errors?.payload.cost}
+                helperText={errors?.payload.cost as string}
                 onMouseEnter={() => setHoveredErroredField('cost')}
                 onMouseLeave={() => setHoveredErroredField(undefined)}
                 sx={{ width: '14ch' }}
@@ -83,7 +83,7 @@ export const MainTab = ({
             name="description"
             onChange={onInputChange}
             error={!!errors?.payload.description}
-            helperText={errors?.payload.description}
+            helperText={errors?.payload.description as string}
             onMouseEnter={() => setHoveredErroredField('description')}
             onMouseLeave={() => setHoveredErroredField(undefined)}
             slotProps={{
@@ -106,7 +106,7 @@ export const MainTab = ({
             name="instructions"
             onChange={onInputChange}
             error={!!errors?.payload.instructions}
-            helperText={errors?.payload.instructions}
+            helperText={errors?.payload.instructions as string}
             onMouseEnter={() => setHoveredErroredField('instructions')}
             onMouseLeave={() => setHoveredErroredField(undefined)}
             slotProps={{
@@ -148,7 +148,7 @@ export const MainTab = ({
                 name="publicResources"
                 onChange={onInputChange}
                 error={!!errors?.payload.publicResources}
-                helperText={errors?.payload.publicResources}
+                helperText={errors?.payload.publicResources as string}
                 onMouseEnter={() => setHoveredErroredField('publicResources')}
                 onMouseLeave={() => setHoveredErroredField(undefined)}
                 leftMargin="2em"
