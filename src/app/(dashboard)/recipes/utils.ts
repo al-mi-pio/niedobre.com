@@ -1,4 +1,6 @@
+import { RecipeFormIngredient } from '@/types/Recipe'
 import { Ingredient } from '@/types/Ingredient'
+import { UUID } from 'crypto'
 
 export const createIngredientDropdownStructure = (ingredients: Ingredient[]) =>
     ingredients.length
@@ -12,3 +14,12 @@ export const createIngredientDropdownStructure = (ingredients: Ingredient[]) =>
               }
           )
         : {}
+
+export const createIngredientRowsStructure = (
+    ingredientIds: UUID[],
+    ingredients?: RecipeFormIngredient[]
+) =>
+    ingredientIds.map((id) => {
+        if (!ingredients) return { id }
+        return ingredients.find((ingredient) => ingredient.id === id) ?? { id }
+    })
