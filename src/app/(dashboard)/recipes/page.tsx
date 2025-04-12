@@ -9,6 +9,7 @@ import { ValidationError } from '@/errors/ValidationError'
 import { SelectChangeEvent } from '@mui/material'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
 import { ChangeEvent, useEffect, useState } from 'react'
+import { createIngredientRowsStructure } from '@/app/(dashboard)/recipes/utils'
 import { deleteRecipe, getRecipes } from '@/services/recipeService'
 import { RecipeSelectableList } from '@/app/(dashboard)/recipes/components/RecipeSelectableList'
 import { useNotifications } from '@toolpad/core'
@@ -17,6 +18,7 @@ import { RecipeForm } from '@/app/(dashboard)/recipes/components/RecipeForm/Reci
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/Spinner'
+import { UUID } from 'crypto'
 
 const Recipes = () => {
     const router = useRouter()
@@ -43,6 +45,40 @@ const Recipes = () => {
         setRecipeForm(newForm)
     }
 
+    const handleIngredientRowChange = (
+        id: UUID,
+        name: 'amount' | 'unit',
+        value?: string
+    ) => {
+        setRecipeForm((prevForm) => {
+            const newForm = {
+                ...prevForm,
+                ingredients:
+                    prevForm.ingredients &&
+                    prevForm.ingredients.map((ingredient) =>
+                        ingredient.id === id
+                            ? { ...ingredient, [name]: value }
+                            : ingredient
+                    ),
+            } as RecipeFormData
+            if (errors) {
+                try {
+                    //TODO:
+                    // if (selectedRecipe)
+                    //     formToPatchRecipeDTO(newForm)
+                    // else formToCreateRecipeDTO(newForm)
+
+                    setErrors(null)
+                } catch (e) {
+                    if (e instanceof ValidationError) {
+                        setErrors(e)
+                    }
+                }
+            }
+            return newForm
+        })
+    }
+
     const handleInputChange = (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => {
         const event = e as ChangeEvent<HTMLInputElement>
 
@@ -53,6 +89,13 @@ const Recipes = () => {
                     event.target.type === 'checkbox'
                         ? event.target.checked
                         : event.target.value,
+                ingredients:
+                    event.target.name === 'selectedIngredients'
+                        ? createIngredientRowsStructure(
+                              event.target.value as unknown as UUID[],
+                              recipeForm.ingredients
+                          )
+                        : prevForm.ingredients,
             } as RecipeFormData
             if (errors) {
                 try {
@@ -180,6 +223,7 @@ const Recipes = () => {
                         selectedRecipe={selectedRecipe}
                         recipeForm={recipeForm}
                         onInputChange={handleInputChange}
+                        onIngredientRowChange={handleIngredientRowChange}
                         onSave={handleSave}
                         onDelete={() => setModalOpen(true)}
                         onClose={handleOnClose}

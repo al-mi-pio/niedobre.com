@@ -14,6 +14,7 @@ import {
     Alert,
     SelectChangeEvent,
 } from '@mui/material'
+import { UUID } from 'crypto'
 import { DataError } from '@/errors/DataError'
 import { Ingredient } from '@/types/Ingredient'
 import { SessionError } from '@/errors/SessionError'
@@ -31,6 +32,7 @@ import { Spinner } from '@/components/Spinner'
 interface RecipeFormProps {
     selectedRecipe: GetRecipeDTO | null
     recipeForm: RecipeFormData
+    onIngredientRowChange: (id: UUID, name: 'amount' | 'unit', value?: string) => void
     onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
     onSave: () => Promise<void>
     onDelete: () => void
@@ -39,6 +41,7 @@ interface RecipeFormProps {
 }
 
 export const RecipeForm = ({
+    onIngredientRowChange,
     selectedRecipe,
     recipeForm,
     onInputChange,
@@ -160,6 +163,7 @@ export const RecipeForm = ({
                         hoveredErroredField={hoveredErroredField}
                         setHoveredErroredField={setHoveredErroredField}
                         ingredients={ingredients}
+                        onRowChange={onIngredientRowChange}
                     />
                 ) : recipeTab === 2 ? null : (
                     <MainTab
