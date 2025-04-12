@@ -20,10 +20,11 @@ import { Ingredient } from '@/types/Ingredient'
 import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, SetStateAction, useEffect, useRef, useState } from 'react'
 import { useNotifications } from '@toolpad/core'
 import { IngredientsTab } from '@/app/(dashboard)/recipes/components/RecipeForm/IngredientsTab'
 import { getIngredients } from '@/services/ingredientService'
+import { PicturesTab } from '@/app/(dashboard)/recipes/components/RecipeForm/PicturesTab'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { MainTab } from '@/app/(dashboard)/recipes/components/RecipeForm/MainTab'
@@ -34,6 +35,7 @@ interface RecipeFormProps {
     recipeForm: RecipeFormData
     onIngredientRowChange: (id: UUID, name: 'amount' | 'unit', value?: string) => void
     onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
+    setRecipeForm: (value: SetStateAction<RecipeFormData>) => void
     onSave: () => Promise<void>
     onDelete: () => void
     onClose: () => void
@@ -42,12 +44,13 @@ interface RecipeFormProps {
 
 export const RecipeForm = ({
     onIngredientRowChange,
+    setRecipeForm,
     selectedRecipe,
-    recipeForm,
     onInputChange,
-    onSave,
+    recipeForm,
     onDelete,
     onClose,
+    onSave,
     errors,
 }: RecipeFormProps) => {
     const router = useRouter()
@@ -165,7 +168,9 @@ export const RecipeForm = ({
                         ingredients={ingredients}
                         onRowChange={onIngredientRowChange}
                     />
-                ) : recipeTab === 2 ? null : (
+                ) : recipeTab === 2 ? (
+                    <PicturesTab recipeForm={recipeForm} setRecipeForm={setRecipeForm} />
+                ) : (
                     <MainTab
                         recipeForm={recipeForm}
                         onInputChange={onInputChange}

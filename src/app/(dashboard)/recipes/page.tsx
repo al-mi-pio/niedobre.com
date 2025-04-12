@@ -3,6 +3,7 @@
 import { autoHideDuration, unknownErrorMessage } from '@/constants/general'
 import { emptyForm, newForm } from '@/constants/recipes'
 import { Grid } from '@mui/system'
+import { UUID } from 'crypto'
 import { DataError } from '@/errors/DataError'
 import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
@@ -10,7 +11,6 @@ import { SelectChangeEvent } from '@mui/material'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { createIngredientRowsStructure } from '@/app/(dashboard)/recipes/utils'
-import { deleteRecipe, getRecipes } from '@/services/recipeService'
 import { RecipeSelectableList } from '@/app/(dashboard)/recipes/components/RecipeSelectableList'
 import { useNotifications } from '@toolpad/core'
 import { RecipeModal } from '@/app/(dashboard)/recipes/components/RecipeModal'
@@ -18,7 +18,17 @@ import { RecipeForm } from '@/app/(dashboard)/recipes/components/RecipeForm/Reci
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/Spinner'
-import { UUID } from 'crypto'
+import {
+    formToCreateRecipeDTO,
+    formToPatchRecipeDTO,
+    recipeToForm,
+} from '@/utils/recipes'
+import {
+    createRecipe,
+    deleteRecipe,
+    getRecipes,
+    patchRecipe,
+} from '@/services/recipeService'
 
 const Recipes = () => {
     const router = useRouter()
@@ -63,10 +73,8 @@ const Recipes = () => {
             } as RecipeFormData
             if (errors) {
                 try {
-                    //TODO:
-                    // if (selectedRecipe)
-                    //     formToPatchRecipeDTO(newForm)
-                    // else formToCreateRecipeDTO(newForm)
+                    if (selectedRecipe) formToPatchRecipeDTO(newForm)
+                    else formToCreateRecipeDTO(newForm)
 
                     setErrors(null)
                 } catch (e) {
@@ -99,10 +107,8 @@ const Recipes = () => {
             } as RecipeFormData
             if (errors) {
                 try {
-                    //TODO:
-                    // if (selectedRecipe)
-                    //     formToPatchRecipeDTO(newForm)
-                    // else formToCreateRecipeDTO(newForm)
+                    if (selectedRecipe) formToPatchRecipeDTO(newForm)
+                    else formToCreateRecipeDTO(newForm)
 
                     setErrors(null)
                 } catch (e) {
@@ -117,11 +123,10 @@ const Recipes = () => {
 
     const handleSave = async () => {
         try {
-            //TODO:
-            // const session = getSession()
-            // if (selectedRecipe)
-            //     await patchRecipe(formToPatchRecipeDTO(recipeForm), session)
-            // else await createRecipe(formToCreateRecipeDTO(recipeForm), session)
+            const session = getSession()
+            if (selectedRecipe)
+                await patchRecipe(formToPatchRecipeDTO(recipeForm), session)
+            else await createRecipe(formToCreateRecipeDTO(recipeForm), session)
 
             setLoading(true)
             loadRecipes()
@@ -196,7 +201,7 @@ const Recipes = () => {
     }, [])
 
     useEffect(() => {
-        if (selectedRecipe) setRecipeForm(() => ({ name: selectedRecipe.name })) //TODO: recipeToForm(selectedRecipe)
+        if (selectedRecipe) setRecipeForm(() => recipeToForm(selectedRecipe))
     }, [selectedRecipe])
 
     return (
@@ -206,27 +211,38 @@ const Recipes = () => {
             margin={2}
             style={{ justifyContent: 'center', gap: '50px' }}
         >
-            {loading ? (
-                <Spinner />
-            ) : (
-                <RecipeSelectableList
-                    recipes={recipes}
-                    selectedRecipeId={selectedRecipe?.id}
-                    onClick={handleRecipeSelected}
-                    onNew={handleOnNew}
-                />
-            )}
+            <Grid
+                container
+                size={6}
+                style={{
+                    maxHeight: '86vh',
+                    overflow: 'clip',
+                    padding: '2rem 0.5rem 2rem 2rem',
+                }}
+            >
+                {loading ? (
+                    <Spinner />
+                ) : (
+                    <RecipeSelectableList
+                        recipes={recipes}
+                        selectedRecipeId={selectedRecipe?.id}
+                        onClick={handleRecipeSelected}
+                        onNew={handleOnNew}
+                    />
+                )}
+            </Grid>
 
             <Grid style={{ minHeight: '86vh' }} size={4}>
                 {(!!selectedRecipe || recipeForm.isNew) && (
                     <RecipeForm
-                        selectedRecipe={selectedRecipe}
-                        recipeForm={recipeForm}
-                        onInputChange={handleInputChange}
                         onIngredientRowChange={handleIngredientRowChange}
-                        onSave={handleSave}
                         onDelete={() => setModalOpen(true)}
+                        onInputChange={handleInputChange}
+                        selectedRecipe={selectedRecipe}
+                        setRecipeForm={setRecipeForm}
+                        recipeForm={recipeForm}
                         onClose={handleOnClose}
+                        onSave={handleSave}
                         errors={errors}
                     />
                 )}
