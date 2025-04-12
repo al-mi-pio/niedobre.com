@@ -1,3 +1,4 @@
+import { massUnits, volumeUnits } from '@/constants/ingredients'
 import { RecipeFormIngredient } from '@/types/Recipe'
 import { Ingredient } from '@/types/Ingredient'
 import { UUID } from 'crypto'
@@ -23,3 +24,12 @@ export const createIngredientRowsStructure = (
         if (!ingredients) return { id }
         return ingredients.find((ingredient) => ingredient.id === id) ?? { id }
     })
+
+export const getIngredientAvailableUnits = (ingredient?: Ingredient) => {
+    if (!ingredient) return []
+    if (ingredient.conversion && ingredient.type !== 'amount')
+        return [...massUnits, ...volumeUnits]
+    if (!ingredient.conversion && ingredient.type === 'mass') return massUnits
+    if (!ingredient.conversion && ingredient.type === 'volume') return volumeUnits
+    return ['szt.']
+}

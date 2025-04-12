@@ -1,10 +1,12 @@
 import { RecipeFormData, RecipeFormIngredient, RecipeFormTabProps } from '@/types/Recipe'
 import { Ingredient } from '@/types/Ingredient'
 import { UUID } from 'crypto'
-import { units } from '@/constants/ingredients'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
-import { TextField, MenuItem, Stack, Typography } from '@mui/material'
-import { createIngredientDropdownStructure } from '@/app/(dashboard)/recipes/utils'
+import { MenuItem, Stack, Typography, TextField } from '@mui/material'
+import {
+    createIngredientDropdownStructure,
+    getIngredientAvailableUnits,
+} from '@/app/(dashboard)/recipes/utils'
 import { ChipDropdown } from '@/components/ChipDropdown'
 import Link from 'next/link'
 
@@ -154,7 +156,9 @@ export const IngredientsTab = ({
                                 },
                             }}
                         >
-                            {units.map((unit) => (
+                            {getIngredientAvailableUnits(
+                                ingredients.find((ingredient) => ingredient.id === id)
+                            ).map((unit) => (
                                 <MenuItem key={unit} value={unit}>
                                     {unit}
                                 </MenuItem>
