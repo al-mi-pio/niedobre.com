@@ -26,46 +26,35 @@ export const RecipeSelectableList = ({
     const filteredRecipes = recipes.filter((recipe) => recipe.name.includes(filterInput))
 
     return (
-        <Grid
-            container
-            size={6}
-            style={{
-                maxHeight: '86vh',
-                overflow: 'clip',
-                padding: '2rem 0.5rem 2rem 2rem',
-            }}
-        >
-            <Paper variant="outlined" sx={{ width: '100%' }}>
-                <Stack sx={{ padding: '1em 15em' }}>
-                    <SearchField
-                        value={filterInput}
-                        onChange={(e) => setFilterInput(() => e.target.value)}
-                    />
-                </Stack>
-                <Grid
-                    container
-                    spacing={2}
-                    style={{
-                        maxHeight: '86vh',
-                        width: '100%',
-                        overflow: 'auto',
-                        padding: '2rem 0.5rem 2rem 2rem',
-                    }}
-                >
-                    <Grid size={4}>
-                        <NewRecipeCard onNew={onNew} />
-                    </Grid>
-                    {filteredRecipes.map((recipe) => (
-                        <Grid key={recipe.id} size={4}>
-                            <RecipeSelectableCard
-                                recipe={recipe}
-                                onClick={() => onClick(recipe)}
-                                selected={selectedRecipeId === recipe.id}
-                            />
-                        </Grid>
-                    ))}
+        <Paper variant="outlined" sx={{ width: '100%' }}>
+            <Stack sx={{ padding: '1em 15em' }}>
+                <SearchField
+                    value={filterInput}
+                    onChange={(e) => setFilterInput(() => e.target.value)}
+                />
+            </Stack>
+            <Grid
+                container
+                spacing={2}
+                style={{
+                    height: '74vh',
+                    overflow: 'auto',
+                    padding: '2rem 0.5rem 2rem 2rem',
+                }}
+            >
+                <Grid size={4}>
+                    <NewRecipeCard onNew={onNew} />
                 </Grid>
-            </Paper>
-        </Grid>
+                {filteredRecipes.map((recipe) => (
+                    <Grid key={recipe.id} size={4}>
+                        <RecipeSelectableCard
+                            recipe={recipe}
+                            onClick={() => onClick(recipe)}
+                            selected={selectedRecipeId === recipe.id}
+                        />
+                    </Grid>
+                ))}
+            </Grid>
+        </Paper>
     )
 }

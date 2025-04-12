@@ -47,7 +47,7 @@ export const RecipeSelectableCard = ({ recipe, selected, onClick }: Props) => {
 export const NewRecipeCard = ({ onNew }: { onNew: () => void }) => {
     return (
         <Card sx={{ maxWidth: 345 }}>
-            <CardMedia sx={{ height: 140 }} image={newRecipeImage} title="Recipe image" />
+            <CardMedia sx={{ height: 140 }} image={newRecipeImage} title="New recipe" />
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
                     {'Nowy przepis'}
