@@ -144,7 +144,7 @@ const Ingredients = () => {
             setSelectedIngredient(null)
             loadIngredients()
         } catch (e) {
-            if (e instanceof DataError || e instanceof SessionError) {
+            if (e instanceof DataError) {
                 toast.show(e.message, {
                     severity: 'error',
                     autoHideDuration,

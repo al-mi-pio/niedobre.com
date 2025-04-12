@@ -1,7 +1,7 @@
-import { IngredientFormData } from '@/types/Ingredient'
+import { UUID } from 'crypto'
 
 export type ValidationErrorPayload = {
-    [Field in keyof IngredientFormData]?: string
+    [key in string]?: string | { [id in UUID]: { [key in string]: string } }
 }
 
 export type ValidationData = { name: string; value: string | undefined }
