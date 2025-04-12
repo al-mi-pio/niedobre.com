@@ -63,12 +63,17 @@ export type RecipeFormIngredient = {
     unit?: string
 }
 
+export type Picture = {
+    id?: UUID
+    file: File
+}
+
 export type RecipeFormData = {
     id?: UUID
     name: string
     description?: string
     instructions?: string
-    pictures?: string[]
+    pictures?: Picture[]
     selectedIngredients?: UUID[]
     ingredients?: RecipeFormIngredient[]
     cost?: string
