@@ -24,8 +24,9 @@ export const createIngredientRowsStructure = (
         if (!ingredients) return { id, amount: '', unit: '' }
         return (
             ingredients.find((ingredient) => ingredient.id === id) ?? {
-                ...ingredient,
                 id,
+                amount: '',
+                unit: '',
             }
         )
     })
