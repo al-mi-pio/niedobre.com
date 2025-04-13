@@ -125,13 +125,14 @@ const Recipes = () => {
         try {
             const session = getSession()
             if (selectedRecipe)
-                await patchRecipe(formToPatchRecipeDTO(recipeForm), session)
-            else await createRecipe(formToCreateRecipeDTO(recipeForm), session)
+                await patchRecipe(await formToPatchRecipeDTO(recipeForm), session)
+            else await createRecipe(await formToCreateRecipeDTO(recipeForm), session)
 
             setLoading(true)
             loadRecipes()
         } catch (e) {
             if (e instanceof ValidationError) {
+                console.log(e.payload)
                 setErrors(e)
             } else if (e instanceof DataError) {
                 toast.show(e.message, {
