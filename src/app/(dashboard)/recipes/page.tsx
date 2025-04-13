@@ -132,7 +132,6 @@ const Recipes = () => {
             loadRecipes()
         } catch (e) {
             if (e instanceof ValidationError) {
-                console.log(e.payload)
                 setErrors(e)
             } else if (e instanceof DataError) {
                 toast.show(e.message, {
