@@ -1,116 +1,120 @@
 'use client'
 
-import { unknownErrorMessage } from '@/constants/general'
-import { AuthProvider, SignInPage } from '@toolpad/core'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { signIn } from '@/services/authService'
-import { createUser } from '@/services/userService'
-import { setSession } from '@/utils/session'
+import {
+    AuthProvider,
+    AuthResponse,
+    SignInPage,
+    SupportedAuthProvider,
+} from '@toolpad/core'
+import { useSearchParams } from 'next/navigation'
 import {
     BaseIngredientsCheckbox,
     CustomEmailLoginField,
     CustomLoginField,
     CustomPasswordField,
+    CustomRepeatPasswordField,
+    CustomSubmitButton,
+    ForgotPasswordLink,
     RememberMeCheckbox,
     SignInLink,
     SignUpLink,
 } from '@/app/(auth)/Fields'
 
-const providers = [{ id: 'credentials', name: 'Email and Password' }]
+const loginProviders = [{ id: 'credentials', name: 'Email and Password' }]
 
-const LoginRegister = ({ authAction }: { authAction: 'login' | 'register' }) => {
-    const router = useRouter()
+const LoginRegister = ({
+    authAction,
+    actionHandler,
+    providers = loginProviders,
+    pending = false,
+}: {
+    pending?: boolean
+    providers?: { id: SupportedAuthProvider; name: string }[]
+    authAction: 'login' | 'register' | 'requestPasswordChange' | 'changePassword'
+    actionHandler: (provider: AuthProvider, formData: FormData) => Promise<AuthResponse>
+}) => {
     const reason = useSearchParams().get('reason')
 
-    const signInHandler = async (_provider: AuthProvider, formData: FormData) => {
-        const login = formData.get('login')?.toString() ?? ''
-        const password = formData.get('password')?.toString() ?? ''
+    switch (authAction) {
+        case 'register':
+            return (
+                <SignInPage
+                    signIn={actionHandler}
+                    providers={providers}
+                    slots={{
+                        signUpLink: SignInLink,
+                        emailField: CustomEmailLoginField,
+                        passwordField: CustomPasswordField,
+                        rememberMe: BaseIngredientsCheckbox,
+                    }}
+                    slotProps={{ form: { noValidate: true } }}
+                    localeText={{
+                        signInTitle: 'Zarejestruj się',
+                        signInSubtitle: 'Podaj wymagane dane, aby założyć konto',
+                    }}
+                />
+            )
 
-        try {
-            const sessionId = await signIn({
-                login,
-                password,
-            })
-            setSession({
-                sessionId,
-                login,
-            })
-        } catch (e) {
-            if (e instanceof Error) {
-                return {
-                    type: 'error',
-                    error: e.message,
-                }
-            } else {
-                return {
-                    type: 'error',
-                    error: unknownErrorMessage,
-                }
-            }
-        }
-        router.push('/')
-        return {}
-    }
+        case 'changePassword':
+            return (
+                <SignInPage
+                    signIn={actionHandler}
+                    providers={providers}
+                    slots={{
+                        emailField: CustomPasswordField,
+                        passwordField: CustomRepeatPasswordField,
+                        rememberMe: () => <></>,
+                    }}
+                    slotProps={{ form: { noValidate: true } }}
+                    localeText={{
+                        signInTitle: 'Zmień hasło',
+                        signInSubtitle: 'Podaj nowe hasło',
+                    }}
+                />
+            )
 
-    const signUpHandler = async (_provider: AuthProvider, formData: FormData) => {
-        try {
-            await createUser({
-                login: formData.get('login')?.toString() ?? '',
-                email: formData.get('email')?.toString() ?? '',
-                keepBaseIngredients: !!formData.get('ingredients'),
-                password: formData.get('password')?.toString() ?? '',
-            })
-            await signInHandler(_provider, formData)
-        } catch (e) {
-            if (e instanceof Error) {
-                return {
-                    type: 'error',
-                    error: e.message,
-                }
-            }
-        }
-        return {}
-    }
+        case 'requestPasswordChange':
+            return (
+                <SignInPage
+                    signIn={actionHandler}
+                    providers={providers}
+                    slots={{
+                        emailField: CustomLoginField,
+                        submitButton: () => <CustomSubmitButton loading={pending} />,
+                    }}
+                    slotProps={{ form: { noValidate: true } }}
+                    localeText={{
+                        signInTitle: 'Zmiana hasła',
+                        signInSubtitle:
+                            'Jeżeli podasz poprawny login, w ciągu kilku minut otrzymasz email z linkiem do zmiany hasła',
+                    }}
+                />
+            )
 
-    if (authAction === 'login') {
-        return (
-            <SignInPage
-                signIn={signInHandler}
-                providers={providers}
-                slots={{
-                    signUpLink: SignUpLink,
-                    emailField: CustomLoginField,
-                    passwordField: CustomPasswordField,
-                    rememberMe: RememberMeCheckbox,
-                }}
-                slotProps={{ form: { noValidate: true } }}
-                localeText={{
-                    signInTitle: 'Zaloguj się',
-                    signInSubtitle:
-                        reason === 'expired'
-                            ? 'Sesja wygasła. Zaloguj się ponownie'
-                            : 'Witaj użytkowniku, zaloguj się aby kontynuować',
-                }}
-            />
-        )
-    } else {
-        return (
-            <SignInPage
-                signIn={signUpHandler}
-                providers={providers}
-                slots={{
-                    signUpLink: SignInLink,
-                    emailField: CustomEmailLoginField,
-                    passwordField: CustomPasswordField,
-                    rememberMe: BaseIngredientsCheckbox,
-                }}
-                slotProps={{ form: { noValidate: true } }}
-                localeText={{
-                    signInTitle: 'Zarejestruj się',
-                    signInSubtitle: 'Podaj wymagane dane, aby założyć konto',
-                }}
-            />
-        )
+        default:
+            return (
+                <SignInPage
+                    signIn={actionHandler}
+                    providers={providers}
+                    slots={{
+                        signUpLink: SignUpLink,
+                        emailField: CustomLoginField,
+                        passwordField: CustomPasswordField,
+                        rememberMe: RememberMeCheckbox,
+                        forgotPasswordLink: ForgotPasswordLink,
+                    }}
+                    slotProps={{ form: { noValidate: true } }}
+                    localeText={{
+                        signInTitle: 'Zaloguj się',
+                        signInSubtitle:
+                            reason === 'expired'
+                                ? 'Sesja wygasła. Zaloguj się ponownie'
+                                : reason === 'passwordChanged'
+                                  ? 'Hasło zostało zmienione, możesz się teraz zalogować'
+                                  : 'Witaj użytkowniku, zaloguj się aby kontynuować',
+                    }}
+                />
+            )
     }
 }
 
