@@ -51,7 +51,12 @@ export const createUser = async ({
             name: ingredient.name,
             type: ingredient.type,
             conversion: ingredient.conversion,
+            foodGroup: ingredient.foodGroup,
             kcal: ingredient.kcal,
+            protein: ingredient.protein,
+            fat: ingredient.fat,
+            carbohydrates: ingredient.carbohydrates,
+            salt: ingredient.salt,
         }))
         await setToFile(ingredientFilePath, baseIngredientsToInsert)
     } else {
@@ -105,8 +110,7 @@ export const patchUser = async (
                 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
             )
         }
-        const hashedPassowrd = await hashString(password)
-        user.password = hashedPassowrd
+        user.password = await hashString(password)
     }
 
     if (sessionId !== undefined) {

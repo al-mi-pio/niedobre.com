@@ -304,12 +304,12 @@ export const IngredientForm = ({
                 >
                     <TextField
                         required
-                        value={ingredientForm.kcalAmount ?? ''}
-                        name="kcalAmount"
+                        value={ingredientForm.nutrientAmount ?? ''}
+                        name="nutrientAmount"
                         onChange={onInputChange}
-                        error={!!errors?.payload.kcalAmount}
-                        helperText={errors?.payload.kcalAmount as string}
-                        onMouseEnter={() => setHoveredErroredField('kcalAmount')}
+                        error={!!errors?.payload.nutrientAmount}
+                        helperText={errors?.payload.nutrientAmount as string}
+                        onMouseEnter={() => setHoveredErroredField('nutrientAmount')}
                         onMouseLeave={() => setHoveredErroredField(undefined)}
                         sx={{ width: '12ch' }}
                         slotProps={{
@@ -324,7 +324,7 @@ export const IngredientForm = ({
                                 sx: {
                                     whiteSpace: 'nowrap',
                                     overflow:
-                                        hoveredErroredField === 'kcalAmount'
+                                        hoveredErroredField === 'nutrientAmount'
                                             ? 'visible'
                                             : 'hidden',
                                     textOverflow: 'ellipsis',
@@ -364,8 +364,8 @@ export const IngredientForm = ({
                                             : 'hidden',
                                     textOverflow: 'ellipsis',
                                     visibility:
-                                        hoveredErroredField !== 'kcalAmount' ||
-                                        ingredientForm.kcalAmount
+                                        hoveredErroredField !== 'nutrientAmount' ||
+                                        ingredientForm.nutrientAmount
                                             ? 'visible'
                                             : 'hidden',
                                 },
