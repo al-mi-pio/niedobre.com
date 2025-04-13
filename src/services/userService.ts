@@ -9,6 +9,7 @@ import { getFromFile, setToFile } from '@/utils/file'
 import { baseIngredients } from '@/constants/baseIngredients'
 import { DataError } from '@/errors/DataError'
 import { emailValidation, loginValidation, passwordValidation } from '@/utils/validate'
+import { ValidationError } from '@/errors/ValidationError'
 
 export const createUser = async ({
     login,
@@ -20,14 +21,15 @@ export const createUser = async ({
     const folderPath = join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassword = await hashString(password)
     if (!loginValidation(login)) {
-        throw new DataError(`Błędny login`)
+        throw new ValidationError('Błędny login', {})
     }
     if (email && !emailValidation(email)) {
-        throw new DataError('Błędny email')
+        throw new ValidationError('Błędny email', {})
     }
     if (!passwordValidation(password)) {
-        throw new DataError(
-            'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
+        throw new ValidationError(
+            'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
+            {}
         )
     }
     const user: User = {
@@ -106,8 +108,9 @@ export const patchUser = async (
 
     if (password !== undefined) {
         if (!passwordValidation(password)) {
-            throw new DataError(
-                'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
+            throw new ValidationError(
+                'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
+                {}
             )
         }
         user.password = await hashString(password)

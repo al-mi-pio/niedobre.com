@@ -1,4 +1,5 @@
 'use server'
+import { ValidationError } from '@/errors/ValidationError'
 import { Session, SignInDTO } from '@/types/Auth'
 import { join } from 'path'
 import { randomUUID, UUID } from 'crypto'
@@ -9,6 +10,7 @@ import { patchUser } from '@/services/userService'
 import { getFromFile, setToFile } from '@/utils/file'
 import { createTransport } from 'nodemailer'
 import get from '@/utils/config'
+import { appName } from '@/constants/general'
 import { passwordValidation } from '@/utils/validate'
 
 export const signIn = async ({ login, password }: SignInDTO) => {
@@ -39,6 +41,8 @@ export const signOut = async (session: Session) => {
 export const resetPasswordRequest = async (login: string, url: string) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     let user: User
+
+    if (!login) throw new ValidationError('Pole login jest wymagane', {})
     try {
         user = await getFromFile(filePath)
     } catch {
@@ -73,7 +77,7 @@ export const resetPasswordRequest = async (login: string, url: string) => {
     const mailOptions = {
         from: email,
         to: user.email,
-        subject: 'NieDOBRE.com reset hasła',
+        subject: `${appName} reset hasła`,
         html: `<p>Otrzymaliśmy prośbę o zresetowanie twojego hasła ${date.toLocaleDateString('pl-Pl')} o ${date.toLocaleTimeString('pl-PL')}</p><br/>
                 <p>Kliknij <a href="${link}">następujący link</a>, aby zresetować twoje hasło</p><br/>
                 <p>Link straci ważność o ${new Date(Date.now() + 10 * 60 * 1000).toLocaleTimeString('pl-PL')}. Nikomu nie podawaj tego linku!</p>`,
@@ -101,8 +105,9 @@ export const changePassword = async (
         user.passwordReset.timestamp > Date.now()
     ) {
         if (!passwordValidation(newPassword)) {
-            throw new DataError(
-                'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę'
+            throw new ValidationError(
+                'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
+                {}
             )
         }
         user.password = await hashString(newPassword)
