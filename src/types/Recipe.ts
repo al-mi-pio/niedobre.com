@@ -83,5 +83,6 @@ export type RecipeFormData = {
 
 export interface RecipeFormTabProps extends FormTabProps {
     setHoveredErroredField: Dispatch<SetStateAction<keyof RecipeFormData | undefined>>
+    hoveredErroredField?: string
     recipeForm: RecipeFormData
 }
