@@ -2,14 +2,22 @@
 import { Session } from '@/types/Auth'
 import { CreateRecipeDTO, Recipe, PatchRecipeDTO, GetRecipeDTO } from '@/types/Recipe'
 import { verifySession } from '@/utils/auth'
-import { getFromFile, setToFile } from '@/utils/file'
+import { getFromFile, removeImage, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 import { getIngredientById } from '@/services/ingredientService'
 import { DataError } from '@/errors/DataError'
 
 export const createRecipe = async (
-    { name, description, instructions, ingredients, cost }: CreateRecipeDTO,
+    {
+        name,
+        description,
+        instructions,
+        pictures,
+        ingredients,
+        cost,
+        publicResources,
+    }: CreateRecipeDTO,
     session: Session
 ) => {
     const recipeId = randomUUID()
@@ -27,9 +35,10 @@ export const createRecipe = async (
         name,
         description,
         instructions,
+        pictures,
         ingredients,
         cost,
-        publicResources: [],
+        publicResources: publicResources?.length ? publicResources : [],
     }
     const recipes: Recipe[] = await getCompressedRecipes(session)
     const newRecipes = [...recipes, recipe]
@@ -86,6 +95,10 @@ export const deleteRecipe = async (id: UUID, session: Session) => {
         'recipes.json'
     )
     const recipes: Recipe[] = await getFromFile(filePath)
+    const recipe = recipes.filter((recipe) => recipe.id === id)[0]
+    if (recipe.pictures) {
+        await recipe.pictures.forEach(async (picture) => await removeImage(picture))
+    }
     const newRecipes = recipes.filter((recipe) => recipe.id !== id)
     await setToFile(filePath, newRecipes)
 }
@@ -117,6 +130,13 @@ export const patchRecipe = async (
     const toPatchRecipe = recipes.find((recipe) => recipe.id === id)
     if (!toPatchRecipe) {
         throw new DataError(`Przepis z id ${id} nie istnieje`)
+    }
+
+    if (!!pictures) {
+        const toDelPictures = toPatchRecipe.pictures?.filter(
+            (picture) => !pictures.includes(picture)
+        )
+        await toDelPictures?.forEach(async (picture) => await removeImage(picture))
     }
 
     toPatchRecipe.name = name ?? toPatchRecipe.name

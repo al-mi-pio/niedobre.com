@@ -21,8 +21,14 @@ export const createIngredientRowsStructure = (
     ingredients?: RecipeFormIngredient[]
 ) =>
     ingredientIds.map((id) => {
-        if (!ingredients) return { id }
-        return ingredients.find((ingredient) => ingredient.id === id) ?? { id }
+        if (!ingredients) return { id, amount: '', unit: '' }
+        return (
+            ingredients.find((ingredient) => ingredient.id === id) ?? {
+                id,
+                amount: '',
+                unit: '',
+            }
+        )
     })
 
 export const getIngredientAvailableUnits = (ingredient?: Ingredient) => {
