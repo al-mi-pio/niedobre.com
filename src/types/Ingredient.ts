@@ -1,10 +1,12 @@
+import { Dispatch, SetStateAction } from 'react'
+import { FormTabProps } from '@/types/default'
+import { UUID } from 'crypto'
 import {
     foodGroups,
     ingredientTypes,
     massUnits,
     volumeUnits,
 } from '@/constants/ingredients'
-import { UUID } from 'crypto'
 
 export type IngredientType = (typeof ingredientTypes)[number]
 export type MassUnit = (typeof massUnits)[number]
@@ -119,4 +121,13 @@ export type MissingValues = {
         | 'oppositeUnit'
         | 'nutrientAmount'
     >]?: boolean
+}
+
+export interface IngredientFormTabProps extends FormTabProps {
+    setHoveredErroredField?: Dispatch<
+        SetStateAction<keyof IngredientFormData | undefined>
+    >
+    hoveredErroredField?: string
+    oppositeUnits?: typeof massUnits | typeof volumeUnits
+    ingredientForm: IngredientFormData
 }

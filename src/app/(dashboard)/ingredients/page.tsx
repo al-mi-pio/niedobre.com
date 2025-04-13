@@ -16,6 +16,7 @@ import { Grid } from '@mui/system'
 import { autoHideDuration, unknownErrorMessage } from '@/constants/general'
 import { emptyForm, massUnits, newForm, volumeUnits } from '@/constants/ingredients'
 import { Ingredient, IngredientFormData, MassUnit } from '@/types/Ingredient'
+import { SelectChangeEvent } from '@mui/material'
 import { ValidationError } from '@/errors/ValidationError'
 import { SessionError } from '@/errors/SessionError'
 import { DataError } from '@/errors/DataError'
@@ -24,7 +25,7 @@ import { IngredientSelectableList } from '@/app/(dashboard)/ingredients/componen
 import { selectOutOfScope } from '@/app/(dashboard)/ingredients/utils'
 import { useNotifications } from '@toolpad/core'
 import { IngredientModal } from '@/app/(dashboard)/ingredients/components/IngredientModal'
-import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm'
+import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm/IngredientForm'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/Spinner'
@@ -64,14 +65,18 @@ const Ingredients = () => {
         setTimeout(() => setRecipesWithIngredient([]), 200)
     }
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => {
+        const event = e as ChangeEvent<HTMLInputElement>
+
         setIngredientForm((prevForm) => {
             const newForm = {
                 ...prevForm,
                 oppositeUnit: selectOutOfScope(prevForm) ? '' : prevForm.oppositeUnit,
                 costAmount:
-                    e.target.name === 'amount' ? e.target.value : prevForm.costAmount,
-                [e.target.name]: e.target.value,
+                    event.target.name === 'amount'
+                        ? event.target.value
+                        : prevForm.costAmount,
+                [event.target.name]: event.target.value,
             } as IngredientFormData
             if (errors) {
                 try {
