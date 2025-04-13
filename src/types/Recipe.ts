@@ -3,9 +3,9 @@ import { IngredientAmount, IngredientIdAmount } from './Ingredient'
 import { SelectChangeEvent } from '@mui/material'
 import { ValidationError } from '@/errors/ValidationError'
 import { UUID } from 'crypto'
-import { publicResources } from '@/constants/recipes'
+import { publicResourcesLabels } from '@/constants/recipes'
 
-export type PublicResources = [] | ['name', (typeof publicResources)[number]]
+export type PublicResources = [] | ['name'] | ['name', keyof typeof publicResourcesLabels]
 export type Recipe = {
     id: UUID
     name: string
@@ -32,8 +32,10 @@ export type CreateRecipeDTO = {
     name: string
     description?: string
     instructions?: string
+    pictures?: string[]
     ingredients: IngredientIdAmount[]
     cost?: number
+    publicResources?: PublicResources
 }
 
 export type PatchRecipeDTO = {
@@ -63,10 +65,14 @@ export type RecipeFormIngredient = {
     unit?: string
 }
 
-export type Picture = {
-    id?: UUID
-    file: File
-}
+export type Picture =
+    | {
+          id: UUID
+          file: string
+      }
+    | {
+          file: File
+      }
 
 export type RecipeFormData = {
     id?: UUID
@@ -78,7 +84,7 @@ export type RecipeFormData = {
     ingredients?: RecipeFormIngredient[]
     cost?: string
     isPublic?: boolean
-    publicResources?: (typeof publicResources)[]
+    publicResources?: string[]
     isNew?: boolean
 }
 
