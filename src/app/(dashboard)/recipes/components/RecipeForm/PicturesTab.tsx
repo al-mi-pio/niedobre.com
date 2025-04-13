@@ -88,7 +88,10 @@ export const PicturesTab = ({ recipeForm, setRecipeForm }: Props) => {
             </Grid>
 
             {recipeForm.pictures?.map((picture, i) => {
-                const url = URL.createObjectURL(picture.file)
+                const url =
+                    picture.file instanceof File
+                        ? URL.createObjectURL(picture.file)
+                        : `pictures/${picture.file}`
                 return (
                     <Grid size={6} key={i}>
                         <Card
@@ -126,7 +129,13 @@ export const PicturesTab = ({ recipeForm, setRecipeForm }: Props) => {
                                 <IconButton
                                     aria-label="remove"
                                     onClick={() => {
-                                        setSelectedPicture({ i, name: picture.file.name })
+                                        setSelectedPicture({
+                                            i,
+                                            name:
+                                                picture.file instanceof File
+                                                    ? picture.file.name
+                                                    : picture.file.split('/')[1],
+                                        })
                                         setModalOpen(true)
                                     }}
                                 >
