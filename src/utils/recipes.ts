@@ -53,40 +53,42 @@ const validateFormData = (form: RecipeFormData) => {
         errors['cost'] = 'Błędna wartość'
     }
 
-    form.ingredients.forEach((ingredient) => {
-        const ingredientError = { amount: '', unit: '' }
-        if (!ingredient.amount) {
-            ingredientError.amount = 'Pole wymagane'
-        }
-        if (!ingredient.unit) {
-            ingredientError.unit = 'Pole wymagane'
-        }
+    if (!!form.ingredients) {
+        form.ingredients.forEach((ingredient) => {
+            const ingredientError = { amount: '', unit: '' }
+            if (!ingredient.amount) {
+                ingredientError.amount = 'Pole wymagane'
+            }
+            if (!ingredient.unit) {
+                ingredientError.unit = 'Pole wymagane'
+            }
 
-        if (!!ingredient.amount && !positiveFloatValidation(ingredient.amount)) {
-            ingredientError.amount = 'Błędna wartość'
-        }
+            if (!!ingredient.amount && !positiveFloatValidation(ingredient.amount)) {
+                ingredientError.amount = 'Błędna wartość'
+            }
 
-        if (ingredientError.amount && ingredientError.unit) {
-            errors['ingredients'] = {
-                [ingredient.id]: {
-                    amount: ingredientError.amount,
-                    unit: ingredientError.unit,
-                },
+            if (ingredientError.amount && ingredientError.unit) {
+                errors['ingredients'] = {
+                    [ingredient.id]: {
+                        amount: ingredientError.amount,
+                        unit: ingredientError.unit,
+                    },
+                }
+            } else if (ingredientError.amount) {
+                errors['ingredients'] = {
+                    [ingredient.id]: {
+                        amount: ingredientError.amount,
+                    },
+                }
+            } else if (ingredientError.unit) {
+                errors['ingredients'] = {
+                    [ingredient.id]: {
+                        unit: ingredientError.unit,
+                    },
+                }
             }
-        } else if (ingredientError.amount) {
-            errors['ingredients'] = {
-                [ingredient.id]: {
-                    amount: ingredientError.amount,
-                },
-            }
-        } else if (ingredientError.unit) {
-            errors['ingredients'] = {
-                [ingredient.id]: {
-                    unit: ingredientError.unit,
-                },
-            }
-        }
-    })
+        })
+    }
 
     if (Object.keys(errors).length) {
         throw new ValidationError('Napraw błędne pola', errors)
