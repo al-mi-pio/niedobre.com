@@ -128,7 +128,7 @@ const validateFormData = (form: IngredientFormData) => {
 
     if (
         !form.nutrientAmount &&
-        (!!form.kcal || !!form.protein || form.fat || form.carbohydrates || form.salt)
+        (form.kcal || form.protein || form.fat || form.carbohydrates || form.salt)
     ) {
         errors['nutrientAmount' as keyof IngredientFormData] =
             'Brakuje wartości do wyliczenia składników odżywczych'
@@ -221,51 +221,56 @@ export const formToCreateIngredientDTO = (
                         ).toFixed(3)
                     )
                   : undefined,
-        kcal: kcalVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(kcalVariables[0].value!) /
-                      (parseFloat(kcalVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        protein: proteinVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(proteinVariables[0].value!) /
-                      (parseFloat(proteinVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        fat: fatVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(fatVariables[0].value!) /
-                      (parseFloat(fatVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        carbohydrates: carbohydratesVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(carbohydratesVariables[0].value!) /
-                      (parseFloat(carbohydratesVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        salt: saltVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(saltVariables[0].value!) /
-                      (parseFloat(saltVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
+        kcal:
+            kcalVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(kcalVariables[0].value!) /
+                          (parseFloat(kcalVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        protein:
+            proteinVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(proteinVariables[0].value!) /
+                          (parseFloat(proteinVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        fat:
+            fatVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(fatVariables[0].value!) /
+                          (parseFloat(fatVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        carbohydrates:
+            carbohydratesVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(carbohydratesVariables[0].value!) /
+                          (parseFloat(carbohydratesVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        salt:
+            saltVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(saltVariables[0].value!) /
+                          (parseFloat(saltVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
         foodGroup: (form.foodGroup as FoodGroup) ?? 'inne',
     }
 }
@@ -314,51 +319,56 @@ export const formToPatchIngredientDTO = (
                         ).toFixed(3)
                     )
                   : undefined,
-        kcal: kcalVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(kcalVariables[0].value!) /
-                      (parseFloat(kcalVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        protein: proteinVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(proteinVariables[0].value!) /
-                      (parseFloat(proteinVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        fat: fatVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(fatVariables[0].value!) /
-                      (parseFloat(fatVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        carbohydrates: carbohydratesVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(carbohydratesVariables[0].value!) /
-                      (parseFloat(carbohydratesVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
-        salt: saltVariables.length
-            ? parseFloat(
-                  (
-                      parseFloat(saltVariables[0].value!) /
-                      (parseFloat(saltVariables[1].value!) *
-                          measurements[form.unit as keyof typeof measurements])
-                  ).toFixed(0)
-              )
-            : undefined,
+        kcal:
+            kcalVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(kcalVariables[0].value!) /
+                          (parseFloat(kcalVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        protein:
+            proteinVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(proteinVariables[0].value!) /
+                          (parseFloat(proteinVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        fat:
+            fatVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(fatVariables[0].value!) /
+                          (parseFloat(fatVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        carbohydrates:
+            carbohydratesVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(carbohydratesVariables[0].value!) /
+                          (parseFloat(carbohydratesVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
+        salt:
+            saltVariables.length > 1
+                ? parseFloat(
+                      (
+                          parseFloat(saltVariables[0].value!) /
+                          (parseFloat(saltVariables[1].value!) *
+                              measurements[form.unit as keyof typeof measurements])
+                      ).toFixed(0)
+                  )
+                : undefined,
         foodGroup: form.foodGroup as FoodGroup,
     }
 }
