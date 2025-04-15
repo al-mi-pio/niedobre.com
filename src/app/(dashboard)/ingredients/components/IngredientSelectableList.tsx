@@ -29,7 +29,7 @@ export const IngredientSelectableList = ({
 }: Props) => {
     const [filterInput, setFilterInput] = useState<string>('')
     const filteredIngredients = ingredients.filter((ingredient) =>
-        ingredient.name.includes(filterInput)
+        ingredient.name.toLowerCase().includes(filterInput.toLowerCase())
     )
     return (
         <Paper variant="outlined">

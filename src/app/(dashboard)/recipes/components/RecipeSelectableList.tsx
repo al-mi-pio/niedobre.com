@@ -23,7 +23,9 @@ export const RecipeSelectableList = ({
     onNew,
 }: Props) => {
     const [filterInput, setFilterInput] = useState<string>('')
-    const filteredRecipes = recipes.filter((recipe) => recipe.name.includes(filterInput))
+    const filteredRecipes = recipes.filter((recipe) =>
+        recipe.name.toLowerCase().includes(filterInput.toLowerCase())
+    )
 
     return (
         <Paper variant="outlined" sx={{ width: '100%' }}>
