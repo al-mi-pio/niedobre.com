@@ -2,7 +2,7 @@ import { RecipeFormData, RecipeFormIngredient, RecipeFormTabProps } from '@/type
 import { Ingredient } from '@/types/Ingredient'
 import { UUID } from 'crypto'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
-import { MenuItem, Stack, Typography, TextField } from '@mui/material'
+import { MenuItem, Stack, Typography, TextField, useTheme } from '@mui/material'
 import {
     createIngredientDropdownStructure,
     getIngredientAvailableUnits,
@@ -24,11 +24,20 @@ export const IngredientsTab = ({
     ingredients,
     onRowChange,
 }: Props) => {
+    const theme = useTheme()
     if (!ingredients.length)
         return (
             <Typography>
                 {'Brak składników, dodaj je '}
-                <Link href="/ingredients">{'tutaj'}</Link>
+                <Link
+                    href="/ingredients"
+                    style={{
+                        color: theme.palette.primary.main,
+                        textDecoration: 'underline',
+                    }}
+                >
+                    {'tutaj'}
+                </Link>
             </Typography>
         )
     return (
