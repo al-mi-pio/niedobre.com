@@ -68,14 +68,14 @@ export const IngredientsTab = ({
                     <Stack
                         key={id}
                         direction="row"
-                        spacing={2}
+                        spacing={3}
                         sx={{
                             alignItems: 'center',
                         }}
                     >
                         <FiberManualRecordIcon sx={{ fontSize: '10px' }} />
 
-                        <Typography sx={{ width: '25ch' }}>
+                        <Typography sx={{ width: '24ch' }}>
                             {ingredients.find((i) => i.id === id)?.name}
                         </Typography>
 
@@ -91,10 +91,20 @@ export const IngredientsTab = ({
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
                                     }
+                                )[id] &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
                                 )[id].amount
                             }
                             helperText={
                                 !!errors?.payload.ingredients &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
+                                )[id] &&
                                 (
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
@@ -112,11 +122,6 @@ export const IngredientsTab = ({
                                 formHelperText: {
                                     sx: {
                                         whiteSpace: 'nowrap',
-                                        overflow:
-                                            hoveredErroredField === 'amount'
-                                                ? 'visible'
-                                                : 'hidden',
-                                        textOverflow: 'ellipsis',
                                     },
                                 },
                             }}
@@ -135,10 +140,20 @@ export const IngredientsTab = ({
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
                                     }
+                                )[id] &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
                                 )[id].unit
                             }
                             helperText={
                                 !!errors?.payload.ingredients &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
+                                )[id] &&
                                 (
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
