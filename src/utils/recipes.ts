@@ -69,6 +69,7 @@ const validateFormData = (form: RecipeFormData) => {
 
             if (ingredientError.amount && ingredientError.unit) {
                 errors['ingredients'] = {
+                    ...(errors['ingredients'] as object),
                     [ingredient.id]: {
                         amount: ingredientError.amount,
                         unit: ingredientError.unit,
@@ -76,12 +77,14 @@ const validateFormData = (form: RecipeFormData) => {
                 }
             } else if (ingredientError.amount) {
                 errors['ingredients'] = {
+                    ...(errors['ingredients'] as object),
                     [ingredient.id]: {
                         amount: ingredientError.amount,
                     },
                 }
             } else if (ingredientError.unit) {
                 errors['ingredients'] = {
+                    ...(errors['ingredients'] as object),
                     [ingredient.id]: {
                         unit: ingredientError.unit,
                     },
