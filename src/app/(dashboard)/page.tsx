@@ -130,11 +130,17 @@ const Dashboard = () => {
                                 {!Object.values(selectedRecipes).filter(
                                     (recipe) => !!recipe.amount
                                 ).length ? (
-                                    <Typography>{'Wybierz przepisy po lewej'}</Typography>
+                                    <Typography p={2}>
+                                        {'Wybierz przepisy po lewej'}
+                                    </Typography>
                                 ) : calcTab === 1 ? (
-                                    <IngredientList ingredients={ingredients} />
+                                    ingredients.length ? (
+                                        <IngredientList ingredients={ingredients} />
+                                    ) : (
+                                        <Typography p={2}>{'Brak składników'}</Typography>
+                                    )
                                 ) : calcTab === 2 ? (
-                                    !!properties.kcal ? (
+                                    Object.values(properties).some((p) => p) ? (
                                         <PropertiesList
                                             properties={properties}
                                             missingIngredientValues={
@@ -142,7 +148,9 @@ const Dashboard = () => {
                                             }
                                         />
                                     ) : (
-                                        <Typography>{'Brak właściwości'}</Typography>
+                                        <Typography p={2}>
+                                            {'Brak właściwości'}
+                                        </Typography>
                                     )
                                 ) : (
                                     <SelectedRecipeList recipes={selectedRecipes} />
