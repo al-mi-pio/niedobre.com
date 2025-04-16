@@ -41,7 +41,7 @@ export const RecipeSelectableList = ({
                 style={{
                     height: '74vh',
                     overflow: 'auto',
-                    padding: '2rem 0.5rem 2rem 2rem',
+                    padding: '2rem 1.5rem 2rem 2rem',
                 }}
             >
                 <Grid size={4}>

@@ -44,7 +44,7 @@ export const IngredientSelectableList = ({
                 sx={{
                     height: '68vh',
                     whiteSpace: 'nowrap',
-                    overflowY: 'scroll',
+                    overflowY: 'auto',
                     width: '26em',
                 }}
             >
