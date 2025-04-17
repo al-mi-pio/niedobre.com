@@ -64,7 +64,7 @@ export const PropertiesList = ({
             titleName="podanej zawartości tłuszczu"
             primary="Tłuszcz"
             properties={properties}
-            property="kcal"
+            property="fat"
         />
 
         <Property
