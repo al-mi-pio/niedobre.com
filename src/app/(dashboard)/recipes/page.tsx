@@ -131,21 +131,33 @@ const Recipes = () => {
     const handleSave = async () => {
         try {
             const session = getSession()
-            if (selectedRecipe)
-                await patchRecipe(await formToPatchRecipeDTO(recipeForm), session)
-            else await createRecipe(await formToCreateRecipeDTO(recipeForm), session)
+
+            if (selectedRecipe) {
+                const dto = await formToPatchRecipeDTO(recipeForm)
+                if (dto instanceof ValidationError) {
+                    setErrors(dto)
+                    return
+                }
+                if ((await patchRecipe(dto, session)) instanceof SessionError) {
+                    router.push('/login?reason=expired')
+                    return
+                }
+            } else {
+                const dto = await formToCreateRecipeDTO(recipeForm)
+                if (dto instanceof ValidationError) {
+                    setErrors(dto)
+                    return
+                }
+                if ((await createRecipe(dto, session)) instanceof SessionError) {
+                    router.push('/login?reason=expired')
+                    return
+                }
+            }
 
             setLoading(true)
             loadRecipes()
         } catch (e) {
-            if (e instanceof ValidationError) {
-                setErrors(e)
-            } else if (e instanceof DataError) {
-                toast.show(e.message, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            } else if (e instanceof SessionError) {
+            if (e instanceof SessionError) {
                 router.push('/login?reason=expired')
             } else {
                 toast.show(unknownErrorMessage, {
@@ -187,11 +199,19 @@ const Recipes = () => {
 
     const loadRecipes = () => {
         getRecipes(getSession())
-            .then((newRecipes) =>
-                setRecipes(() =>
-                    newRecipes.toSorted((a, b) => (a.name > b.name ? 1 : -1))
-                )
-            )
+            .then((newRecipes) => {
+                if (newRecipes instanceof SessionError)
+                    router.push('/login?reason=expired')
+                else if (newRecipes instanceof DataError)
+                    toast.show(newRecipes.message, {
+                        severity: 'error',
+                        autoHideDuration,
+                    })
+                else
+                    setRecipes(() =>
+                        (newRecipes ?? []).toSorted((a, b) => (a.name > b.name ? 1 : -1))
+                    )
+            })
             .catch((e) =>
                 toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
                     severity: 'error',

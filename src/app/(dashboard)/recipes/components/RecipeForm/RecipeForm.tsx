@@ -15,7 +15,6 @@ import {
     SelectChangeEvent,
 } from '@mui/material'
 import { UUID } from 'crypto'
-import { DataError } from '@/errors/DataError'
 import { Ingredient } from '@/types/Ingredient'
 import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
@@ -71,24 +70,19 @@ export const RecipeForm = ({
     const loadIngredients = async () => {
         try {
             const newIngredients = await getIngredients(getSession())
+            if (newIngredients instanceof SessionError) {
+                router.push('/login?reason=expired')
+                return
+            }
             if (!ignoreLoad.current)
                 setIngredients(() =>
                     newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1))
                 )
-        } catch (error) {
-            if (error instanceof DataError)
-                toast.show(error.message, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            else if (error instanceof SessionError) {
-                router.push('/login?reason=expired')
-            } else {
-                toast.show(unknownErrorMessage, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            }
+        } catch {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
         }
     }
 

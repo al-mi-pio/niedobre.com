@@ -5,6 +5,7 @@ import { createUser } from '@/services/userService'
 import { setSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { signIn } from '@/services/authService'
+import { DataError } from '@/errors/DataError'
 import { AuthProvider } from '@toolpad/core'
 import { unknownErrorMessage } from '@/constants/general'
 
@@ -25,6 +26,12 @@ const Register = () => {
                 login,
                 password,
             })
+            if (sessionId instanceof DataError) {
+                return {
+                    type: 'error',
+                    error: sessionId.message,
+                }
+            }
             setSession({
                 sessionId,
                 login,
