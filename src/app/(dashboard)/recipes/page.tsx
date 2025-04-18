@@ -55,6 +55,17 @@ const Recipes = () => {
         setRecipeForm(newForm)
     }
 
+    const handleError = (error: unknown) => {
+        if (error instanceof ValidationError) {
+            setErrors(error)
+        } else {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
+        }
+    }
+
     const handleIngredientRowChange = (
         id: UUID,
         name: 'amount' | 'unit',
@@ -72,16 +83,14 @@ const Recipes = () => {
                     ),
             } as RecipeFormData
             if (errors) {
-                try {
-                    if (selectedRecipe) formToPatchRecipeDTO(newForm)
-                    else formToCreateRecipeDTO(newForm)
-
-                    setErrors(null)
-                } catch (e) {
-                    if (e instanceof ValidationError) {
-                        setErrors(e)
-                    }
-                }
+                if (selectedRecipe)
+                    formToPatchRecipeDTO(newForm)
+                        .then(() => setErrors(null))
+                        .catch(handleError)
+                else
+                    formToCreateRecipeDTO(newForm)
+                        .then(() => setErrors(null))
+                        .catch(handleError)
             }
             return newForm
         })
@@ -106,16 +115,14 @@ const Recipes = () => {
                         : prevForm.ingredients,
             } as RecipeFormData
             if (errors) {
-                try {
-                    if (selectedRecipe) formToPatchRecipeDTO(newForm)
-                    else formToCreateRecipeDTO(newForm)
-
-                    setErrors(null)
-                } catch (e) {
-                    if (e instanceof ValidationError) {
-                        setErrors(e)
-                    }
-                }
+                if (selectedRecipe)
+                    formToPatchRecipeDTO(newForm)
+                        .then(() => setErrors(null))
+                        .catch(handleError)
+                else
+                    formToCreateRecipeDTO(newForm)
+                        .then(() => setErrors(null))
+                        .catch(handleError)
             }
             return newForm
         })
@@ -141,7 +148,6 @@ const Recipes = () => {
             } else if (e instanceof SessionError) {
                 router.push('/login?reason=expired')
             } else {
-                console.log(e)
                 toast.show(unknownErrorMessage, {
                     severity: 'error',
                     autoHideDuration,

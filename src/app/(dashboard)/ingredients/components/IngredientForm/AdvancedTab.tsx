@@ -110,9 +110,7 @@ export const AdvancedTab = ({
                 slotProps={{
                     input: {
                         endAdornment: (
-                            <InputAdornment position="end">
-                                {ingredientForm.unit}
-                            </InputAdornment>
+                            <InputAdornment position="end">{'g'}</InputAdornment>
                         ),
                     },
                     formHelperText: {
@@ -148,9 +146,7 @@ export const AdvancedTab = ({
                 slotProps={{
                     input: {
                         endAdornment: (
-                            <InputAdornment position="end">
-                                {ingredientForm.unit}
-                            </InputAdornment>
+                            <InputAdornment position="end">{'g'}</InputAdornment>
                         ),
                     },
                     formHelperText: {
@@ -186,9 +182,7 @@ export const AdvancedTab = ({
                 slotProps={{
                     input: {
                         endAdornment: (
-                            <InputAdornment position="end">
-                                {ingredientForm.unit}
-                            </InputAdornment>
+                            <InputAdornment position="end">{'g'}</InputAdornment>
                         ),
                     },
                     formHelperText: {
@@ -224,9 +218,7 @@ export const AdvancedTab = ({
                 slotProps={{
                     input: {
                         endAdornment: (
-                            <InputAdornment position="end">
-                                {ingredientForm.unit}
-                            </InputAdornment>
+                            <InputAdornment position="end">{'g'}</InputAdornment>
                         ),
                     },
                     formHelperText: {

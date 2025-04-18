@@ -11,5 +11,6 @@ export const publicResourcesLabels = {
     instructions: 'Instrukcje',
     ingredients: 'Składniki',
     cost: 'Cena',
+    pictures: 'Zdjęcia',
 }
 export const publicResources = [...Object.keys(publicResourcesLabels)] as const

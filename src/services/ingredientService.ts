@@ -124,14 +124,14 @@ export const patchIngredient = async (
 
     toPatchIngredient.name = name ?? toPatchIngredient.name
     toPatchIngredient.type = type ?? toPatchIngredient.type
-    toPatchIngredient.cost = cost ?? toPatchIngredient.cost
-    toPatchIngredient.conversion = conversion ?? toPatchIngredient.conversion
-    toPatchIngredient.kcal = kcal ?? toPatchIngredient.kcal
+    toPatchIngredient.cost = cost
+    toPatchIngredient.conversion = conversion
+    toPatchIngredient.kcal = kcal
     toPatchIngredient.foodGroup = foodGroup ?? toPatchIngredient.foodGroup
-    toPatchIngredient.carbohydrates = carbohydrates ?? toPatchIngredient.carbohydrates
-    toPatchIngredient.salt = salt ?? toPatchIngredient.salt
-    toPatchIngredient.fat = fat ?? toPatchIngredient.fat
-    toPatchIngredient.protein = protein ?? toPatchIngredient.protein
+    toPatchIngredient.carbohydrates = carbohydrates
+    toPatchIngredient.salt = salt
+    toPatchIngredient.fat = fat
+    toPatchIngredient.protein = protein
 
     const newIngredients = [...unchangedIngredients, toPatchIngredient]
     await setToFile(filePath, newIngredients)

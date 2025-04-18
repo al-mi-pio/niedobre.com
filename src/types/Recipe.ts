@@ -1,4 +1,4 @@
-import { IngredientAmount, IngredientIdAmount } from './Ingredient'
+import { IngredientAmount, IngredientIdAmount, NutrientValues } from './Ingredient'
 import { Dispatch, SetStateAction } from 'react'
 import { FormTabProps } from '@/types/default'
 import { UUID } from 'crypto'
@@ -54,7 +54,8 @@ export type PublicRecipe = {
     description?: string
     instructions?: string
     pictures?: string[]
-    ingredients?: IngredientIdAmount[]
+    ingredients?: IngredientAmount[]
+    nutrients?: NutrientValues
     cost?: number
 }
 

@@ -23,7 +23,9 @@ export const RecipeSelectableList = ({
     onNew,
 }: Props) => {
     const [filterInput, setFilterInput] = useState<string>('')
-    const filteredRecipes = recipes.filter((recipe) => recipe.name.includes(filterInput))
+    const filteredRecipes = recipes.filter((recipe) =>
+        recipe.name.toLowerCase().includes(filterInput.toLowerCase())
+    )
 
     return (
         <Paper variant="outlined" sx={{ width: '100%' }}>
@@ -39,7 +41,7 @@ export const RecipeSelectableList = ({
                 style={{
                     height: '74vh',
                     overflow: 'auto',
-                    padding: '2rem 0.5rem 2rem 2rem',
+                    padding: '2rem 1.5rem 2rem 2rem',
                 }}
             >
                 <Grid size={4}>

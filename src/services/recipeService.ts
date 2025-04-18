@@ -140,11 +140,11 @@ export const patchRecipe = async (
     }
 
     toPatchRecipe.name = name ?? toPatchRecipe.name
-    toPatchRecipe.description = description ?? toPatchRecipe.description
-    toPatchRecipe.instructions = instructions ?? toPatchRecipe.instructions
-    toPatchRecipe.pictures = pictures ?? toPatchRecipe.pictures
+    toPatchRecipe.description = description
+    toPatchRecipe.instructions = instructions
+    toPatchRecipe.pictures = pictures
     toPatchRecipe.ingredients = ingredients ?? toPatchRecipe.ingredients
-    toPatchRecipe.cost = cost ?? toPatchRecipe.cost
+    toPatchRecipe.cost = cost
     toPatchRecipe.publicResources = publicResources ?? toPatchRecipe.publicResources
 
     const newRecipes = [...unchangedRecipes, toPatchRecipe]

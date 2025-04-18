@@ -29,7 +29,7 @@ export const IngredientSelectableList = ({
 }: Props) => {
     const [filterInput, setFilterInput] = useState<string>('')
     const filteredIngredients = ingredients.filter((ingredient) =>
-        ingredient.name.includes(filterInput)
+        ingredient.name.toLowerCase().includes(filterInput.toLowerCase())
     )
     return (
         <Paper variant="outlined">
@@ -44,7 +44,7 @@ export const IngredientSelectableList = ({
                 sx={{
                     height: '68vh',
                     whiteSpace: 'nowrap',
-                    overflowY: 'scroll',
+                    overflowY: 'auto',
                     width: '26em',
                 }}
             >

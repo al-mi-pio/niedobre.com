@@ -17,9 +17,12 @@ import { autoHideDuration } from '@/constants/general'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
 import { GetRecipeDTO } from '@/types/Recipe'
-import { IngredientAmount, IngredientSum, MissingValues } from '@/types/Ingredient'
+import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
+import {
+    createSelectedRecipeStructure,
+    missingIngredientAndNutritionalValues,
+} from '@/app/(dashboard)/utils'
 import { calculateIngredients, calculateNutrients } from '@/utils/conversion'
-import { createSelectedRecipeStructure } from '@/app/(dashboard)/utils'
 import { useEffect, useState } from 'react'
 import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
 import { useNotifications } from '@toolpad/core'
@@ -38,44 +41,13 @@ export type SelectedRecipes = {
     }
 }
 
-const missingIngredientAndNutritionalValues = (
-    ingredients: IngredientAmount[]
-): MissingValues => {
-    return {
-        cost: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.cost && !!curr.amount),
-            false
-        ),
-        kcal: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.kcal && !!curr.amount),
-            false
-        ),
-        protein: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.protein && !!curr.amount),
-            false
-        ),
-        fat: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.fat && !!curr.amount),
-            false
-        ),
-        carbohydrates: ingredients.reduce(
-            (prev, curr) =>
-                prev ? true : !curr.ingredient.carbohydrates && !!curr.amount,
-            false
-        ),
-        salt: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.salt && !!curr.amount),
-            false
-        ),
-    }
-}
-
 const Dashboard = () => {
     const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipes>({})
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
     const [loading, setLoading] = useState(true)
     const [calcTab, setCalcTab] = useState(0)
     const { sum, ingredients }: IngredientSum = calculateIngredients(selectedRecipes)
+    const missingIngredientValues = missingIngredientAndNutritionalValues(ingredients)
     const properties = calculateNutrients(selectedRecipes)
     const toast = useNotifications()
 
@@ -158,14 +130,27 @@ const Dashboard = () => {
                                 {!Object.values(selectedRecipes).filter(
                                     (recipe) => !!recipe.amount
                                 ).length ? (
-                                    <Typography>{'Wybierz przepisy po lewej'}</Typography>
+                                    <Typography p={2}>
+                                        {'Wybierz przepisy po lewej'}
+                                    </Typography>
                                 ) : calcTab === 1 ? (
-                                    <IngredientList ingredients={ingredients} />
-                                ) : calcTab === 2 ? (
-                                    !!properties.kcal ? (
-                                        <PropertiesList properties={properties} />
+                                    ingredients.length ? (
+                                        <IngredientList ingredients={ingredients} />
                                     ) : (
-                                        <Typography>{'Brak właściwości'}</Typography>
+                                        <Typography p={2}>{'Brak składników'}</Typography>
+                                    )
+                                ) : calcTab === 2 ? (
+                                    Object.values(properties).some((p) => p) ? (
+                                        <PropertiesList
+                                            properties={properties}
+                                            missingIngredientValues={
+                                                missingIngredientValues
+                                            }
+                                        />
+                                    ) : (
+                                        <Typography p={2}>
+                                            {'Brak właściwości'}
+                                        </Typography>
                                     )
                                 ) : (
                                     <SelectedRecipeList recipes={selectedRecipes} />
@@ -177,7 +162,7 @@ const Dashboard = () => {
                             <Divider sx={{ marginBottom: '1rem' }} />
                             <Stack direction="row" spacing={1}>
                                 <Typography variant="h4">{`Suma: ${sum} zł`}</Typography>
-                                {missingIngredientAndNutritionalValues(ingredients) && (
+                                {missingIngredientValues.cost && (
                                     <Tooltip
                                         title="Co najmniej jeden ze składników nie posiada ceny. Suma może być niedokładna"
                                         placement="top"

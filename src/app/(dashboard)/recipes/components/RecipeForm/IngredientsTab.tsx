@@ -2,7 +2,7 @@ import { RecipeFormData, RecipeFormIngredient, RecipeFormTabProps } from '@/type
 import { Ingredient } from '@/types/Ingredient'
 import { UUID } from 'crypto'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
-import { MenuItem, Stack, Typography, TextField } from '@mui/material'
+import { MenuItem, Stack, Typography, TextField, useTheme } from '@mui/material'
 import {
     createIngredientDropdownStructure,
     getIngredientAvailableUnits,
@@ -24,11 +24,20 @@ export const IngredientsTab = ({
     ingredients,
     onRowChange,
 }: Props) => {
+    const theme = useTheme()
     if (!ingredients.length)
         return (
             <Typography>
                 {'Brak składników, dodaj je '}
-                <Link href="/ingredients">{'tutaj'}</Link>
+                <Link
+                    href="/ingredients"
+                    style={{
+                        color: theme.palette.primary.main,
+                        textDecoration: 'underline',
+                    }}
+                >
+                    {'tutaj'}
+                </Link>
             </Typography>
         )
     return (
@@ -59,14 +68,14 @@ export const IngredientsTab = ({
                     <Stack
                         key={id}
                         direction="row"
-                        spacing={2}
+                        spacing={3}
                         sx={{
                             alignItems: 'center',
                         }}
                     >
                         <FiberManualRecordIcon sx={{ fontSize: '10px' }} />
 
-                        <Typography sx={{ width: '25ch' }}>
+                        <Typography sx={{ width: '24ch' }}>
                             {ingredients.find((i) => i.id === id)?.name}
                         </Typography>
 
@@ -82,10 +91,20 @@ export const IngredientsTab = ({
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
                                     }
+                                )[id] &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
                                 )[id].amount
                             }
                             helperText={
                                 !!errors?.payload.ingredients &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
+                                )[id] &&
                                 (
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
@@ -103,11 +122,6 @@ export const IngredientsTab = ({
                                 formHelperText: {
                                     sx: {
                                         whiteSpace: 'nowrap',
-                                        overflow:
-                                            hoveredErroredField === 'amount'
-                                                ? 'visible'
-                                                : 'hidden',
-                                        textOverflow: 'ellipsis',
                                     },
                                 },
                             }}
@@ -126,10 +140,20 @@ export const IngredientsTab = ({
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
                                     }
+                                )[id] &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
                                 )[id].unit
                             }
                             helperText={
                                 !!errors?.payload.ingredients &&
+                                !!(
+                                    errors?.payload.ingredients as {
+                                        [id: UUID]: RecipeFormIngredient
+                                    }
+                                )[id] &&
                                 (
                                     errors?.payload.ingredients as {
                                         [id: UUID]: RecipeFormIngredient
