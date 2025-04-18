@@ -10,6 +10,7 @@ import { baseIngredients } from '@/constants/baseIngredients'
 import { DataError } from '@/errors/DataError'
 import { emailValidation, loginValidation, passwordValidation } from '@/utils/validate'
 import { ValidationError } from '@/errors/ValidationError'
+import { SessionError } from '@/errors/SessionError'
 
 export const createUser = async ({
     login,
@@ -21,13 +22,13 @@ export const createUser = async ({
     const folderPath = join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassword = await hashString(password)
     if (!loginValidation(login)) {
-        throw new ValidationError('Błędny login', {})
+        return new ValidationError('Błędny login', {})
     }
     if (email && !emailValidation(email)) {
-        throw new ValidationError('Błędny email', {})
+        return new ValidationError('Błędny email', {})
     }
     if (!passwordValidation(password)) {
-        throw new ValidationError(
+        return new ValidationError(
             'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
             {}
         )
@@ -43,7 +44,7 @@ export const createUser = async ({
     fs.mkdirSync(folderPath, { recursive: true })
     const userFilePath = join(folderPath, 'user.json')
     if (fs.existsSync(userFilePath)) {
-        throw new DataError(`Użytkownik z loginem ${login} już istnieje`)
+        return new DataError(`Użytkownik z loginem ${login} już istnieje`)
     }
     await setToFile(userFilePath, user)
     const ingredientFilePath = join(folderPath, 'ingredients.json')
@@ -81,17 +82,23 @@ export const getUser = async (session: Session) => {
     try {
         user = await getFromFile(filePath)
     } catch {
-        throw new DataError(`Użytkownik z loginem ${session.login} nie istnieje`)
+        return new DataError(`Użytkownik z loginem ${session.login} nie istnieje`)
     }
 
-    await verifySession(session)
+    const verifiedSession = await verifySession(session)
+    if (verifiedSession instanceof SessionError) {
+        return verifiedSession
+    }
 
     return user
 }
 
 export const deleteUser = async (session: Session) => {
     const folderPath = join(process.cwd(), 'src', 'data', 'users', session.login)
-    await verifySession(session)
+    const verifiedSession = await verifySession(session)
+    if (verifiedSession instanceof SessionError) {
+        return verifiedSession
+    }
 
     fs.rmdirSync(folderPath, { recursive: true })
 }
@@ -102,13 +109,19 @@ export const patchUser = async (
 ) => {
     let filePath = join(process.cwd(), 'src', 'data', 'users', session.login, 'user.json')
 
-    const user: User = await getUser(session)
+    const user = await getUser(session)
+    if (user instanceof SessionError) {
+        return user
+    }
+    if (user instanceof DataError) {
+        return user
+    }
     user.login = login ?? user.login
     user.email = email ?? user.email
 
     if (password !== undefined) {
         if (!passwordValidation(password)) {
-            throw new ValidationError(
+            return new ValidationError(
                 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
                 {}
             )
@@ -120,7 +133,10 @@ export const patchUser = async (
         user.sessionId = sessionId
     }
 
-    await verifySession(session)
+    const verifiedSession = await verifySession(session)
+    if (verifiedSession instanceof SessionError) {
+        return verifiedSession
+    }
 
     if (login !== undefined) {
         const oldFolderPath = join('src', 'data', 'users', session.login)
@@ -131,7 +147,7 @@ export const patchUser = async (
         try {
             fs.renameSync(oldFolderPath, newFolderPath)
         } catch {
-            throw new DataError(`Użytkownik z loginem ${session.login} już istnieje`)
+            return new DataError(`Użytkownik z loginem ${session.login} już istnieje`)
         }
         filePath = newFilePath
     }

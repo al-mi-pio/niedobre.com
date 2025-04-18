@@ -14,7 +14,7 @@ export const setToFile = async (filePath: string, file: object) => {
 
 export const saveImage = async (image: File) => {
     if (!image.name) {
-        throw new DataError(`Błędna nazwa zdjęcia`)
+        return new DataError(`Błędna nazwa zdjęcia`)
     }
     const imageId = randomUUID()
     const folderPath = join(process.cwd(), 'public', 'pictures', imageId)
@@ -29,5 +29,5 @@ export const removeImage = async (imagePath: string) => {
     const folderPath = join(process.cwd(), 'public', 'pictures', imagePath.split('/')[0])
     try {
         fs.rmdirSync(folderPath, { recursive: true })
-    } catch {}
+    } catch { }
 }

@@ -22,6 +22,7 @@ const combineIngredients = (selectedRecipes: SelectedRecipes) => {
     })
 
     let ingredientAmount: IngredientAmount[] = []
+
     ingredients.forEach((ingredient) => {
         const ingredientToUpdate = ingredientAmount.find(
             (ing) => ing.ingredient.id === ingredient.ingredient.id
@@ -36,11 +37,19 @@ const combineIngredients = (selectedRecipes: SelectedRecipes) => {
             ingredientAmount = [...ingredientAmount, convertToBaseMeasurement(ingredient)]
         }
     })
+
     return ingredientAmount
 }
 
-export const calculateIngredients = (selectedRecipes: SelectedRecipes): IngredientSum => {
-    const ingredientAmount: IngredientAmount[] = combineIngredients(selectedRecipes)
+export const calculateIngredients = (selectedRecipes: SelectedRecipes) => {
+    const ingredientAmount: IngredientAmount[] = []
+    try {
+        ingredientAmount.push(...combineIngredients(selectedRecipes))
+    } catch (e) {
+        if (e instanceof ConversionError) {
+            return e
+        }
+    }
     const beautifiedIngredientAmount: IngredientAmount[] = ingredientAmount.map((ing) => {
         if (ing.amount > 1000) {
             return {
@@ -57,7 +66,7 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes): Ingredie
         .toFixed(2)
         .replace('.', ',')
 
-    return { sum, ingredients: beautifiedIngredientAmount }
+    return { sum, ingredients: beautifiedIngredientAmount } as IngredientSum
 }
 
 export const calculateNutrients = (selectedRecipes: SelectedRecipes): NutrientValues => {
