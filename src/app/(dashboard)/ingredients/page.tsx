@@ -144,6 +144,10 @@ const Ingredients = () => {
                     session,
                     !!recipesWithIngredient.length
                 )
+                if (recipes instanceof SessionError) {
+                    router.push('/login?reason=expired')
+                    return
+                }
                 if (recipes.length) {
                     setRecipesWithIngredient(recipes)
                     setLoading(false)
