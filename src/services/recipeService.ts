@@ -106,12 +106,10 @@ export const getRecipes = async (session: Session) => {
         )
         return recipes
     } catch (e) {
-        if (e instanceof DataError) {
+        if (e instanceof DataError || e instanceof SessionError) {
             return e
         }
-        if (e instanceof SessionError) {
-            return e
-        }
+
     }
 }
 

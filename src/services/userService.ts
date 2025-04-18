@@ -110,12 +110,10 @@ export const patchUser = async (
     let filePath = join(process.cwd(), 'src', 'data', 'users', session.login, 'user.json')
 
     const user = await getUser(session)
-    if (user instanceof SessionError) {
+    if (user instanceof SessionError || user instanceof DataError) {
         return user
     }
-    if (user instanceof DataError) {
-        return user
-    }
+
     user.login = login ?? user.login
     user.email = email ?? user.email
 
