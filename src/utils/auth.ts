@@ -37,10 +37,10 @@ export const verifySession = async ({ sessionId, login }: Session) => {
     try {
         user = await getFromFile(filePath)
     } catch {
-        throw new SessionError(`Użytkownik z loginem ${login} nie istnieje`)
+        return new SessionError(`Użytkownik z loginem ${login} nie istnieje`)
     }
 
     if (user.sessionId !== sessionId) {
-        throw new SessionError('Nieprawidłowa sesja')
+        return new SessionError('Nieprawidłowa sesja')
     }
 }
