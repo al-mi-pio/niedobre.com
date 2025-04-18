@@ -8,6 +8,7 @@ on:
 env:
     REGISTRY: ghcr.io
     IMAGE_NAME: ${{ github.repository }}
+    APP_NAME: Plackarnia
 
 jobs:
     build-and-push-image:
@@ -21,6 +22,9 @@ jobs:
         steps:
             -   name: Checkout repository
                 uses: actions/checkout@v4
+
+            -   name: Rename the app
+                run: sed -i 's/nieDOBRE.com/${{ env.APP_NAME }}/g' ./src/constants/general.ts
 
             -   name: Log in to the Container registry
                 uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
