@@ -3,21 +3,22 @@
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { getUser } from '@/services/userService'
-import { User } from '@/types/User'
-import {
-    SetStateAction,
-    ReactNode,
-    Dispatch,
-    createContext,
-    useEffect,
-    useState,
-} from 'react'
 import { Spinner } from '@/components/Spinner'
+import { ReactNode, createContext, useEffect, useState } from 'react'
+import { SessionError } from '@/errors/SessionError'
+import { DataError } from '@/errors/DataError'
+import { User } from '@/types/User'
 
-const handleAuthentication = async (setUser: Dispatch<SetStateAction<User | null>>) => {
-    const session = getSession()
-    const user = await getUser(session)
-    setUser(() => user)
+const handleAuthentication = async () => {
+    try {
+        const session = getSession()
+        return await getUser(session)
+    } catch (error) {
+        if (error instanceof SessionError) {
+            return error
+        }
+        return new SessionError('Brak sesji')
+    }
 }
 
 export const AuthContext = createContext<User | null>(null)
@@ -27,7 +28,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const router = useRouter()
 
     useEffect(() => {
-        handleAuthentication(setUser).catch(() => router.push('/login'))
+        handleAuthentication().then((res) => {
+            if (res instanceof DataError || res instanceof SessionError)
+                router.push('/login')
+            else setUser(res)
+        })
     }, [router])
 
     if (!user) {
