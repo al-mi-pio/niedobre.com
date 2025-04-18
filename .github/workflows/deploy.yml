@@ -64,5 +64,6 @@ jobs:
                     key: ${{ secrets.SSH_KEY }}
                     port: ${{ secrets.SSH_PORT }}
                     script: |
+                        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
                         docker rm -f Plackarnia 1> /dev/null 2>&1
-                        docker run ${{ secrets.CONTAINER_ARGS }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+                        docker run ${{ secrets.CONTAINER_ARGS }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
