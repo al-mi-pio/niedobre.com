@@ -29,5 +29,5 @@ export const removeImage = async (imagePath: string) => {
     const folderPath = join(process.cwd(), 'public', 'pictures', imagePath.split('/')[0])
     try {
         fs.rmdirSync(folderPath, { recursive: true })
-    } catch { }
+    } catch {}
 }

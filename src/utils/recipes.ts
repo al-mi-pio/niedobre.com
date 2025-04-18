@@ -96,6 +96,8 @@ const validateFormData = (form: RecipeFormData) => {
     if (Object.keys(errors).length) {
         return new ValidationError('Napraw błędne pola', errors)
     }
+
+    return {}
 }
 
 export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
@@ -122,10 +124,10 @@ export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
         ),
         ingredients: !!form.ingredients
             ? form.ingredients.map((ingredient) => ({
-                id: ingredient.id,
-                amount: parseFloat(ingredient.amount!),
-                unit: ingredient.unit,
-            }))
+                  id: ingredient.id,
+                  amount: parseFloat(ingredient.amount!),
+                  unit: ingredient.unit,
+              }))
             : [],
         cost: form.cost,
         publicResources: form.isPublic
@@ -162,10 +164,10 @@ export const formToPatchRecipeDTO = async (form: RecipeFormData) => {
         ),
         ingredients: !!form.ingredients
             ? form.ingredients.map((ingredient) => ({
-                id: ingredient.id,
-                amount: parseFloat(ingredient.amount!),
-                unit: ingredient.unit,
-            }))
+                  id: ingredient.id,
+                  amount: parseFloat(ingredient.amount!),
+                  unit: ingredient.unit,
+              }))
             : [],
         cost: form.cost,
         publicResources: form.isPublic

@@ -109,7 +109,6 @@ export const getRecipes = async (session: Session) => {
         if (e instanceof DataError || e instanceof SessionError) {
             return e
         }
-
     }
 }
 

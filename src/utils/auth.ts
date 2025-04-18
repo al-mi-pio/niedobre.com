@@ -43,4 +43,5 @@ export const verifySession = async ({ sessionId, login }: Session) => {
     if (user.sessionId !== sessionId) {
         return new SessionError('Nieprawidłowa sesja')
     }
+    return {}
 }
