@@ -16,6 +16,7 @@ import { UUID } from 'crypto'
 import { getCompressedRecipes, patchRecipe } from '@/services/recipeService'
 import { Session } from '@/types/Auth'
 import { deleteIngredient } from '@/services/ingredientService'
+import { SessionError } from '@/errors/SessionError'
 
 export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => {
     const units: IngredientFormDataUnits =
@@ -322,6 +323,9 @@ export const safeIngredientDeletion = async (
     commitDeletion?: boolean
 ) => {
     const recipes = await getCompressedRecipes(session)
+    if (recipes instanceof SessionError) {
+        return recipes
+    }
     const recipesWithIngredients = recipes.filter(
         (recipe) =>
             recipe.ingredients.filter((ingredient) => ingredient.id === ingredientId)
