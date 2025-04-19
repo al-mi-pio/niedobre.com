@@ -28,8 +28,10 @@ export async function GET(
         userLogin,
         'ingredients.json'
     )
+
     const compressedRecipes: Recipe[] = await getFromFile(recipeFilePath)
     const ingredients: Ingredient[] = await getFromFile(ingredientFilePath)
+
     try {
         const recipes: GetRecipeDTO[] = compressedRecipes.map((recipe) => ({
             id: recipe.id,
@@ -40,7 +42,22 @@ export async function GET(
             ingredients: recipe.ingredients.map((ingredientId) => {
                 const ingredient = ingredients.find((ing) => ing.id === ingredientId.id)
                 if (ingredient === undefined) {
-                    throw new DataError(`Składnik z id ${ingredientId.id} nie istnieje`)
+                    const recipe = recipes.find((rec) => rec.id === ingredientId.id)
+                    if (recipe === undefined) {
+                        throw new DataError(
+                            `Składnik z id ${ingredientId.id} nie istnieje`
+                        )
+                    }
+
+                    return {
+                        ingredient: {
+                            id: recipe.id,
+                            name: recipe.name,
+                            type: 'amount',
+                        } as Ingredient,
+                        amount: ingredientId.amount,
+                        unit: ingredientId.unit,
+                    }
                 }
                 return {
                     ingredient,
@@ -54,51 +71,61 @@ export async function GET(
         const publicRecipes = recipes.filter((recipe) => recipe.publicResources.length)
 
         return NextResponse.json({
-            publicRecipes: publicRecipes.map((recipe) =>
-                recipe.publicResources.reduce(
-                    (acc, key) => {
-                        if (key === 'ingredients') {
-                            acc.ingredients = recipe.ingredients
-                            acc.nutrients = calculateNutrients({
-                                [emptyUUID]: {
-                                    amount: 1,
-                                    name: 'dupa',
-                                    ingredients: recipe.ingredients.map(
-                                        (ingredientAmount) => {
-                                            const ingredient = ingredients.find(
-                                                (ing) =>
-                                                    ing.id ===
-                                                    ingredientAmount.ingredient.id
-                                            )
-                                            return {
-                                                ingredient: ingredient!,
-                                                amount: ingredientAmount.amount,
-                                                unit: ingredientAmount.unit,
-                                            }
-                                        }
-                                    ),
-                                },
-                            })
-                        } else if (key === 'pictures') {
-                            acc.pictures = recipe.pictures?.map(
-                                (picturePath) =>
-                                    request.url.slice(0, -4 - userLogin.length) +
-                                    'pictures/' +
-                                    picturePath
-                            )
-                        } else {
-                            acc = {
-                                ...acc,
-                                [key]:
-                                    recipe[
+            publicRecipes: await Promise.all(
+                publicRecipes.map(async (recipe) => {
+                    const reduced = await recipe.publicResources.reduce(
+                        async (accPromise, key) => {
+                            let acc = await accPromise
+
+                            if (key === 'ingredients') {
+                                acc.ingredients = recipe.ingredients
+                                acc.nutrients = await calculateNutrients(
+                                    {
+                                        [emptyUUID]: {
+                                            amount: 1,
+                                            name: 'dupa',
+                                            ingredients: recipe.ingredients.map(
+                                                (ingredientAmount) => {
+                                                    const ingredient = ingredients.find(
+                                                        (ing) =>
+                                                            ing.id ===
+                                                            ingredientAmount.ingredient.id
+                                                    )
+                                                    return {
+                                                        ingredient: ingredient!,
+                                                        amount: ingredientAmount.amount,
+                                                        unit: ingredientAmount.unit,
+                                                    }
+                                                }
+                                            ),
+                                        },
+                                    },
+                                    userLogin
+                                )
+                            } else if (key === 'pictures') {
+                                acc.pictures = recipe.pictures?.map(
+                                    (picturePath) =>
+                                        request.url.slice(0, -4 - userLogin.length) +
+                                        'pictures/' +
+                                        picturePath
+                                )
+                            } else {
+                                acc = {
+                                    ...acc,
+                                    [key]:
+                                        recipe[
                                         key as keyof Omit<PublicRecipe, 'nutrients'>
-                                    ] || null,
+                                        ] || null,
+                                }
                             }
-                        }
-                        return acc
-                    },
-                    { id: recipe.id } as PublicRecipe
-                )
+
+                            return acc
+                        },
+                        Promise.resolve({ id: recipe.id } as PublicRecipe)
+                    )
+
+                    return reduced
+                })
             ),
         })
     } catch (e) {

@@ -2,6 +2,8 @@ import { massUnits, volumeUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
 import { ConversionError } from '@/errors/ConversionError'
 import {
+    FlatIngredientAmount,
+    Ingredient,
     IngredientAmount,
     IngredientSum,
     MassUnit,
@@ -9,6 +11,8 @@ import {
     VolumeUnit,
 } from '@/types/Ingredient'
 import { SelectedRecipes } from '@/app/(dashboard)/page'
+import { getFromFile } from './file'
+import { join } from 'path'
 
 const combineIngredients = (selectedRecipes: SelectedRecipes) => {
     const ingredients: IngredientAmount[] = []
@@ -41,7 +45,52 @@ const combineIngredients = (selectedRecipes: SelectedRecipes) => {
     return ingredientAmount
 }
 
-export const calculateIngredients = (selectedRecipes: SelectedRecipes) => {
+const flattenRecipes = (
+    ingredientAmount: IngredientAmount[],
+    allIngredients: Ingredient[],
+    flattenedRecipe: FlatIngredientAmount[] = []
+): FlatIngredientAmount[] => {
+    ingredientAmount.forEach((ing) => {
+        if ('ingredients' in ing.ingredient) {
+            flattenRecipes(
+                ing.ingredient.ingredients.map((ingredientId) => {
+                    const ingredient = allIngredients.find(
+                        (ing) => ing.id === ingredientId.id
+                    )
+                    return {
+                        ingredient: ingredient!,
+                        amount: ingredientId.amount,
+                        unit: ingredientId.unit,
+                    }
+                }),
+                allIngredients,
+                flattenedRecipe
+            )
+        } else {
+            flattenedRecipe.push({
+                ingredient: ing.ingredient,
+                amount: ing.amount,
+                unit: ing.unit,
+            })
+        }
+    })
+    return flattenedRecipe
+}
+
+export const calculateIngredients = async (
+    selectedRecipes: SelectedRecipes,
+    userLogin: string
+) => {
+    const ingredientFilePath = join(
+        process.cwd(),
+        'src',
+        'data',
+        'users',
+        userLogin,
+        'ingredients.json'
+    )
+    const allIngredients: Ingredient[] = await getFromFile(ingredientFilePath)
+
     const ingredientAmount: IngredientAmount[] = []
     try {
         ingredientAmount.push(...combineIngredients(selectedRecipes))
@@ -50,7 +99,8 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes) => {
             return e
         }
     }
-    const beautifiedIngredientAmount: IngredientAmount[] = ingredientAmount.map((ing) => {
+    const flattenedRecipe = flattenRecipes(ingredientAmount, allIngredients)
+    const beautifiedIngredientAmount: IngredientAmount[] = flattenedRecipe.map((ing) => {
         if (ing.amount > 1000) {
             return {
                 ingredient: ing.ingredient,
@@ -75,36 +125,52 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes) => {
     return { sum, ingredients: beautifiedIngredientAmount } as IngredientSum
 }
 
-export const calculateNutrients = (selectedRecipes: SelectedRecipes): NutrientValues => {
+export const calculateNutrients = async (
+    selectedRecipes: SelectedRecipes,
+    userLogin: string
+) => {
     const ingredients = combineIngredients(selectedRecipes)
+    const ingredientFilePath = join(
+        process.cwd(),
+        'src',
+        'data',
+        'users',
+        userLogin,
+        'ingredients.json'
+    )
+    const allIngredients: Ingredient[] = await getFromFile(ingredientFilePath)
+    const flattenedRecipe = flattenRecipes(ingredients, allIngredients)
     return {
-        kcal: ingredients
+        kcal: flattenedRecipe
             .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0), 0)
             .toFixed(0)
             .replace('.', ','),
-        protein: ingredients
+        protein: flattenedRecipe
             .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.protein ?? 0), 0)
             .toFixed(0)
             .replace('.', ','),
-        fat: ingredients
+        fat: flattenedRecipe
             .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.fat ?? 0), 0)
             .toFixed(0)
             .replace('.', ','),
-        carbohydrates: ingredients
+        carbohydrates: flattenedRecipe
             .reduce(
                 (acc, ing) => acc + ing.amount * (ing.ingredient.carbohydrates ?? 0),
                 0
             )
             .toFixed(0)
             .replace('.', ','),
-        salt: ingredients
+        salt: flattenedRecipe
             .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.salt ?? 0), 0)
             .toFixed(0)
             .replace('.', ','),
-    }
+    } as NutrientValues
 }
 
 const convertToBaseMeasurement = (ingredient: IngredientAmount): IngredientAmount => {
+    if ('ingredients' in ingredient.ingredient) {
+        return ingredient
+    }
     if (ingredient.ingredient.type === 'mass') {
         const baseAmount = Math.round(
             measurements[ingredient.unit as keyof typeof measurements] * ingredient.amount
