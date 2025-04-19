@@ -17,12 +17,11 @@ const Login = () => {
             login,
             password,
         })
-        if (sessionId instanceof Error) {
-            return {
-                type: 'error',
-                error: sessionId.message,
-            }
+
+        if (typeof sessionId === 'object') {
+            return sessionId
         }
+
         setSession({
             sessionId,
             login,

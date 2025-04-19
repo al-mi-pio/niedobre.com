@@ -52,11 +52,9 @@ const ResetPassword = () => {
                 token ? (token as UUID) : emptyUUID,
                 password
             )
-            if (passwordChanged instanceof Error) {
-                return {
-                    type: 'error',
-                    error: passwordChanged.message,
-                }
+
+            if (passwordChanged.error) {
+                return passwordChanged
             }
         } catch (e) {
             if (e instanceof Error) {
@@ -87,11 +85,8 @@ const ResetPassword = () => {
                 window.location.origin
             )
             setPending(false)
-            if (request instanceof Error) {
-                return {
-                    type: 'error',
-                    error: request.message,
-                }
+            if (request.error) {
+                return request
             }
         } catch (e) {
             setPending(false)
