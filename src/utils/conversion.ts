@@ -58,8 +58,15 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes) => {
                     ing.unit !== 'szt.' ? Math.round(ing.amount / 10) / 100 : ing.amount,
                 unit: ing.unit === 'mL' ? 'L' : ing.unit === 'g' ? 'Kg' : ing.unit,
             } as IngredientAmount
+        } else {
+            return {
+                ingredient: ing.ingredient,
+                amount:
+                    ing.unit !== 'szt.' ? Math.round(ing.amount * 100) / 100 : ing.amount,
+                unit: ing.unit,
+            } as IngredientAmount
         }
-        return ing
+
     })
     const sum = ingredientAmount
         .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.cost ?? 0), 0)
@@ -72,26 +79,29 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes) => {
 export const calculateNutrients = (selectedRecipes: SelectedRecipes): NutrientValues => {
     const ingredients = combineIngredients(selectedRecipes)
     return {
-        kcal: ingredients.reduce(
-            (acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0),
-            0
-        ),
-        protein: ingredients.reduce(
-            (acc, ing) => acc + ing.amount * (ing.ingredient.protein ?? 0),
-            0
-        ),
-        fat: ingredients.reduce(
-            (acc, ing) => acc + ing.amount * (ing.ingredient.fat ?? 0),
-            0
-        ),
-        carbohydrates: ingredients.reduce(
-            (acc, ing) => acc + ing.amount * (ing.ingredient.carbohydrates ?? 0),
-            0
-        ),
-        salt: ingredients.reduce(
-            (acc, ing) => acc + ing.amount * (ing.ingredient.salt ?? 0),
-            0
-        ),
+        kcal: ingredients
+            .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0), 0)
+            .toFixed(0)
+            .replace('.', ','),
+        protein: ingredients
+            .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.protein ?? 0), 0)
+            .toFixed(0)
+            .replace('.', ','),
+        fat: ingredients
+            .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.fat ?? 0), 0)
+            .toFixed(0)
+            .replace('.', ','),
+        carbohydrates: ingredients
+            .reduce(
+                (acc, ing) => acc + ing.amount * (ing.ingredient.carbohydrates ?? 0),
+                0
+            )
+            .toFixed(0)
+            .replace('.', ','),
+        salt: ingredients
+            .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.salt ?? 0), 0)
+            .toFixed(0)
+            .replace('.', ','),
     }
 }
 

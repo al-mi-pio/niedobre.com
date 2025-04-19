@@ -14,27 +14,21 @@ const Login = () => {
         const login = formData.get('login')?.toString() ?? ''
         const password = formData.get('password')?.toString() ?? ''
 
-        try {
-            const sessionId = await signIn({
-                login,
-                password,
-            })
-            if (sessionId instanceof Error) {
-                return {
-                    type: 'error',
-                    error: sessionId.message,
-                }
-            }
-            setSession({
-                sessionId,
-                login,
-            })
-        } catch {
+        const sessionId = await signIn({
+            login,
+            password,
+        })
+        if (sessionId instanceof Error) {
             return {
                 type: 'error',
-                error: unknownErrorMessage,
+                error: sessionId.message,
             }
         }
+        setSession({
+            sessionId,
+            login,
+        })
+
         router.push('/')
         return {}
     }
