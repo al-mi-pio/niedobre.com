@@ -24,15 +24,15 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
     const units: IngredientFormDataUnits =
         ingredient.type === 'amount'
             ? {
-                  unit: 'szt.',
-                  oppositeUnit: ingredient.conversion ? 'szt.' : undefined,
-              }
+                unit: 'szt.',
+                oppositeUnit: ingredient.conversion ? 'szt.' : undefined,
+            }
             : ingredient.type === 'mass'
-              ? {
+                ? {
                     unit: 'g',
                     oppositeUnit: ingredient.conversion ? 'mL' : undefined,
                 }
-              : { unit: 'mL', oppositeUnit: ingredient.conversion ? 'g' : undefined }
+                : { unit: 'mL', oppositeUnit: ingredient.conversion ? 'g' : undefined }
     const requiredNutrientAmount =
         ingredient.kcal !== undefined ||
         ingredient.fat !== undefined ||
@@ -56,8 +56,8 @@ export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => 
         cost: !ingredient.cost
             ? undefined
             : ingredient.cost < 0.01
-              ? (ingredient.cost * 1000).toString()
-              : ingredient.cost.toString(),
+                ? (ingredient.cost * 1000).toString()
+                : ingredient.cost.toString(),
         ...units,
         foodGroup: ingredient.foodGroup,
     }
@@ -159,6 +159,17 @@ const variables = (form: IngredientFormData) => {
     }
 }
 export const formToCreateIngredientDTO = (form: IngredientFormData) => {
+    form.amount = form.amount?.replace(',', '.')
+    form.oppositeAmount = form.oppositeAmount?.replace(',', '.')
+    form.costAmount = form.costAmount?.replace(',', '.')
+    form.cost = form.cost?.replace(',', '.')
+    form.foodGroup = form.foodGroup?.replace(',', '.')
+    form.nutrientAmount = form.nutrientAmount?.replace(',', '.')
+    form.kcal = form.kcal?.replace(',', '.')
+    form.protein = form.protein?.replace(',', '.')
+    form.fat = form.fat?.replace(',', '.')
+    form.carbohydrates = form.carbohydrates?.replace(',', '.')
+    form.salt = form.salt?.replace(',', '.')
     const validation = validateFormData(form)
     if (validation instanceof ValidationError) {
         return validation
@@ -172,74 +183,85 @@ export const formToCreateIngredientDTO = (form: IngredientFormData) => {
             form.unit === 'szt.'
                 ? 'amount'
                 : massUnits.includes(form.unit! as MassUnit)
-                  ? 'mass'
-                  : 'volume',
+                    ? 'mass'
+                    : 'volume',
         cost: costVariables.length
             ? parseFloat(costVariables[0].value!) /
-              (parseFloat(costVariables[1].value!) *
-                  measurements[form.unit as keyof typeof measurements])
+            (parseFloat(costVariables[1].value!) *
+                measurements[form.unit as keyof typeof measurements])
             : undefined,
         conversion:
             form.unit === 'szt.'
                 ? undefined
                 : conversionVariables.length
-                  ? parseFloat(
+                    ? parseFloat(
                         (
                             (parseFloat(conversionVariables[0].value!) *
                                 measurements[form.unit as keyof typeof measurements]) /
                             (parseFloat(conversionVariables[1].value!) *
                                 measurements[
-                                    form.oppositeUnit as keyof typeof measurements
+                                form.oppositeUnit as keyof typeof measurements
                                 ])
                         ).toFixed(3)
                     )
-                  : undefined,
+                    : undefined,
         kcal: form.kcal
             ? parseFloat(
-                  (
-                      (parseFloat(form.kcal) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.kcal) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         protein: form.protein
             ? parseFloat(
-                  (
-                      (parseFloat(form.protein) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.protein) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         fat: form.fat
             ? parseFloat(
-                  (
-                      (parseFloat(form.fat) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.fat) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         carbohydrates: form.carbohydrates
             ? parseFloat(
-                  (
-                      (parseFloat(form.carbohydrates) /
-                          parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.carbohydrates) /
+                        parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         salt: form.salt
             ? parseFloat(
-                  (
-                      (parseFloat(form.salt) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.salt) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         foodGroup: (form.foodGroup as FoodGroup) ?? 'inne',
     } as CreateIngredientDTO
 }
 
 export const formToPatchIngredientDTO = (form: IngredientFormData) => {
+    form.amount = form.amount?.replace(',', '.')
+    form.oppositeAmount = form.oppositeAmount?.replace(',', '.')
+    form.costAmount = form.costAmount?.replace(',', '.')
+    form.cost = form.cost?.replace(',', '.')
+    form.foodGroup = form.foodGroup?.replace(',', '.')
+    form.nutrientAmount = form.nutrientAmount?.replace(',', '.')
+    form.kcal = form.kcal?.replace(',', '.')
+    form.protein = form.protein?.replace(',', '.')
+    form.fat = form.fat?.replace(',', '.')
+    form.carbohydrates = form.carbohydrates?.replace(',', '.')
+    form.salt = form.salt?.replace(',', '.')
     const validation = validateFormData(form)
     if (validation instanceof ValidationError) {
         return validation
@@ -254,68 +276,68 @@ export const formToPatchIngredientDTO = (form: IngredientFormData) => {
             form.unit === 'szt.'
                 ? 'amount'
                 : massUnits.includes(form.unit! as MassUnit)
-                  ? 'mass'
-                  : 'volume',
+                    ? 'mass'
+                    : 'volume',
         cost: costVariables.length
             ? parseFloat(costVariables[0].value!) /
-              (parseFloat(costVariables[1].value!) *
-                  measurements[form.unit as keyof typeof measurements])
+            (parseFloat(costVariables[1].value!) *
+                measurements[form.unit as keyof typeof measurements])
             : undefined,
         conversion:
             form.unit === 'szt.'
                 ? undefined
                 : conversionVariables.length
-                  ? parseFloat(
+                    ? parseFloat(
                         (
                             (parseFloat(conversionVariables[0].value!) *
                                 measurements[form.unit as keyof typeof measurements]) /
                             (parseFloat(conversionVariables[1].value!) *
                                 measurements[
-                                    form.oppositeUnit as keyof typeof measurements
+                                form.oppositeUnit as keyof typeof measurements
                                 ])
                         ).toFixed(3)
                     )
-                  : undefined,
+                    : undefined,
         kcal: form.kcal
             ? parseFloat(
-                  (
-                      (parseFloat(form.kcal) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.kcal) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         protein: form.protein
             ? parseFloat(
-                  (
-                      (parseFloat(form.protein) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.protein) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         fat: form.fat
             ? parseFloat(
-                  (
-                      (parseFloat(form.fat) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.fat) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         carbohydrates: form.carbohydrates
             ? parseFloat(
-                  (
-                      (parseFloat(form.carbohydrates) /
-                          parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.carbohydrates) /
+                        parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         salt: form.salt
             ? parseFloat(
-                  (
-                      (parseFloat(form.salt) / parseFloat(form.nutrientAmount!)) *
-                      measurements[form.unit as keyof typeof measurements]
-                  ).toFixed(4)
-              )
+                (
+                    (parseFloat(form.salt) / parseFloat(form.nutrientAmount!)) *
+                    measurements[form.unit as keyof typeof measurements]
+                ).toFixed(4)
+            )
             : undefined,
         foodGroup: form.foodGroup as FoodGroup,
     } as PatchIngredientDTO
