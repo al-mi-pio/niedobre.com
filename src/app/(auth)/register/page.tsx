@@ -21,22 +21,20 @@ const Register = () => {
                 keepBaseIngredients: !!formData.get('ingredients'),
                 password,
             })
-            if (user instanceof Error) {
-                return {
-                    type: 'error',
-                    error: user.message,
-                }
+
+            if (user.error) {
+                return user
             }
+
             const sessionId = await signIn({
                 login,
                 password,
             })
-            if (sessionId instanceof Error) {
-                return {
-                    type: 'error',
-                    error: sessionId.message,
-                }
+
+            if (typeof sessionId === 'object') {
+                return sessionId
             }
+
             setSession({
                 sessionId,
                 login,

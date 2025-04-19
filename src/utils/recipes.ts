@@ -101,6 +101,11 @@ const validateFormData = (form: RecipeFormData) => {
 }
 
 export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
+    form.ingredients = form.ingredients?.map((ingredient) => ({
+        ...ingredient,
+        amount: ingredient.amount?.replace(',', '.'),
+    }))
+    form.cost = form.cost?.replace(',', '.')
     const validation = validateFormData(form)
     if (validation instanceof ValidationError) {
         return validation
@@ -137,6 +142,11 @@ export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
 }
 
 export const formToPatchRecipeDTO = async (form: RecipeFormData) => {
+    form.ingredients = form.ingredients?.map((ingredient) => ({
+        ...ingredient,
+        amount: ingredient.amount?.replace(',', '.'),
+    }))
+    form.cost = form.cost?.replace(',', '.')
     const validation = validateFormData(form)
     if (validation instanceof ValidationError) {
         return validation

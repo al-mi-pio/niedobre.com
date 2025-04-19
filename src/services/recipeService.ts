@@ -92,8 +92,28 @@ export const getRecipes = async (session: Session) => {
                             throw fullIngredient
                         }
                         if (fullIngredient instanceof DataError) {
-                            throw fullIngredient
+                            const recipes = (await getCompressedRecipes(session)) ?? []
+                            if (
+                                recipes instanceof DataError ||
+                                recipes instanceof SessionError
+                            ) {
+                                throw recipes
+                            }
+                            const recipe = recipes.find(
+                                (recipe) => recipe.id === ingredient.id
+                            )
+                            if (!recipe) {
+                                throw new DataError(
+                                    `Przepis z id ${ingredient.id} nie istnieje`
+                                )
+                            }
+                            return {
+                                ingredient: recipe,
+                                amount: ingredient.amount,
+                                unit: ingredient.unit,
+                            }
                         }
+
                         return {
                             ingredient: fullIngredient,
                             amount: ingredient.amount,
@@ -167,6 +187,10 @@ export const patchRecipe = async (
             (picture) => !pictures.includes(picture)
         )
         await toDelPictures?.forEach(async (picture) => await removeImage(picture))
+    }
+
+    if (toPatchRecipe.id in toPatchRecipe.ingredients) {
+        return new DataError(`Nie można dawać placka do siebie samego`)
     }
 
     toPatchRecipe.name = name ?? toPatchRecipe.name

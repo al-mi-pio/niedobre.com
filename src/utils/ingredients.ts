@@ -159,6 +159,17 @@ const variables = (form: IngredientFormData) => {
     }
 }
 export const formToCreateIngredientDTO = (form: IngredientFormData) => {
+    form.amount = form.amount?.replace(',', '.')
+    form.oppositeAmount = form.oppositeAmount?.replace(',', '.')
+    form.costAmount = form.costAmount?.replace(',', '.')
+    form.cost = form.cost?.replace(',', '.')
+    form.foodGroup = form.foodGroup?.replace(',', '.')
+    form.nutrientAmount = form.nutrientAmount?.replace(',', '.')
+    form.kcal = form.kcal?.replace(',', '.')
+    form.protein = form.protein?.replace(',', '.')
+    form.fat = form.fat?.replace(',', '.')
+    form.carbohydrates = form.carbohydrates?.replace(',', '.')
+    form.salt = form.salt?.replace(',', '.')
     const validation = validateFormData(form)
     if (validation instanceof ValidationError) {
         return validation
@@ -240,6 +251,17 @@ export const formToCreateIngredientDTO = (form: IngredientFormData) => {
 }
 
 export const formToPatchIngredientDTO = (form: IngredientFormData) => {
+    form.amount = form.amount?.replace(',', '.')
+    form.oppositeAmount = form.oppositeAmount?.replace(',', '.')
+    form.costAmount = form.costAmount?.replace(',', '.')
+    form.cost = form.cost?.replace(',', '.')
+    form.foodGroup = form.foodGroup?.replace(',', '.')
+    form.nutrientAmount = form.nutrientAmount?.replace(',', '.')
+    form.kcal = form.kcal?.replace(',', '.')
+    form.protein = form.protein?.replace(',', '.')
+    form.fat = form.fat?.replace(',', '.')
+    form.carbohydrates = form.carbohydrates?.replace(',', '.')
+    form.salt = form.salt?.replace(',', '.')
     const validation = validateFormData(form)
     if (validation instanceof ValidationError) {
         return validation
