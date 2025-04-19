@@ -16,6 +16,7 @@ import { SessionError } from '@/errors/SessionError'
 
 export const signIn = async ({ login, password }: SignInDTO) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    if (!login) return new ValidationError('Pole login jest wymagane', {})
     let user: User
     try {
         user = await getFromFile(filePath)
@@ -45,9 +46,9 @@ export const signOut = async (session: Session) => {
 
 export const resetPasswordRequest = async (login: string, url: string) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    if (!login) return new ValidationError('Pole login jest wymagane', {})
     let user: User
 
-    if (!login) return new ValidationError('Pole login jest wymagane', {})
     try {
         user = await getFromFile(filePath)
     } catch {
@@ -98,6 +99,7 @@ export const changePassword = async (
     newPassword: string
 ) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    if (!login) return new ValidationError('Pole login jest wymagane', {})
     let user: User
     try {
         user = await getFromFile(filePath)
