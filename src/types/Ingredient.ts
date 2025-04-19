@@ -7,6 +7,7 @@ import {
     massUnits,
     volumeUnits,
 } from '@/constants/ingredients'
+import { Recipe } from './Recipe'
 
 export type IngredientType = (typeof ingredientTypes)[number]
 export type MassUnit = (typeof massUnits)[number]
@@ -29,6 +30,12 @@ export type Ingredient = {
 }
 
 export type IngredientAmount = {
+    ingredient: Ingredient | Recipe
+    amount: number
+    unit: Unit
+}
+
+export type FlatIngredientAmount = {
     ingredient: Ingredient
     amount: number
     unit: Unit
@@ -91,17 +98,17 @@ export type IngredientFormData = {
 
 export type IngredientFormDataUnits =
     | {
-          unit?: MassUnit
-          oppositeUnit?: VolumeUnit
-      }
+        unit?: MassUnit
+        oppositeUnit?: VolumeUnit
+    }
     | {
-          unit?: VolumeUnit
-          oppositeUnit?: MassUnit
-      }
+        unit?: VolumeUnit
+        oppositeUnit?: MassUnit
+    }
     | {
-          unit?: 'szt.'
-          oppositeUnit?: Omit<Unit, 'szt.'>
-      }
+        unit?: 'szt.'
+        oppositeUnit?: Omit<Unit, 'szt.'>
+    }
 
 export type NutrientValues = {
     [Field in keyof Omit<MissingValues, 'cost'>]?: string
