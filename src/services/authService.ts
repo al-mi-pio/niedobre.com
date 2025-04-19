@@ -1,11 +1,9 @@
 'use server'
-import { ValidationError } from '@/errors/ValidationError'
 import { Session, SignInDTO } from '@/types/Auth'
 import { join } from 'path'
 import { randomUUID, UUID } from 'crypto'
 import { User } from '@/types/User'
 import { hashString, verifyHash, verifySession } from '@/utils/auth'
-import { DataError } from '@/errors/DataError'
 import { patchUser } from '@/services/userService'
 import { getFromFile, setToFile } from '@/utils/file'
 import { createTransport } from 'nodemailer'
@@ -56,17 +54,27 @@ export const signOut = async (session: Session) => {
 
 export const resetPasswordRequest = async (login: string, url: string) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
-    if (!login) return new ValidationError('Pole login jest wymagane', {})
+    if (!login)
+        return {
+            type: 'error',
+            error: 'Pole login jest wymagane',
+        }
     let user: User
 
     try {
         user = await getFromFile(filePath)
     } catch {
-        return new DataError(`Użytkownik z loginem ${login} nie istnieje`)
+        return {
+            type: 'error',
+            error: `Użytkownik z loginem ${login} nie istnieje`,
+        }
     }
 
     if (!user.email) {
-        return new DataError(`Ten użytkownik nie posiada adresu email`)
+        return {
+            type: 'error',
+            error: `Ten użytkownik nie posiada adresu email`,
+        }
     }
 
     const passwordResetToken = randomUUID()
@@ -109,12 +117,19 @@ export const changePassword = async (
     newPassword: string
 ) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
-    if (!login) return new ValidationError('Pole login jest wymagane', {})
+    if (!login)
+        return {
+            type: 'error',
+            error: 'Pole login jest wymagane',
+        }
     let user: User
     try {
         user = await getFromFile(filePath)
     } catch {
-        return new DataError(`Użytkownik z loginem ${login} nie istnieje`)
+        return {
+            type: 'error',
+            error: `Użytkownik z loginem ${login} nie istnieje`,
+        }
     }
 
     if (
@@ -123,15 +138,18 @@ export const changePassword = async (
         user.passwordReset.timestamp > Date.now()
     ) {
         if (!passwordValidation(newPassword)) {
-            return new ValidationError(
-                'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
-                {}
-            )
+            return {
+                type: 'error',
+                error: 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
+            }
         }
         user.password = await hashString(newPassword)
         await setToFile(filePath, user)
     } else {
-        return new DataError('Link wygasł')
+        return {
+            type: 'error',
+            error: 'Link wygasł',
+        }
     }
     return {}
 }

@@ -22,16 +22,22 @@ export const createUser = async ({
     const folderPath = join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassword = await hashString(password)
     if (!loginValidation(login)) {
-        return new ValidationError('Błędny login', {})
+        return {
+            type: 'error',
+            error: 'Błędny login',
+        }
     }
     if (email && !emailValidation(email)) {
-        return new ValidationError('Błędny email', {})
+        return {
+            type: 'error',
+            error: 'Błędny email',
+        }
     }
     if (!passwordValidation(password)) {
-        return new ValidationError(
-            'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
-            {}
-        )
+        return {
+            type: 'error',
+            error: 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
+        }
     }
     const user: User = {
         id: userId,
@@ -44,7 +50,10 @@ export const createUser = async ({
     fs.mkdirSync(folderPath, { recursive: true })
     const userFilePath = join(folderPath, 'user.json')
     if (fs.existsSync(userFilePath)) {
-        return new DataError(`Użytkownik z loginem ${login} już istnieje`)
+        return {
+            type: 'error',
+            error: `Użytkownik z loginem ${login} już istnieje`,
+        }
     }
     await setToFile(userFilePath, user)
     const ingredientFilePath = join(folderPath, 'ingredients.json')
