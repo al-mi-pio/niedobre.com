@@ -97,22 +97,31 @@ const Ingredients = () => {
     const handleSave = async () => {
         try {
             const session = getSession()
-            if (selectedIngredient)
-                await patchIngredient(formToPatchIngredientDTO(ingredientForm), session)
-            else
-                await createIngredient(formToCreateIngredientDTO(ingredientForm), session)
-
+            if (selectedIngredient) {
+                const dto = formToPatchIngredientDTO(ingredientForm)
+                if (dto instanceof ValidationError) {
+                    setErrors(dto)
+                    return
+                }
+                if ((await patchIngredient(dto, session)) instanceof SessionError) {
+                    router.push('/login?reason=expired')
+                    return
+                }
+            } else {
+                const dto = formToCreateIngredientDTO(ingredientForm)
+                if (dto instanceof ValidationError) {
+                    setErrors(dto)
+                    return
+                }
+                if ((await createIngredient(dto, session)) instanceof SessionError) {
+                    router.push('/login?reason=expired')
+                    return
+                }
+            }
             setLoading(true)
             loadIngredients()
         } catch (e) {
-            if (e instanceof ValidationError) {
-                setErrors(e)
-            } else if (e instanceof DataError) {
-                toast.show(e.message, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            } else if (e instanceof SessionError) {
+            if (e instanceof SessionError) {
                 router.push('/login?reason=expired')
             } else {
                 console.log(e)
@@ -135,6 +144,10 @@ const Ingredients = () => {
                     session,
                     !!recipesWithIngredient.length
                 )
+                if (recipes instanceof SessionError) {
+                    router.push('/login?reason=expired')
+                    return
+                }
                 if (recipes.length) {
                     setRecipesWithIngredient(recipes)
                     setLoading(false)
@@ -167,11 +180,14 @@ const Ingredients = () => {
 
     const loadIngredients = () => {
         getIngredients(getSession())
-            .then((newIngredients) =>
-                setIngredients(() =>
-                    newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1))
-                )
-            )
+            .then((newIngredients) => {
+                if (newIngredients instanceof SessionError)
+                    router.push('/login?reason=expired')
+                else
+                    setIngredients(() =>
+                        newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1))
+                    )
+            })
             .catch((e) =>
                 toast.show(`Problem z załadowaniem składników: ${e.message}`, {
                     severity: 'error',

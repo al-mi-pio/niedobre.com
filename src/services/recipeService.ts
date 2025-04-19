@@ -7,6 +7,7 @@ import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 import { getIngredientById } from '@/services/ingredientService'
 import { DataError } from '@/errors/DataError'
+import { SessionError } from '@/errors/SessionError'
 
 export const createRecipe = async (
     {
@@ -40,7 +41,10 @@ export const createRecipe = async (
         cost,
         publicResources: publicResources?.length ? publicResources : [],
     }
-    const recipes: Recipe[] = await getCompressedRecipes(session)
+    const recipes = await getCompressedRecipes(session)
+    if (recipes instanceof SessionError) {
+        return recipes
+    }
     const newRecipes = [...recipes, recipe]
 
     await setToFile(filePath, newRecipes)
@@ -56,33 +60,56 @@ export const getCompressedRecipes = async (session: Session) => {
         'recipes.json'
     )
 
-    await verifySession(session)
+    const verifiedSession = await verifySession(session)
+    if (verifiedSession instanceof SessionError) {
+        return verifiedSession
+    }
 
     const recipes: Recipe[] = await getFromFile(filePath)
     return recipes
 }
 
 export const getRecipes = async (session: Session) => {
-    const compressedRecipes: Recipe[] = await getCompressedRecipes(session)
-    const recipes: GetRecipeDTO[] = await Promise.all(
-        compressedRecipes.map(async (recipe) => ({
-            id: recipe.id,
-            name: recipe.name,
-            description: recipe.description,
-            instructions: recipe.instructions,
-            pictures: recipe.pictures,
-            ingredients: await Promise.all(
-                recipe.ingredients.map(async (ingredient) => ({
-                    ingredient: await getIngredientById(ingredient.id, session),
-                    amount: ingredient.amount,
-                    unit: ingredient.unit,
-                }))
-            ),
-            publicResources: recipe.publicResources,
-        }))
-    )
-
-    return recipes
+    const compressedRecipes = await getCompressedRecipes(session)
+    if (compressedRecipes instanceof SessionError) {
+        return compressedRecipes
+    }
+    try {
+        const recipes: GetRecipeDTO[] = await Promise.all(
+            compressedRecipes.map(async (recipe) => ({
+                id: recipe.id,
+                name: recipe.name,
+                description: recipe.description,
+                instructions: recipe.instructions,
+                pictures: recipe.pictures,
+                ingredients: await Promise.all(
+                    recipe.ingredients.map(async (ingredient) => {
+                        const fullIngredient = await getIngredientById(
+                            ingredient.id,
+                            session
+                        )
+                        if (fullIngredient instanceof SessionError) {
+                            throw fullIngredient
+                        }
+                        if (fullIngredient instanceof DataError) {
+                            throw fullIngredient
+                        }
+                        return {
+                            ingredient: fullIngredient,
+                            amount: ingredient.amount,
+                            unit: ingredient.unit,
+                        }
+                    })
+                ),
+                publicResources: recipe.publicResources,
+            }))
+        )
+        return recipes
+    } catch (e) {
+        if (e instanceof DataError || e instanceof SessionError) {
+            return e
+        }
+    }
 }
 
 export const deleteRecipe = async (id: UUID, session: Session) => {
@@ -125,11 +152,14 @@ export const patchRecipe = async (
         'recipes.json'
     )
 
-    const recipes: Recipe[] = await getCompressedRecipes(session)
+    const recipes = await getCompressedRecipes(session)
+    if (recipes instanceof SessionError) {
+        return recipes
+    }
     const unchangedRecipes = recipes.filter((recipe) => recipe.id !== id)
     const toPatchRecipe = recipes.find((recipe) => recipe.id === id)
     if (!toPatchRecipe) {
-        throw new DataError(`Przepis z id ${id} nie istnieje`)
+        return new DataError(`Przepis z id ${id} nie istnieje`)
     }
 
     if (!!pictures) {

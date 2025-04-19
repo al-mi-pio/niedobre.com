@@ -94,12 +94,17 @@ const validateFormData = (form: RecipeFormData) => {
     }
 
     if (Object.keys(errors).length) {
-        throw new ValidationError('Napraw błędne pola', errors)
+        return new ValidationError('Napraw błędne pola', errors)
     }
+
+    return {}
 }
 
 export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
-    validateFormData(form)
+    const validation = validateFormData(form)
+    if (validation instanceof ValidationError) {
+        return validation
+    }
     const savedPictures = await Promise.all(
         form.pictures?.map(async (picture) => {
             const imageId = await saveImage(picture.file as File)
@@ -132,7 +137,10 @@ export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
 }
 
 export const formToPatchRecipeDTO = async (form: RecipeFormData) => {
-    validateFormData(form)
+    const validation = validateFormData(form)
+    if (validation instanceof ValidationError) {
+        return validation
+    }
     const savedPictures = await Promise.all(
         (await form.pictures?.map(async (picture) => {
             if (picture.file instanceof File) {

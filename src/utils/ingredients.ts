@@ -3,13 +3,13 @@ import { measurements } from '@/constants/measurements'
 import { emptyUUID } from '@/constants/general'
 import { ValidationError } from '@/errors/ValidationError'
 import {
-    CreateIngredientDTO,
     FoodGroup,
     Ingredient,
+    PatchIngredientDTO,
+    CreateIngredientDTO,
     IngredientFormData,
     IngredientFormDataUnits,
     MassUnit,
-    PatchIngredientDTO,
     Unit,
 } from '@/types/Ingredient'
 import { positiveFloatValidation } from '@/utils/validate'
@@ -18,6 +18,7 @@ import { UUID } from 'crypto'
 import { getCompressedRecipes, patchRecipe } from '@/services/recipeService'
 import { Session } from '@/types/Auth'
 import { deleteIngredient } from '@/services/ingredientService'
+import { SessionError } from '@/errors/SessionError'
 
 export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => {
     const units: IngredientFormDataUnits =
@@ -135,8 +136,10 @@ const validateFormData = (form: IngredientFormData) => {
     }
 
     if (Object.keys(errors).length) {
-        throw new ValidationError('Napraw błędne pola', errors)
+        return new ValidationError('Napraw błędne pola', errors)
     }
+
+    return {}
 }
 
 const variables = (form: IngredientFormData) => {
@@ -155,10 +158,12 @@ const variables = (form: IngredientFormData) => {
         conversionVariables,
     }
 }
-export const formToCreateIngredientDTO = (
-    form: IngredientFormData
-): CreateIngredientDTO => {
-    validateFormData(form)
+export const formToCreateIngredientDTO = (form: IngredientFormData) => {
+    const validation = validateFormData(form)
+    if (validation instanceof ValidationError) {
+        return validation
+    }
+
     const { costVariables, conversionVariables } = variables(form)
 
     return {
@@ -231,13 +236,14 @@ export const formToCreateIngredientDTO = (
               )
             : undefined,
         foodGroup: (form.foodGroup as FoodGroup) ?? 'inne',
-    }
+    } as CreateIngredientDTO
 }
 
-export const formToPatchIngredientDTO = (
-    form: IngredientFormData
-): PatchIngredientDTO => {
-    validateFormData(form)
+export const formToPatchIngredientDTO = (form: IngredientFormData) => {
+    const validation = validateFormData(form)
+    if (validation instanceof ValidationError) {
+        return validation
+    }
 
     const { costVariables, conversionVariables } = variables(form)
 
@@ -312,7 +318,7 @@ export const formToPatchIngredientDTO = (
               )
             : undefined,
         foodGroup: form.foodGroup as FoodGroup,
-    }
+    } as PatchIngredientDTO
 }
 
 export const safeIngredientDeletion = async (
@@ -321,6 +327,9 @@ export const safeIngredientDeletion = async (
     commitDeletion?: boolean
 ) => {
     const recipes = await getCompressedRecipes(session)
+    if (recipes instanceof SessionError) {
+        return recipes
+    }
     const recipesWithIngredients = recipes.filter(
         (recipe) =>
             recipe.ingredients.filter((ingredient) => ingredient.id === ingredientId)

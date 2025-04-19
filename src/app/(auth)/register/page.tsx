@@ -15,16 +15,28 @@ const Register = () => {
         try {
             const login = formData.get('login')?.toString() ?? ''
             const password = formData.get('password')?.toString() ?? ''
-            await createUser({
+            const user = await createUser({
                 login,
                 email: formData.get('email')?.toString() ?? '',
                 keepBaseIngredients: !!formData.get('ingredients'),
                 password,
             })
+            if (user instanceof Error) {
+                return {
+                    type: 'error',
+                    error: user.message,
+                }
+            }
             const sessionId = await signIn({
                 login,
                 password,
             })
+            if (sessionId instanceof Error) {
+                return {
+                    type: 'error',
+                    error: sessionId.message,
+                }
+            }
             setSession({
                 sessionId,
                 login,

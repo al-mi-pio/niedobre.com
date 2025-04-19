@@ -12,14 +12,16 @@ import { createTransport } from 'nodemailer'
 import get from '@/utils/config'
 import { appName } from '@/constants/general'
 import { passwordValidation } from '@/utils/validate'
+import { SessionError } from '@/errors/SessionError'
 
 export const signIn = async ({ login, password }: SignInDTO) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    if (!login) return new ValidationError('Pole login jest wymagane', {})
     let user: User
     try {
         user = await getFromFile(filePath)
     } catch {
-        throw new DataError(`Użytkownik z loginem ${login} nie istnieje`)
+        return new DataError(`Użytkownik z loginem ${login} nie istnieje`)
     }
 
     const result = await verifyHash(password, user.password)
@@ -30,27 +32,31 @@ export const signIn = async ({ login, password }: SignInDTO) => {
         await setToFile(filePath, user)
         return sessionId
     }
-    throw new DataError('Hasło jest nieprawidłowe')
+    return new DataError('Hasło jest nieprawidłowe')
 }
 
 export const signOut = async (session: Session) => {
-    await verifySession(session)
+    const verifiedSession = await verifySession(session)
+    if (verifiedSession instanceof SessionError) {
+        return verifiedSession
+    }
+
     await patchUser({ sessionId: null }, session)
 }
 
 export const resetPasswordRequest = async (login: string, url: string) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    if (!login) return new ValidationError('Pole login jest wymagane', {})
     let user: User
 
-    if (!login) throw new ValidationError('Pole login jest wymagane', {})
     try {
         user = await getFromFile(filePath)
     } catch {
-        throw new DataError(`Użytkownik z loginem ${login} nie istnieje`)
+        return new DataError(`Użytkownik z loginem ${login} nie istnieje`)
     }
 
     if (!user.email) {
-        throw new DataError(`Ten użytkownik nie posiada adresu email`)
+        return new DataError(`Ten użytkownik nie posiada adresu email`)
     }
 
     const passwordResetToken = randomUUID()
@@ -84,6 +90,7 @@ export const resetPasswordRequest = async (login: string, url: string) => {
     }
 
     await transporter.sendMail(mailOptions)
+    return {}
 }
 
 export const changePassword = async (
@@ -92,11 +99,12 @@ export const changePassword = async (
     newPassword: string
 ) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
+    if (!login) return new ValidationError('Pole login jest wymagane', {})
     let user: User
     try {
         user = await getFromFile(filePath)
     } catch {
-        throw new DataError(`Użytkownik z loginem ${login} nie istnieje`)
+        return new DataError(`Użytkownik z loginem ${login} nie istnieje`)
     }
 
     if (
@@ -105,7 +113,7 @@ export const changePassword = async (
         user.passwordReset.timestamp > Date.now()
     ) {
         if (!passwordValidation(newPassword)) {
-            throw new ValidationError(
+            return new ValidationError(
                 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
                 {}
             )
@@ -113,6 +121,7 @@ export const changePassword = async (
         user.password = await hashString(newPassword)
         await setToFile(filePath, user)
     } else {
-        throw new DataError('Link wygasł')
+        return new DataError('Link wygasł')
     }
+    return {}
 }

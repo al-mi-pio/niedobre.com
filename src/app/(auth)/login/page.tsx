@@ -19,21 +19,20 @@ const Login = () => {
                 login,
                 password,
             })
+            if (sessionId instanceof Error) {
+                return {
+                    type: 'error',
+                    error: sessionId.message,
+                }
+            }
             setSession({
                 sessionId,
                 login,
             })
-        } catch (e) {
-            if (e instanceof Error) {
-                return {
-                    type: 'error',
-                    error: e.message,
-                }
-            } else {
-                return {
-                    type: 'error',
-                    error: unknownErrorMessage,
-                }
+        } catch {
+            return {
+                type: 'error',
+                error: unknownErrorMessage,
             }
         }
         router.push('/')

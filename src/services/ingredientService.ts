@@ -1,5 +1,6 @@
 'use server'
 import { DataError } from '@/errors/DataError'
+import { SessionError } from '@/errors/SessionError'
 import { Session } from '@/types/Auth'
 import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
 import { verifySession } from '@/utils/auth'
@@ -47,6 +48,9 @@ export const createIngredient = async (
         protein,
     }
     const ingredients = await getIngredients(session)
+    if (ingredients instanceof SessionError) {
+        return ingredients
+    }
     const newIngredients = [...ingredients, ingredient]
 
     await setToFile(filePath, newIngredients)
@@ -62,17 +66,23 @@ export const getIngredients = async (session: Session) => {
         'ingredients.json'
     )
 
-    await verifySession(session)
+    const verifiedSession = await verifySession(session)
+    if (verifiedSession instanceof SessionError) {
+        return verifiedSession
+    }
 
     const ingredients: Ingredient[] = await getFromFile(filePath)
     return ingredients
 }
 
 export const getIngredientById = async (id: UUID, session: Session) => {
-    const ingredients: Ingredient[] = await getIngredients(session)
+    const ingredients = await getIngredients(session)
+    if (ingredients instanceof SessionError) {
+        return ingredients
+    }
     const ingredient = ingredients.find((ingredient) => ingredient.id === id)
     if (ingredient === undefined) {
-        throw new DataError(`Składnik z id ${id} nie istnieje`)
+        return new DataError(`Składnik z id ${id} nie istnieje`)
     }
     return ingredient
 }
@@ -87,6 +97,9 @@ export const deleteIngredient = async (id: UUID, session: Session) => {
         'ingredients.json'
     )
     const ingredients = await getIngredients(session)
+    if (ingredients instanceof SessionError) {
+        return ingredients
+    }
     const newIngredients = ingredients.filter((ingredient) => ingredient.id !== id)
     await setToFile(filePath, newIngredients)
 }
@@ -116,10 +129,13 @@ export const patchIngredient = async (
         'ingredients.json'
     )
     const ingredients = await getIngredients(session)
+    if (ingredients instanceof SessionError) {
+        return ingredients
+    }
     const unchangedIngredients = ingredients.filter((ingredient) => ingredient.id !== id)
     const toPatchIngredient = ingredients.find((ingredient) => ingredient.id === id)
     if (!toPatchIngredient) {
-        throw new DataError(`Składnik z id ${id} nie istnieje`)
+        return new DataError(`Składnik z id ${id} nie istnieje`)
     }
 
     toPatchIngredient.name = name ?? toPatchIngredient.name
