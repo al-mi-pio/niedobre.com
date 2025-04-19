@@ -16,12 +16,19 @@ import { SessionError } from '@/errors/SessionError'
 
 export const signIn = async ({ login, password }: SignInDTO) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
-    if (!login) return new ValidationError('Pole login jest wymagane', {})
+    if (!login)
+        return {
+            type: 'error',
+            error: 'Pole login jest wymagane',
+        }
     let user: User
     try {
         user = await getFromFile(filePath)
     } catch {
-        return new DataError(`Użytkownik z loginem ${login} nie istnieje`)
+        return {
+            type: 'error',
+            error: `Użytkownik z loginem ${login} nie istnieje`,
+        }
     }
 
     const result = await verifyHash(password, user.password)
@@ -32,7 +39,10 @@ export const signIn = async ({ login, password }: SignInDTO) => {
         await setToFile(filePath, user)
         return sessionId
     }
-    return new DataError('Hasło jest nieprawidłowe')
+    return {
+        type: 'error',
+        error: 'Hasło jest nieprawidłowe',
+    }
 }
 
 export const signOut = async (session: Session) => {
