@@ -4,7 +4,6 @@ import LoginRegister from '@/app/(auth)/LoginRegisterPage'
 import { setSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { signIn } from '@/services/authService'
-import { DataError } from '@/errors/DataError'
 import { AuthProvider } from '@toolpad/core'
 import { unknownErrorMessage } from '@/constants/general'
 
@@ -20,7 +19,7 @@ const Login = () => {
                 login,
                 password,
             })
-            if (sessionId instanceof DataError) {
+            if (sessionId instanceof Error) {
                 return {
                     type: 'error',
                     error: sessionId.message,

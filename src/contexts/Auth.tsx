@@ -6,7 +6,6 @@ import { getUser } from '@/services/userService'
 import { Spinner } from '@/components/Spinner'
 import { ReactNode, createContext, useEffect, useState } from 'react'
 import { SessionError } from '@/errors/SessionError'
-import { DataError } from '@/errors/DataError'
 import { User } from '@/types/User'
 
 const handleAuthentication = async () => {
@@ -29,8 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         handleAuthentication().then((res) => {
-            if (res instanceof DataError || res instanceof SessionError)
-                router.push('/login')
+            if (res instanceof Error) router.push('/login')
             else setUser(res)
         })
     }, [router])

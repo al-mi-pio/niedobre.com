@@ -47,11 +47,17 @@ const ResetPassword = () => {
                 formData.get('password')?.toString(),
                 formData.get('repeatPassword')?.toString()
             )
-            await changePassword(
+            const passwordChanged = await changePassword(
                 login ?? '',
                 token ? (token as UUID) : emptyUUID,
                 password
             )
+            if (passwordChanged instanceof Error) {
+                return {
+                    type: 'error',
+                    error: passwordChanged.message,
+                }
+            }
         } catch (e) {
             if (e instanceof Error) {
                 return {
@@ -76,11 +82,17 @@ const ResetPassword = () => {
     ): Promise<AuthResponse> => {
         setPending(true)
         try {
-            await resetPasswordRequest(
+            const request = await resetPasswordRequest(
                 formData.get('login')?.toString() ?? '',
                 window.location.origin
             )
             setPending(false)
+            if (request instanceof Error) {
+                return {
+                    type: 'error',
+                    error: request.message,
+                }
+            }
         } catch (e) {
             setPending(false)
             if (e instanceof Error) {

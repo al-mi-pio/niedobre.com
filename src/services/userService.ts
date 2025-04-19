@@ -67,6 +67,7 @@ export const createUser = async ({
     }
     const recipeFilePath = join(folderPath, 'recipes.json')
     await setToFile(recipeFilePath, [])
+    return {}
 }
 
 export const getUser = async (session: Session) => {
