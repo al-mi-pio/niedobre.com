@@ -100,23 +100,29 @@ export const calculateIngredients = async (
         }
     }
     const flattenedRecipe = flattenRecipes(ingredientAmount, allIngredients)
-    const beautifiedIngredientAmount: IngredientAmount[] = flattenedRecipe.map((ing) => {
-        if (ing.amount > 1000) {
-            return {
-                ingredient: ing.ingredient,
-                amount:
-                    ing.unit !== 'szt.' ? Math.round(ing.amount / 10) / 100 : ing.amount,
-                unit: ing.unit === 'mL' ? 'L' : ing.unit === 'g' ? 'Kg' : ing.unit,
-            } as IngredientAmount
-        } else {
-            return {
-                ingredient: ing.ingredient,
-                amount:
-                    ing.unit !== 'szt.' ? Math.round(ing.amount * 100) / 100 : ing.amount,
-                unit: ing.unit,
-            } as IngredientAmount
+    const beautifiedIngredientAmount: FlatIngredientAmount[] = flattenedRecipe.map(
+        (ing) => {
+            if (ing.amount > 1000) {
+                return {
+                    ingredient: ing.ingredient,
+                    amount:
+                        ing.unit !== 'szt.'
+                            ? Math.round(ing.amount / 10) / 100
+                            : ing.amount,
+                    unit: ing.unit === 'mL' ? 'L' : ing.unit === 'g' ? 'Kg' : ing.unit,
+                } as FlatIngredientAmount
+            } else {
+                return {
+                    ingredient: ing.ingredient,
+                    amount:
+                        ing.unit !== 'szt.'
+                            ? Math.round(ing.amount * 100) / 100
+                            : ing.amount,
+                    unit: ing.unit,
+                } as FlatIngredientAmount
+            }
         }
-    })
+    )
     const sum = ingredientAmount
         .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.cost ?? 0), 0)
         .toFixed(2)

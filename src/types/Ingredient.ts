@@ -49,7 +49,7 @@ export type IngredientIdAmount = {
 
 export type IngredientSum = {
     sum: string
-    ingredients: IngredientAmount[]
+    ingredients: FlatIngredientAmount[]
 }
 
 export type CreateIngredientDTO = {
