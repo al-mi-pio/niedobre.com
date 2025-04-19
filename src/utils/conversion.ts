@@ -66,7 +66,6 @@ export const calculateIngredients = (selectedRecipes: SelectedRecipes) => {
                 unit: ing.unit,
             } as IngredientAmount
         }
-
     })
     const sum = ingredientAmount
         .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.cost ?? 0), 0)

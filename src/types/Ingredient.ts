@@ -91,17 +91,17 @@ export type IngredientFormData = {
 
 export type IngredientFormDataUnits =
     | {
-        unit?: MassUnit
-        oppositeUnit?: VolumeUnit
-    }
+          unit?: MassUnit
+          oppositeUnit?: VolumeUnit
+      }
     | {
-        unit?: VolumeUnit
-        oppositeUnit?: MassUnit
-    }
+          unit?: VolumeUnit
+          oppositeUnit?: MassUnit
+      }
     | {
-        unit?: 'szt.'
-        oppositeUnit?: Omit<Unit, 'szt.'>
-    }
+          unit?: 'szt.'
+          oppositeUnit?: Omit<Unit, 'szt.'>
+      }
 
 export type NutrientValues = {
     [Field in keyof Omit<MissingValues, 'cost'>]?: string

@@ -5,7 +5,6 @@ import { setSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { signIn } from '@/services/authService'
 import { AuthProvider } from '@toolpad/core'
-import { unknownErrorMessage } from '@/constants/general'
 
 const Login = () => {
     const router = useRouter()
