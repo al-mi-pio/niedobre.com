@@ -20,17 +20,18 @@ import { DataError } from '@/errors/DataError'
 import { GetRecipeDTO } from '@/types/Recipe'
 import { SessionError } from '@/errors/SessionError'
 import { ConversionError } from '@/errors/ConversionError'
-import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
+import { IngredientAmount, IngredientSum, NutrientValues } from '@/types/Ingredient'
 import {
     createSelectedRecipeStructure,
     missingIngredientAndNutritionalValues,
 } from '@/app/(dashboard)/utils'
 import { calculateIngredients, calculateNutrients } from '@/utils/conversion'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
 import { useNotifications } from '@toolpad/core'
 import { IngredientList } from '@/app/(dashboard)/components/IngredientList'
 import { PropertiesList } from '@/app/(dashboard)/components/PropertiesList'
+import { AuthContext } from '@/contexts/Auth'
 import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
 import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
@@ -47,18 +48,33 @@ export type SelectedRecipes = {
 
 const Dashboard = () => {
     const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipes>({})
+    const [properties, setProperties] = useState<NutrientValues>({})
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
     const [loading, setLoading] = useState(true)
     const [calcTab, setCalcTab] = useState(0)
-    const calculatedIngredients = calculateIngredients(selectedRecipes)
-    const { sum, ingredients }: IngredientSum =
-        calculatedIngredients instanceof ConversionError
-            ? { sum: '0', ingredients: [] }
-            : calculatedIngredients
+    const [{ sum, ingredients }, setIngredientSum] = useState<IngredientSum>({
+        sum: '0',
+        ingredients: [],
+    })
     const missingIngredientValues = missingIngredientAndNutritionalValues(ingredients)
-    const properties = calculateNutrients(selectedRecipes)
     const router = useRouter()
     const toast = useNotifications()
+    const user = use(AuthContext)
+
+    useEffect(() => {
+        calculateNutrients(selectedRecipes, user?.login ?? '').then((result) =>
+            setProperties(result)
+        )
+
+        calculateIngredients(selectedRecipes, user?.login ?? '').then((result) => {
+            if (result instanceof ConversionError)
+                toast.show(result.message, {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            else setIngredientSum(result)
+        })
+    }, [selectedRecipes, toast, user?.login])
 
     useEffect(() => {
         getRecipes(getSession())

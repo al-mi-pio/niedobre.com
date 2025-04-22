@@ -1,8 +1,12 @@
-import { IngredientAmount } from '@/types/Ingredient'
+import { FlatIngredientAmount } from '@/types/Ingredient'
 import { Avatar, ListItem, ListItemAvatar, ListItemText } from '@mui/material'
 import IngredientIcon from '@/app/(dashboard)/ingredients/components/IngredientIcon'
 
-export const IngredientList = ({ ingredients }: { ingredients: IngredientAmount[] }) =>
+export const IngredientList = ({
+    ingredients,
+}: {
+    ingredients: FlatIngredientAmount[]
+}) =>
     ingredients.map(
         ({ ingredient, amount, unit }, id) =>
             !!amount && (
