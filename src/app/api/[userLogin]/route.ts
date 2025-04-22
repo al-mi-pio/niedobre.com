@@ -114,7 +114,7 @@ export async function GET(
                                     ...acc,
                                     [key]:
                                         recipe[
-                                        key as keyof Omit<PublicRecipe, 'nutrients'>
+                                            key as keyof Omit<PublicRecipe, 'nutrients'>
                                         ] || null,
                                 }
                             }
