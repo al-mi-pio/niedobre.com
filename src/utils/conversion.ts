@@ -1,3 +1,4 @@
+'use server'
 import { massUnits, volumeUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
 import { ConversionError } from '@/errors/ConversionError'
@@ -11,7 +12,7 @@ import {
     VolumeUnit,
 } from '@/types/Ingredient'
 import { SelectedRecipes } from '@/app/(dashboard)/page'
-import { getFromFile } from './file'
+import { getFromFile } from '@/utils/file'
 import { join } from 'path'
 
 const combineIngredients = (selectedRecipes: SelectedRecipes) => {
@@ -89,6 +90,7 @@ export const calculateIngredients = async (
         userLogin,
         'ingredients.json'
     )
+
     const allIngredients: Ingredient[] = await getFromFile(ingredientFilePath)
 
     const ingredientAmount: IngredientAmount[] = []
