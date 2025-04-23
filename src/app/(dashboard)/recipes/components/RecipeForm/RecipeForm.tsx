@@ -68,7 +68,9 @@ export const RecipeForm = ({
 
     const handleSave = () => {
         setSaving(true)
-        onSave().then(() => setSaving(false))
+        onSave().then(() => {
+            loadIngredients().then(() => setSaving(false))
+        })
     }
 
     const loadIngredients = async () => {
