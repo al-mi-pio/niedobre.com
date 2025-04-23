@@ -22,9 +22,9 @@ import { SessionError } from '@/errors/SessionError'
 import { DataError } from '@/errors/DataError'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { IngredientSelectableList } from '@/app/(dashboard)/ingredients/components/IngredientSelectableList'
+import { SafeDeletionModal } from '@/components/SafeDeletionModal'
 import { selectOutOfScope } from '@/app/(dashboard)/ingredients/utils'
 import { useNotifications } from '@toolpad/core'
-import { IngredientModal } from '@/app/(dashboard)/ingredients/components/IngredientModal'
 import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm/IngredientForm'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
@@ -250,13 +250,14 @@ const Ingredients = () => {
                 )}
             </Grid>
 
-            <IngredientModal
+            <SafeDeletionModal
                 which={recipesWithIngredient.length ? 2 : 1}
-                open={modalOpen}
+                elementName={selectedIngredient?.name}
+                recipes={recipesWithIngredient}
                 onClose={handleModalClose}
                 onAction={handleDelete}
-                ingredientName={selectedIngredient?.name}
-                recipes={recipesWithIngredient}
+                elementType="składnik"
+                open={modalOpen}
             />
         </Grid>
     )

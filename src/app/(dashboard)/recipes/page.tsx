@@ -13,7 +13,6 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { createIngredientRowsStructure } from '@/app/(dashboard)/recipes/utils'
 import { RecipeSelectableList } from '@/app/(dashboard)/recipes/components/RecipeSelectableList'
 import { useNotifications } from '@toolpad/core'
-import { RecipeModal } from '@/app/(dashboard)/recipes/components/RecipeModal'
 import { RecipeForm } from '@/app/(dashboard)/recipes/components/RecipeForm/RecipeForm'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
@@ -21,6 +20,7 @@ import { Spinner } from '@/components/Spinner'
 import {
     formToCreateRecipeDTO,
     formToPatchRecipeDTO,
+    safeRecipeDeletion,
     recipeToForm,
 } from '@/utils/recipes'
 import {
@@ -29,12 +29,14 @@ import {
     getRecipes,
     patchRecipe,
 } from '@/services/recipeService'
+import { SafeDeletionModal } from '@/components/SafeDeletionModal'
 
 const Recipes = () => {
     const router = useRouter()
     const toast = useNotifications()
     const [errors, setErrors] = useState<ValidationError | null>(null)
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
+    const [recipesWithRecipe, setRecipesWithRecipe] = useState<string[]>([])
     const [selectedRecipe, setSelectedRecipe] = useState<GetRecipeDTO | null>(null)
     const [recipeForm, setRecipeForm] = useState<RecipeFormData>(emptyForm)
     const [modalOpen, setModalOpen] = useState(false)
@@ -64,6 +66,11 @@ const Recipes = () => {
                 autoHideDuration,
             })
         }
+    }
+
+    const handleModalClose = () => {
+        setModalOpen(false)
+        setTimeout(() => setRecipesWithRecipe([]), 200)
     }
 
     const handleIngredientRowChange = (
@@ -174,6 +181,21 @@ const Recipes = () => {
         try {
             const session = getSession()
             if (selectedRecipe?.id) {
+                const badRecipes = await safeRecipeDeletion(
+                    selectedRecipe.id,
+                    session,
+                    !!recipesWithRecipe.length
+                )
+                if (badRecipes instanceof SessionError) {
+                    router.push('/login?reason=expired')
+                    return
+                }
+                if (badRecipes.length) {
+                    setRecipesWithRecipe(badRecipes)
+                    setLoading(false)
+                    setModalOpen(true)
+                    return
+                }
                 await deleteRecipe(selectedRecipe.id, session)
             }
 
@@ -275,11 +297,14 @@ const Recipes = () => {
                 )}
             </Grid>
 
-            <RecipeModal
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
+            <SafeDeletionModal
+                which={recipesWithRecipe.length ? 2 : 1}
+                elementName={selectedRecipe?.name}
+                recipes={recipesWithRecipe}
+                onClose={handleModalClose}
                 onAction={handleDelete}
-                recipeName={selectedRecipe?.name}
+                elementType="przepis"
+                open={modalOpen}
             />
         </Grid>
     )

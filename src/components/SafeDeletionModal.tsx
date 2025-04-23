@@ -12,29 +12,31 @@ import {
     DialogContent,
 } from '@mui/material'
 
-interface Props {
+export interface SafeDeletionModalProps {
     which: number
     open: boolean
-    ingredientName?: string
+    elementName?: string
+    elementType: string
     onAction: () => void
     onClose: () => void
     recipes: string[]
 }
 
-export const IngredientModal = ({
+export const SafeDeletionModal = ({
     which,
     open,
-    ingredientName = '???',
+    elementName = '???',
+    elementType,
     onAction,
     onClose,
     recipes,
-}: Props) =>
+}: SafeDeletionModalProps) =>
     which === 2 ? (
         <Dialog open={open} onClose={onClose}>
-            <DialogTitle>{`${ingredientName} jest w użyciu`}</DialogTitle>
+            <DialogTitle>{`${elementName} jest w użyciu`}</DialogTitle>
 
             <DialogContent dividers>
-                <DialogContentText>{`Składnik o nazwie ${ingredientName} jest używany w następujących przepisach: `}</DialogContentText>
+                <DialogContentText>{`${elementType[0].toUpperCase() + elementType.slice(1)} o nazwie ${elementName} jest używany w następujących przepisach: `}</DialogContentText>
                 <List>
                     {recipes.map((ingredient, i) => (
                         <ListItem key={i}>
@@ -62,10 +64,10 @@ export const IngredientModal = ({
         </Dialog>
     ) : (
         <Dialog open={open} onClose={onClose}>
-            <DialogTitle>{`Usunąć ${ingredientName}?`}</DialogTitle>
+            <DialogTitle>{`Usunąć ${elementName}?`}</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    {`Czy aby napewno chcesz usunąć składnik o nazwie ${ingredientName}?`}
+                    {`Czy aby napewno chcesz usunąć ${elementType} o nazwie ${elementName}?`}
                 </DialogContentText>
             </DialogContent>
             <DialogActions>

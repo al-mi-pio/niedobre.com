@@ -8,13 +8,22 @@ import {
 } from '@mui/material'
 
 interface Props {
+    which: number
     open: boolean
     recipeName?: string
     onAction: () => void
     onClose: () => void
+    recipes: string[]
 }
 
-export const RecipeModal = ({ open, recipeName = '???', onAction, onClose }: Props) => (
+export const RecipeModal = ({
+    which,
+    open,
+    recipeName = '???',
+    onAction,
+    onClose,
+    recipes,
+}: Props) => (
     <Dialog open={open} onClose={onClose}>
         <DialogTitle>{`Usunąć ${recipeName}?`}</DialogTitle>
         <DialogContent>
