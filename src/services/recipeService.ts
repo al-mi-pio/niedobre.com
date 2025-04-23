@@ -130,6 +130,7 @@ export const getRecipes = async (session: Session) => {
             return e
         }
     }
+    return []
 }
 
 export const deleteRecipe = async (id: UUID, session: Session) => {
