@@ -15,6 +15,7 @@ import {
     SelectChangeEvent,
 } from '@mui/material'
 import { UUID } from 'crypto'
+import { DataError } from '@/errors/DataError'
 import { Ingredient } from '@/types/Ingredient'
 import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
@@ -24,6 +25,7 @@ import { useNotifications } from '@toolpad/core'
 import { IngredientsTab } from '@/app/(dashboard)/recipes/components/RecipeForm/IngredientsTab'
 import { getIngredients } from '@/services/ingredientService'
 import { PicturesTab } from '@/app/(dashboard)/recipes/components/RecipeForm/PicturesTab'
+import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { MainTab } from '@/app/(dashboard)/recipes/components/RecipeForm/MainTab'
@@ -37,7 +39,6 @@ interface RecipeFormProps {
     setRecipeForm: (value: SetStateAction<RecipeFormData>) => void
     onDelete: () => void
     onClose: () => void
-    recipes: GetRecipeDTO[]
     errors: ValidationError | null
     onSave: () => Promise<void>
 }
@@ -50,7 +51,6 @@ export const RecipeForm = ({
     recipeForm,
     onDelete,
     onClose,
-    recipes,
     onSave,
     errors,
 }: RecipeFormProps) => {
@@ -74,15 +74,30 @@ export const RecipeForm = ({
     const loadIngredients = async () => {
         try {
             const newIngredients = await getIngredients(getSession())
-            if (newIngredients instanceof SessionError) {
+            const recipes = await getRecipes(getSession())
+
+            if (
+                newIngredients instanceof SessionError ||
+                recipes instanceof SessionError
+            ) {
                 router.push('/login?reason=expired')
                 return
             }
+
+            if (recipes instanceof DataError) {
+                toast.show(recipes.message, {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+                return
+            }
+
             if (!ignoreLoad.current)
-                setIngredients(() => [
-                    ...newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1)),
-                    ...recipes.toSorted((a, b) => (a.name > b.name ? 1 : -1)),
-                ])
+                setIngredients(() =>
+                    [...newIngredients, ...recipes].toSorted((a, b) =>
+                        a.name > b.name ? 1 : -1
+                    )
+                )
         } catch {
             toast.show(unknownErrorMessage, {
                 severity: 'error',
