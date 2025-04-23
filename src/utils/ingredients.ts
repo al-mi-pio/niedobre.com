@@ -364,11 +364,10 @@ export const safeIngredientDeletion = async (
         )
     }
 
-    await deleteIngredient(ingredientId, session)
     recipesWithIngredients.forEach((recipe) =>
         patchRecipe(
             {
-                id: recipe.id,
+                ...recipe,
                 ingredients: recipe.ingredients.filter(
                     (ingredient) => ingredient.id !== ingredientId
                 ),
@@ -376,5 +375,6 @@ export const safeIngredientDeletion = async (
             session
         )
     )
+    await deleteIngredient(ingredientId, session)
     return [] as string[]
 }
