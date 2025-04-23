@@ -189,8 +189,23 @@ export const patchRecipe = async (
         await toDelPictures?.forEach(async (picture) => await removeImage(picture))
     }
 
-    if (toPatchRecipe.id in toPatchRecipe.ingredients) {
-        return new DataError(`Nie można dawać placka do siebie samego`)
+    if (ingredients) {
+        if (ingredients.find((ingredient) => ingredient.id === toPatchRecipe.id)) {
+            return new DataError(`Nie można dawać placka do siebie samego`)
+        }
+        const fullRecipes = await getRecipes(session)
+        if (fullRecipes instanceof Error) {
+            return fullRecipes
+        }
+        try {
+            ingredients.forEach((ingredient) => {
+                if (recipes.find((recipe) => recipe.id === ingredient.id)) {
+                    findRecipeLoops(toPatchRecipe.id, ingredient.id, fullRecipes!)
+                }
+            })
+        } catch {
+            return new DataError(`Nie można dawać placka do siebie samego`)
+        }
     }
 
     toPatchRecipe.name = name ?? toPatchRecipe.name
@@ -203,4 +218,24 @@ export const patchRecipe = async (
 
     const newRecipes = [...unchangedRecipes, toPatchRecipe]
     await setToFile(filePath, newRecipes)
+}
+
+const findRecipeLoops = (
+    originalRecipeId: UUID,
+    currentRecipeId: UUID,
+    recipes: GetRecipeDTO[]
+) => {
+    const currentRecipe = recipes.find((recipe) => recipe.id === currentRecipeId)
+    if (
+        currentRecipe?.ingredients.find(
+            (ingredient) => ingredient.ingredient.id === originalRecipeId
+        )
+    ) {
+        throw new Error()
+    }
+    currentRecipe?.ingredients.forEach((ingredient) => {
+        if (recipes.find((recipe) => recipe.id === ingredient.ingredient.id)) {
+            findRecipeLoops(originalRecipeId, ingredient.ingredient.id, recipes)
+        }
+    })
 }

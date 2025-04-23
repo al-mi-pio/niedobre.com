@@ -14,19 +14,26 @@ import {
 import { SelectedRecipes } from '@/app/(dashboard)/page'
 import { getFromFile } from '@/utils/file'
 import { join } from 'path'
+import { Recipe } from '@/types/Recipe'
 
-const combineIngredients = (selectedRecipes: SelectedRecipes) => {
+const selectRecipesToIngredientAmount = (selectedRecipes: SelectedRecipes) => {
     const ingredients: IngredientAmount[] = []
     Object.values(selectedRecipes).forEach((recipe) => {
-        ingredients.push(
-            ...recipe.ingredients.map((ing) => ({
-                ...ing,
-                amount: ing.amount * recipe.amount,
-            }))
-        )
+        if (recipe.amount) {
+            ingredients.push(
+                ...recipe.ingredients.map((ing) => ({
+                    ...ing,
+                    amount: ing.amount * recipe.amount,
+                }))
+            )
+        }
     })
 
-    let ingredientAmount: IngredientAmount[] = []
+    return ingredients
+}
+
+const combineIngredients = (ingredients: FlatIngredientAmount[]) => {
+    let ingredientAmount: FlatIngredientAmount[] = []
 
     ingredients.forEach((ingredient) => {
         const ingredientToUpdate = ingredientAmount.find(
@@ -49,28 +56,43 @@ const combineIngredients = (selectedRecipes: SelectedRecipes) => {
 const flattenRecipes = (
     ingredientAmount: IngredientAmount[],
     allIngredients: Ingredient[],
+    allRecipes: Recipe[],
+    amountOfRecipes: number = 1,
     flattenedRecipe: FlatIngredientAmount[] = []
 ): FlatIngredientAmount[] => {
     ingredientAmount.forEach((ing) => {
         if ('ingredients' in ing.ingredient) {
-            flattenRecipes(
-                ing.ingredient.ingredients.map((ingredientId) => {
+            const ingreidents: IngredientAmount[] = ing.ingredient.ingredients.map(
+                (ingredientId) => {
                     const ingredient = allIngredients.find(
                         (ing) => ing.id === ingredientId.id
                     )
+                    if (ingredient) {
+                        return {
+                            ingredient: ingredient,
+                            amount: ingredientId.amount,
+                            unit: ingredientId.unit,
+                        }
+                    }
+                    const recipe = allRecipes.find((ing) => ing.id === ingredientId.id)
                     return {
-                        ingredient: ingredient!,
+                        ingredient: recipe!,
                         amount: ingredientId.amount,
                         unit: ingredientId.unit,
                     }
-                }),
+                }
+            )
+            flattenRecipes(
+                ingreidents,
                 allIngredients,
+                allRecipes,
+                ing.amount * amountOfRecipes,
                 flattenedRecipe
             )
         } else {
             flattenedRecipe.push({
                 ingredient: ing.ingredient,
-                amount: ing.amount,
+                amount: ing.amount * amountOfRecipes,
                 unit: ing.unit,
             })
         }
@@ -90,18 +112,24 @@ export const calculateIngredients = async (
         userLogin,
         'ingredients.json'
     )
-
+    const recipeFilePath = join(
+        process.cwd(),
+        'src',
+        'data',
+        'users',
+        userLogin,
+        'recipes.json'
+    )
+    const allRecipes: Recipe[] = await getFromFile(recipeFilePath)
     const allIngredients: Ingredient[] = await getFromFile(ingredientFilePath)
 
-    const ingredientAmount: IngredientAmount[] = []
-    try {
-        ingredientAmount.push(...combineIngredients(selectedRecipes))
-    } catch (e) {
-        if (e instanceof ConversionError) {
-            return e
-        }
-    }
-    const flattenedRecipe = flattenRecipes(ingredientAmount, allIngredients)
+    const ingredientAmount: IngredientAmount[] =
+        selectRecipesToIngredientAmount(selectedRecipes)
+
+    const flattenedRecipe = combineIngredients(
+        flattenRecipes(ingredientAmount, allIngredients, allRecipes)
+    )
+
     const beautifiedIngredientAmount: FlatIngredientAmount[] = flattenedRecipe.map(
         (ing) => {
             if (ing.amount > 1000) {
@@ -137,7 +165,7 @@ export const calculateNutrients = async (
     selectedRecipes: SelectedRecipes,
     userLogin: string
 ) => {
-    const ingredients = combineIngredients(selectedRecipes)
+    const ingredients = selectRecipesToIngredientAmount(selectedRecipes)
     const ingredientFilePath = join(
         process.cwd(),
         'src',
@@ -146,8 +174,19 @@ export const calculateNutrients = async (
         userLogin,
         'ingredients.json'
     )
+    const recipeFilePath = join(
+        process.cwd(),
+        'src',
+        'data',
+        'users',
+        userLogin,
+        'recipes.json'
+    )
+    const allRecipes: Recipe[] = await getFromFile(recipeFilePath)
     const allIngredients: Ingredient[] = await getFromFile(ingredientFilePath)
-    const flattenedRecipe = flattenRecipes(ingredients, allIngredients)
+    const flattenedRecipe = combineIngredients(
+        flattenRecipes(ingredients, allIngredients, allRecipes)
+    )
     return {
         kcal: flattenedRecipe
             .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0), 0)
@@ -175,9 +214,18 @@ export const calculateNutrients = async (
     } as NutrientValues
 }
 
-const convertToBaseMeasurement = (ingredient: IngredientAmount): IngredientAmount => {
+const convertToBaseMeasurement = (ingredient: IngredientAmount): FlatIngredientAmount => {
     if ('ingredients' in ingredient.ingredient) {
-        return ingredient
+        return {
+            ingredient: {
+                id: ingredient.ingredient.id,
+                name: ingredient.ingredient.name,
+                type: 'amount',
+                foodGroup: 'inne',
+            },
+            amount: ingredient.amount,
+            unit: 'szt.',
+        }
     }
     if (ingredient.ingredient.type === 'mass') {
         const baseAmount = Math.round(
@@ -222,5 +270,14 @@ const convertToBaseMeasurement = (ingredient: IngredientAmount): IngredientAmoun
     if (ingredient.unit !== 'szt.') {
         throw new ConversionError('Nie można konwertować policzalnych składników')
     }
-    return ingredient
+    return {
+        ingredient: {
+            id: ingredient.ingredient.id,
+            name: ingredient.ingredient.name,
+            type: 'amount',
+            foodGroup: 'inne',
+        },
+        amount: ingredient.amount,
+        unit: 'szt.',
+    }
 }

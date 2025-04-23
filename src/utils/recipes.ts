@@ -12,6 +12,9 @@ import { positiveFloatValidation } from './validate'
 import { ValidationError } from '@/errors/ValidationError'
 import { saveImage } from './file'
 import { emptyUUID } from '@/constants/general'
+import { Session } from '@/types/Auth'
+import { deleteRecipe, getCompressedRecipes, patchRecipe } from '@/services/recipeService'
+import { SessionError } from '@/errors/SessionError'
 
 export const recipeToForm = (recipe: GetRecipeDTO) => {
     return {
@@ -184,4 +187,39 @@ export const formToPatchRecipeDTO = async (form: RecipeFormData) => {
             ? ['name', ...(form.publicResources as string[])]
             : [],
     } as PatchRecipeDTO
+}
+
+export const safeRecipeDeletion = async (
+    recipeId: UUID,
+    session: Session,
+    commitDeletion?: boolean
+) => {
+    const recipes = await getCompressedRecipes(session)
+    if (recipes instanceof SessionError) {
+        return recipes
+    }
+    const recipesWithIngredients = recipes.filter(
+        (recipe) =>
+            recipe.ingredients.filter((ingredient) => ingredient.id === recipeId).length
+    )
+    if (!commitDeletion) {
+        return recipesWithIngredients.reduce(
+            (prev, curr) => [...prev, curr.name],
+            [] as string[]
+        )
+    }
+
+    await deleteRecipe(recipeId, session)
+    recipesWithIngredients.forEach((recipe) =>
+        patchRecipe(
+            {
+                id: recipe.id,
+                ingredients: recipe.ingredients.filter(
+                    (ingredient) => ingredient.id !== recipeId
+                ),
+            },
+            session
+        )
+    )
+    return [] as string[]
 }
