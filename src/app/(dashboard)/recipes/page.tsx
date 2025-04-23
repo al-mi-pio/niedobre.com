@@ -235,7 +235,7 @@ const Recipes = () => {
                     )
             })
             .catch((e) =>
-                toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
+                toast.show(e.message, {
                     severity: 'error',
                     autoHideDuration,
                 })
