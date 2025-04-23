@@ -79,6 +79,7 @@ export const getRecipes = async (session: Session) => {
             compressedRecipes.map(async (recipe) => ({
                 id: recipe.id,
                 name: recipe.name,
+                cost: recipe.cost,
                 description: recipe.description,
                 instructions: recipe.instructions,
                 pictures: recipe.pictures,
@@ -143,8 +144,8 @@ export const deleteRecipe = async (id: UUID, session: Session) => {
         'recipes.json'
     )
     const recipes: Recipe[] = await getFromFile(filePath)
-    const recipe = recipes.filter((recipe) => recipe.id === id)[0]
-    if (recipe.pictures) {
+    const recipe = recipes.find((recipe) => recipe.id === id)
+    if (recipe && recipe.pictures) {
         await recipe.pictures.forEach(async (picture) => await removeImage(picture))
     }
     const newRecipes = recipes.filter((recipe) => recipe.id !== id)
