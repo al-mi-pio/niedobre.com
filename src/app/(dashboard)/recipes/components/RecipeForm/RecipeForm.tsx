@@ -35,10 +35,11 @@ interface RecipeFormProps {
     onIngredientRowChange: (id: UUID, name: 'amount' | 'unit', value?: string) => void
     onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
     setRecipeForm: (value: SetStateAction<RecipeFormData>) => void
-    onSave: () => Promise<void>
     onDelete: () => void
     onClose: () => void
+    recipes: GetRecipeDTO[]
     errors: ValidationError | null
+    onSave: () => Promise<void>
 }
 
 export const RecipeForm = ({
@@ -49,6 +50,7 @@ export const RecipeForm = ({
     recipeForm,
     onDelete,
     onClose,
+    recipes,
     onSave,
     errors,
 }: RecipeFormProps) => {
@@ -57,7 +59,9 @@ export const RecipeForm = ({
     const ignoreLoad = useRef(false)
     const [saving, setSaving] = useState(false)
     const [recipeTab, setRecipeTab] = useState(0)
-    const [ingredients, setIngredients] = useState<Ingredient[] | null>(null)
+    const [ingredients, setIngredients] = useState<(Ingredient | GetRecipeDTO)[] | null>(
+        null
+    )
     const [hoveredErroredField, setHoveredErroredField] = useState<
         keyof RecipeFormData | undefined
     >(undefined)
@@ -75,9 +79,10 @@ export const RecipeForm = ({
                 return
             }
             if (!ignoreLoad.current)
-                setIngredients(() =>
-                    newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1))
-                )
+                setIngredients(() => [
+                    ...newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1)),
+                    ...recipes.toSorted((a, b) => (a.name > b.name ? 1 : -1)),
+                ])
         } catch {
             toast.show(unknownErrorMessage, {
                 severity: 'error',

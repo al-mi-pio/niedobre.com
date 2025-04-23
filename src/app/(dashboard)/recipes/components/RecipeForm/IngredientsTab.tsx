@@ -1,4 +1,9 @@
-import { RecipeFormData, RecipeFormIngredient, RecipeFormTabProps } from '@/types/Recipe'
+import {
+    GetRecipeDTO,
+    RecipeFormData,
+    RecipeFormIngredient,
+    RecipeFormTabProps,
+} from '@/types/Recipe'
 import { Ingredient } from '@/types/Ingredient'
 import { UUID } from 'crypto'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
@@ -11,7 +16,7 @@ import { ChipDropdown } from '@/components/ChipDropdown'
 import Link from 'next/link'
 
 interface Props extends RecipeFormTabProps {
-    ingredients: Ingredient[]
+    ingredients: (Ingredient | GetRecipeDTO)[]
     onRowChange: (id: UUID, name: 'amount' | 'unit', value?: string) => void
 }
 

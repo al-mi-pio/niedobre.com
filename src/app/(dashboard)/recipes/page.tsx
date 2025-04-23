@@ -269,6 +269,7 @@ const Recipes = () => {
                         recipeForm={recipeForm}
                         onClose={handleOnClose}
                         onSave={handleSave}
+                        recipes={recipes}
                         errors={errors}
                     />
                 )}

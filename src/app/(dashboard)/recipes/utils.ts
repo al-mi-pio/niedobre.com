@@ -1,9 +1,11 @@
 import { massUnits, volumeUnits } from '@/constants/ingredients'
-import { RecipeFormIngredient } from '@/types/Recipe'
+import { GetRecipeDTO, RecipeFormIngredient } from '@/types/Recipe'
 import { Ingredient } from '@/types/Ingredient'
 import { UUID } from 'crypto'
 
-export const createIngredientDropdownStructure = (ingredients: Ingredient[]) =>
+export const createIngredientDropdownStructure = (
+    ingredients: (Ingredient | GetRecipeDTO)[]
+) =>
     ingredients.length
         ? ingredients.reduce(
               (prev, ingredient) => ({
@@ -31,8 +33,12 @@ export const createIngredientRowsStructure = (
         )
     })
 
-export const getIngredientAvailableUnits = (ingredient?: Ingredient) => {
+export const getIngredientAvailableUnits = (ingredient?: Ingredient | GetRecipeDTO) => {
     if (!ingredient) return []
+    if ('ingredients' in ingredient) {
+        return ['szt.']
+    }
+
     if (ingredient.conversion && ingredient.type !== 'amount')
         return [...massUnits, ...volumeUnits]
     if (!ingredient.conversion && ingredient.type === 'mass') return massUnits
