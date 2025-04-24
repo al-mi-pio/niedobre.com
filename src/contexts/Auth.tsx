@@ -1,22 +1,22 @@
 'use client'
 
+import { sessionError } from '@/errors/SessionError'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { getUser } from '@/services/userService'
 import { Spinner } from '@/components/Spinner'
 import { ReactNode, createContext, useEffect, useState } from 'react'
-import { SessionError } from '@/errors/SessionError'
 import { User } from '@/types/User'
 
 const handleAuthentication = async () => {
     try {
         const session = getSession()
-        return await getUser(session)
-    } catch (error) {
-        if (error instanceof SessionError) {
-            return error
+        if ('errorType' in session) {
+            return session
         }
-        return new SessionError('Brak sesji')
+        return await getUser(session)
+    } catch {
+        return sessionError('Brak sesji')
     }
 }
 
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         handleAuthentication().then((res) => {
-            if (res instanceof Error) router.push('/login')
+            if ('errorType' in res) router.push('/login')
             else setUser(res)
         })
     }, [router])

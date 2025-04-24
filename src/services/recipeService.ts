@@ -49,6 +49,8 @@ export const createRecipe = async (
     const newRecipes = [...recipes, recipe]
 
     await setToFile(filePath, newRecipes)
+
+    return [] as Success
 }
 
 export const getCompressedRecipes = async (session: Session) => {
@@ -197,7 +199,7 @@ export const patchRecipe = async (
 
     if (ingredients) {
         if (ingredients.find((ingredient) => ingredient.id === toPatchRecipe.id)) {
-            return dataError(`Nie można dawać placka do siebie samego`)
+            return dataError('Nie można dodać przepisu do samego siebie')
         }
         const fullRecipes = await getRecipes(session)
         if ('errorType' in fullRecipes) {
@@ -210,7 +212,9 @@ export const patchRecipe = async (
                 }
             })
         } catch {
-            return dataError(`Nie można dawać placka do siebie samego`)
+            return dataError(
+                'Nie można tworzyć pętli wzajemnie wskazujących na siebie przepisów'
+            )
         }
     }
 

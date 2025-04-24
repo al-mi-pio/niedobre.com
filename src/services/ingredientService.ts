@@ -2,6 +2,7 @@
 import { dataError } from '@/errors/DataError'
 
 import { Session } from '@/types/Auth'
+import { Success } from '@/types/default'
 import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
 import { verifySession } from '@/utils/auth'
 import { getFromFile, setToFile } from '@/utils/file'
@@ -54,6 +55,7 @@ export const createIngredient = async (
     const newIngredients = [...ingredients, ingredient]
 
     await setToFile(filePath, newIngredients)
+    return [] as Success
 }
 
 export const getIngredients = async (session: Session) => {
@@ -151,4 +153,5 @@ export const patchIngredient = async (
 
     const newIngredients = [...unchangedIngredients, toPatchIngredient]
     await setToFile(filePath, newIngredients)
+    return [] as Success
 }

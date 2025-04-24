@@ -16,10 +16,7 @@ import {
 import { autoHideDuration } from '@/constants/general'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
-import { DataError } from '@/errors/DataError'
 import { GetRecipeDTO } from '@/types/Recipe'
-import { SessionError } from '@/errors/SessionError'
-import { ConversionError } from '@/errors/ConversionError'
 import { IngredientAmount, IngredientSum, NutrientValues } from '@/types/Ingredient'
 import {
     createSelectedRecipeStructure,
@@ -62,12 +59,17 @@ const Dashboard = () => {
     const user = use(AuthContext)
 
     useEffect(() => {
-        calculateNutrients(selectedRecipes, user?.login ?? '').then((result) =>
-            setProperties(result)
-        )
+        calculateNutrients(selectedRecipes, user?.login ?? '').then((result) => {
+            if ('errorType' in result) {
+                toast.show(result.message, {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            } else setProperties(result)
+        })
 
         calculateIngredients(selectedRecipes, user?.login ?? '').then((result) => {
-            if (result instanceof ConversionError)
+            if ('errorType' in result)
                 toast.show(result.message, {
                     severity: 'error',
                     autoHideDuration,
@@ -77,24 +79,31 @@ const Dashboard = () => {
     }, [selectedRecipes, toast, user?.login])
 
     useEffect(() => {
-        getRecipes(getSession())
+        const session = getSession()
+        if ('errorType' in session) {
+            router.push('/login?reason=expired')
+            return
+        }
+
+        getRecipes(session)
             .then((newRecipes) => {
-                if (newRecipes instanceof SessionError) {
-                    router.push('/login?reason=expired')
-                    return
+                if ('errorType' in newRecipes) {
+                    if (newRecipes.errorType === 'SessionError')
+                        router.push('/login?reason=expired')
+                    else
+                        toast.show(newRecipes.message, {
+                            severity: 'error',
+                            autoHideDuration,
+                        })
+                } else {
+                    setRecipes(() => newRecipes ?? [])
+                    setSelectedRecipes(() =>
+                        createSelectedRecipeStructure(newRecipes ?? [])
+                    )
                 }
-                if (newRecipes instanceof DataError) {
-                    toast.show(newRecipes.message, {
-                        severity: 'error',
-                        autoHideDuration,
-                    })
-                    return
-                }
-                setRecipes(() => newRecipes ?? [])
-                setSelectedRecipes(() => createSelectedRecipeStructure(newRecipes ?? []))
             })
             .catch((e) =>
-                toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
+                toast.show(e.message, {
                     severity: 'error',
                     autoHideDuration,
                 })

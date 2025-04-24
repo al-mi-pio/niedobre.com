@@ -4,8 +4,6 @@ import { autoHideDuration, unknownErrorMessage } from '@/constants/general'
 import { emptyForm, newForm } from '@/constants/recipes'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
-import { DataError } from '@/errors/DataError'
-import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
 import { SelectChangeEvent } from '@mui/material'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
@@ -57,15 +55,9 @@ const Recipes = () => {
         setRecipeForm(newForm)
     }
 
-    const handleError = (error: unknown) => {
-        if (error instanceof ValidationError) {
-            setErrors(error)
-        } else {
-            toast.show(unknownErrorMessage, {
-                severity: 'error',
-                autoHideDuration,
-            })
-        }
+    const handleError = (result: ValidationError | object) => {
+        if ('errorType' in result) setErrors(result)
+        else setErrors(null)
     }
 
     const handleModalClose = () => {
@@ -91,13 +83,8 @@ const Recipes = () => {
             } as RecipeFormData
             if (errors) {
                 if (selectedRecipe)
-                    formToPatchRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
-                else
-                    formToCreateRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
+                    formToPatchRecipeDTO(newForm).then((result) => handleError(result))
+                else formToCreateRecipeDTO(newForm).then((result) => handleError(result))
             }
             return newForm
         })
@@ -123,13 +110,8 @@ const Recipes = () => {
             } as RecipeFormData
             if (errors) {
                 if (selectedRecipe)
-                    formToPatchRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
-                else
-                    formToCreateRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
+                    formToPatchRecipeDTO(newForm).then((result) => handleError(result))
+                else formToCreateRecipeDTO(newForm).then((result) => handleError(result))
             }
             return newForm
         })
@@ -138,24 +120,35 @@ const Recipes = () => {
     const handleSave = async () => {
         try {
             const session = getSession()
+            if ('errorType' in session) {
+                router.push('/login?reason=expired')
+                return
+            }
 
             if (selectedRecipe) {
                 const dto = await formToPatchRecipeDTO(recipeForm)
-                if (dto instanceof ValidationError) {
+                if ('errorType' in dto) {
                     setErrors(dto)
                     return
                 }
-                if ((await patchRecipe(dto, session)) instanceof SessionError) {
-                    router.push('/login?reason=expired')
+                const result = await patchRecipe(dto, session)
+                if ('errorType' in result) {
+                    if (result.errorType === 'SessionError')
+                        router.push('/login?reason=expired')
+                    else
+                        toast.show(result.message, {
+                            severity: 'error',
+                            autoHideDuration,
+                        })
                     return
                 }
             } else {
                 const dto = await formToCreateRecipeDTO(recipeForm)
-                if (dto instanceof ValidationError) {
+                if ('errorType' in dto) {
                     setErrors(dto)
                     return
                 }
-                if ((await createRecipe(dto, session)) instanceof SessionError) {
+                if ('errorType' in (await createRecipe(dto, session))) {
                     router.push('/login?reason=expired')
                     return
                 }
@@ -163,15 +156,11 @@ const Recipes = () => {
 
             setLoading(true)
             loadRecipes()
-        } catch (e) {
-            if (e instanceof SessionError) {
-                router.push('/login?reason=expired')
-            } else {
-                toast.show(unknownErrorMessage, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            }
+        } catch {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
         }
     }
 
@@ -180,13 +169,18 @@ const Recipes = () => {
         setLoading(true)
         try {
             const session = getSession()
+            if ('errorType' in session) {
+                router.push('/login?reason=expired')
+                return
+            }
+
             if (selectedRecipe?.id) {
                 const badRecipes = await safeRecipeDeletion(
                     selectedRecipe.id,
                     session,
                     !!recipesWithRecipe.length
                 )
-                if (badRecipes instanceof SessionError) {
+                if ('errorType' in badRecipes) {
                     router.push('/login?reason=expired')
                     return
                 }
@@ -201,35 +195,34 @@ const Recipes = () => {
 
             setSelectedRecipe(null)
             loadRecipes()
-        } catch (e) {
-            if (e instanceof DataError) {
-                toast.show(e.message, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            } else if (e instanceof SessionError) {
-                router.push('/login?reason=expired')
-            } else {
-                toast.show(unknownErrorMessage, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            }
-            setLoading(false)
+        } catch {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
         }
+
+        setLoading(false)
     }
 
     const loadRecipes = () => {
-        getRecipes(getSession())
+        const session = getSession()
+        if ('errorType' in session) {
+            router.push('/login?reason=expired')
+            return
+        }
+
+        getRecipes(session)
             .then((newRecipes) => {
-                if (newRecipes instanceof SessionError)
-                    router.push('/login?reason=expired')
-                else if (newRecipes instanceof DataError)
-                    toast.show(newRecipes.message, {
-                        severity: 'error',
-                        autoHideDuration,
-                    })
-                else
+                if ('errorType' in newRecipes) {
+                    if (newRecipes.message === 'SessionError')
+                        router.push('/login?reason=expired')
+                    else
+                        toast.show(newRecipes.message, {
+                            severity: 'error',
+                            autoHideDuration,
+                        })
+                } else
                     setRecipes(() =>
                         (newRecipes ?? []).toSorted((a, b) => (a.name > b.name ? 1 : -1))
                     )

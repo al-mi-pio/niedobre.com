@@ -15,9 +15,7 @@ import {
     SelectChangeEvent,
 } from '@mui/material'
 import { UUID } from 'crypto'
-import { DataError } from '@/errors/DataError'
 import { Ingredient } from '@/types/Ingredient'
-import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
 import { ChangeEvent, SetStateAction, useEffect, useRef, useState } from 'react'
@@ -75,22 +73,32 @@ export const RecipeForm = ({
 
     const loadIngredients = async () => {
         try {
-            const newIngredients = await getIngredients(getSession())
-            const recipes = await getRecipes(getSession())
-
-            if (
-                newIngredients instanceof SessionError ||
-                recipes instanceof SessionError
-            ) {
+            const session = getSession()
+            if ('errorType' in session) {
                 router.push('/login?reason=expired')
                 return
             }
 
-            if (recipes instanceof DataError) {
-                toast.show(recipes.message, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
+            const newIngredients = await getIngredients(session)
+            const recipes = await getRecipes(session)
+
+            if ('errorType' in newIngredients || 'errorType' in recipes) {
+                if (
+                    ('errorType' in newIngredients &&
+                        newIngredients.errorType === 'SessionError') ||
+                    ('errorType' in recipes && recipes.errorType === 'SessionError')
+                )
+                    router.push('/login?reason=expired')
+                else if ('errorType' in recipes && recipes.errorType === 'DataError')
+                    toast.show(recipes.message, {
+                        severity: 'error',
+                        autoHideDuration,
+                    })
+                else
+                    toast.show(unknownErrorMessage, {
+                        severity: 'error',
+                        autoHideDuration,
+                    })
                 return
             }
 

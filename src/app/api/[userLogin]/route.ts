@@ -71,17 +71,16 @@ export async function GET(
         return NextResponse.json({
             publicRecipes: await Promise.all(
                 publicRecipes.map(async (recipe) => {
-                    const reduced = await recipe.publicResources.reduce(
+                    return await recipe.publicResources.reduce(
                         async (accPromise, key) => {
                             let acc = await accPromise
 
                             if (key === 'ingredients') {
-                                acc.ingredients = recipe.ingredients
-                                acc.nutrients = await calculateNutrients(
+                                const nutrients = await calculateNutrients(
                                     {
                                         [emptyUUID]: {
                                             amount: 1,
-                                            name: 'dupa',
+                                            name: '',
                                             ingredients: recipe.ingredients.map(
                                                 (ingredientAmount) => {
                                                     const ingredient = ingredients.find(
@@ -100,6 +99,10 @@ export async function GET(
                                     },
                                     userLogin
                                 )
+                                if ('errorType' in nutrients) throw nutrients
+
+                                acc.ingredients = recipe.ingredients
+                                acc.nutrients = nutrients
                             } else if (key === 'pictures') {
                                 acc.pictures = recipe.pictures?.map(
                                     (picturePath) =>
@@ -121,13 +124,11 @@ export async function GET(
                         },
                         Promise.resolve({ id: recipe.id } as PublicRecipe)
                     )
-
-                    return reduced
                 })
             ),
         })
     } catch (e) {
-        if (e instanceof Object && 'errorType' in e && e.errorType === 'DataError') {
+        if (e instanceof Object && 'errorType' in e) {
             return NextResponse.json(e)
         }
     }
