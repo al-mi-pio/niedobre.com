@@ -46,7 +46,7 @@ export const createRecipe = async (
     if ('errorType' in recipes) {
         return recipes
     }
-    const newRecipes = [...recipes, recipe]
+    const newRecipes = [recipe, ...recipes]
 
     await setToFile(filePath, newRecipes)
 
@@ -226,7 +226,7 @@ export const patchRecipe = async (
     toPatchRecipe.cost = cost
     toPatchRecipe.publicResources = publicResources ?? toPatchRecipe.publicResources
 
-    const newRecipes = [...unchangedRecipes, toPatchRecipe]
+    const newRecipes = [toPatchRecipe, ...unchangedRecipes]
     await setToFile(filePath, newRecipes)
     return [] as Success
 }
