@@ -1,7 +1,7 @@
 import { foodGroups, massUnits, units } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
 import { emptyUUID } from '@/constants/general'
-import { ValidationError } from '@/errors/ValidationError'
+import { validationError } from '@/errors/ValidationError'
 import {
     FoodGroup,
     Ingredient,
@@ -13,12 +13,11 @@ import {
     Unit,
 } from '@/types/Ingredient'
 import { positiveFloatValidation } from '@/utils/validate'
-import { ValidationData, ValidationErrorPayload } from '@/types/default'
+import { Success, ValidationData, ValidationErrorPayload } from '@/types/default'
 import { UUID } from 'crypto'
 import { getCompressedRecipes, patchRecipe } from '@/services/recipeService'
 import { Session } from '@/types/Auth'
 import { deleteIngredient } from '@/services/ingredientService'
-import { SessionError } from '@/errors/SessionError'
 
 export const ingredientToForm = (ingredient: Ingredient): IngredientFormData => {
     const units: IngredientFormDataUnits =
@@ -136,10 +135,9 @@ const validateFormData = (form: IngredientFormData) => {
     }
 
     if (Object.keys(errors).length) {
-        return new ValidationError('Napraw błędne pola', errors)
+        return validationError('Napraw błędne pola', errors)
     }
-
-    return {}
+    return [] as Success
 }
 
 const variables = (form: IngredientFormData) => {
@@ -159,8 +157,19 @@ const variables = (form: IngredientFormData) => {
     }
 }
 export const formToCreateIngredientDTO = (form: IngredientFormData) => {
+    form.amount = form.amount?.replace(',', '.')
+    form.oppositeAmount = form.oppositeAmount?.replace(',', '.')
+    form.costAmount = form.costAmount?.replace(',', '.')
+    form.cost = form.cost?.replace(',', '.')
+    form.foodGroup = form.foodGroup?.replace(',', '.')
+    form.nutrientAmount = form.nutrientAmount?.replace(',', '.')
+    form.kcal = form.kcal?.replace(',', '.')
+    form.protein = form.protein?.replace(',', '.')
+    form.fat = form.fat?.replace(',', '.')
+    form.carbohydrates = form.carbohydrates?.replace(',', '.')
+    form.salt = form.salt?.replace(',', '.')
     const validation = validateFormData(form)
-    if (validation instanceof ValidationError) {
+    if ('errorType' in validation) {
         return validation
     }
 
@@ -240,8 +249,19 @@ export const formToCreateIngredientDTO = (form: IngredientFormData) => {
 }
 
 export const formToPatchIngredientDTO = (form: IngredientFormData) => {
+    form.amount = form.amount?.replace(',', '.')
+    form.oppositeAmount = form.oppositeAmount?.replace(',', '.')
+    form.costAmount = form.costAmount?.replace(',', '.')
+    form.cost = form.cost?.replace(',', '.')
+    form.foodGroup = form.foodGroup?.replace(',', '.')
+    form.nutrientAmount = form.nutrientAmount?.replace(',', '.')
+    form.kcal = form.kcal?.replace(',', '.')
+    form.protein = form.protein?.replace(',', '.')
+    form.fat = form.fat?.replace(',', '.')
+    form.carbohydrates = form.carbohydrates?.replace(',', '.')
+    form.salt = form.salt?.replace(',', '.')
     const validation = validateFormData(form)
-    if (validation instanceof ValidationError) {
+    if ('errorType' in validation) {
         return validation
     }
 
@@ -327,7 +347,7 @@ export const safeIngredientDeletion = async (
     commitDeletion?: boolean
 ) => {
     const recipes = await getCompressedRecipes(session)
-    if (recipes instanceof SessionError) {
+    if ('errorType' in recipes) {
         return recipes
     }
     const recipesWithIngredients = recipes.filter(
@@ -342,11 +362,10 @@ export const safeIngredientDeletion = async (
         )
     }
 
-    await deleteIngredient(ingredientId, session)
     recipesWithIngredients.forEach((recipe) =>
         patchRecipe(
             {
-                id: recipe.id,
+                ...recipe,
                 ingredients: recipe.ingredients.filter(
                     (ingredient) => ingredient.id !== ingredientId
                 ),
@@ -354,5 +373,6 @@ export const safeIngredientDeletion = async (
             session
         )
     )
+    await deleteIngredient(ingredientId, session)
     return [] as string[]
 }

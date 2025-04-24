@@ -1,6 +1,11 @@
-export class SessionError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'SessionError'
-    }
+export const sessionError = (message: string) => {
+    return {
+        errorType: 'SessionError',
+        message,
+    } as SessionError
+}
+
+export interface SessionError {
+    errorType: 'SessionError'
+    message: string
 }

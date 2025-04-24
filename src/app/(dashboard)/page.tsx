@@ -16,21 +16,19 @@ import {
 import { autoHideDuration } from '@/constants/general'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
-import { DataError } from '@/errors/DataError'
 import { GetRecipeDTO } from '@/types/Recipe'
-import { SessionError } from '@/errors/SessionError'
-import { ConversionError } from '@/errors/ConversionError'
-import { IngredientAmount, IngredientSum } from '@/types/Ingredient'
+import { IngredientAmount, IngredientSum, NutrientValues } from '@/types/Ingredient'
 import {
     createSelectedRecipeStructure,
     missingIngredientAndNutritionalValues,
 } from '@/app/(dashboard)/utils'
 import { calculateIngredients, calculateNutrients } from '@/utils/conversion'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { SelectedRecipeList } from '@/app/(dashboard)/components/SelectedRecipeList'
 import { useNotifications } from '@toolpad/core'
 import { IngredientList } from '@/app/(dashboard)/components/IngredientList'
 import { PropertiesList } from '@/app/(dashboard)/components/PropertiesList'
+import { AuthContext } from '@/contexts/Auth'
 import { RecipeList } from '@/app/(dashboard)/components/RecipeList'
 import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
@@ -47,38 +45,65 @@ export type SelectedRecipes = {
 
 const Dashboard = () => {
     const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipes>({})
+    const [properties, setProperties] = useState<NutrientValues>({})
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
     const [loading, setLoading] = useState(true)
     const [calcTab, setCalcTab] = useState(0)
-    const calculatedIngredients = calculateIngredients(selectedRecipes)
-    const { sum, ingredients }: IngredientSum =
-        calculatedIngredients instanceof ConversionError
-            ? { sum: '0', ingredients: [] }
-            : calculatedIngredients
+    const [{ sum, ingredients }, setIngredientSum] = useState<IngredientSum>({
+        sum: '0',
+        ingredients: [],
+    })
     const missingIngredientValues = missingIngredientAndNutritionalValues(ingredients)
-    const properties = calculateNutrients(selectedRecipes)
     const router = useRouter()
     const toast = useNotifications()
+    const user = use(AuthContext)
 
     useEffect(() => {
-        getRecipes(getSession())
+        calculateNutrients(selectedRecipes, user?.login ?? '').then((result) => {
+            if ('errorType' in result) {
+                toast.show(result.message, {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            } else setProperties(result)
+        })
+
+        calculateIngredients(selectedRecipes, user?.login ?? '').then((result) => {
+            if ('errorType' in result)
+                toast.show(result.message, {
+                    severity: 'error',
+                    autoHideDuration,
+                })
+            else setIngredientSum(result)
+        })
+    }, [selectedRecipes, toast, user?.login])
+
+    useEffect(() => {
+        const session = getSession()
+        if ('errorType' in session) {
+            router.push('/login?reason=expired')
+            return
+        }
+
+        getRecipes(session)
             .then((newRecipes) => {
-                if (newRecipes instanceof SessionError) {
-                    router.push('/login?reason=expired')
-                    return
+                if ('errorType' in newRecipes) {
+                    if (newRecipes.errorType === 'SessionError')
+                        router.push('/login?reason=expired')
+                    else
+                        toast.show(newRecipes.message, {
+                            severity: 'error',
+                            autoHideDuration,
+                        })
+                } else {
+                    setRecipes(() => newRecipes ?? [])
+                    setSelectedRecipes(() =>
+                        createSelectedRecipeStructure(newRecipes ?? [])
+                    )
                 }
-                if (newRecipes instanceof DataError) {
-                    toast.show(newRecipes.message, {
-                        severity: 'error',
-                        autoHideDuration,
-                    })
-                    return
-                }
-                setRecipes(() => newRecipes ?? [])
-                setSelectedRecipes(() => createSelectedRecipeStructure(newRecipes ?? []))
             })
             .catch((e) =>
-                toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
+                toast.show(e.message, {
                     severity: 'error',
                     autoHideDuration,
                 })

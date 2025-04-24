@@ -13,3 +13,5 @@ export interface FormTabProps {
     onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
     errors: ValidationError | null
 }
+
+export type Success = []

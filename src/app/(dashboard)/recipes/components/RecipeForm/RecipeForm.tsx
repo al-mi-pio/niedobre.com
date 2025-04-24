@@ -16,7 +16,6 @@ import {
 } from '@mui/material'
 import { UUID } from 'crypto'
 import { Ingredient } from '@/types/Ingredient'
-import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
 import { ChangeEvent, SetStateAction, useEffect, useRef, useState } from 'react'
@@ -24,6 +23,7 @@ import { useNotifications } from '@toolpad/core'
 import { IngredientsTab } from '@/app/(dashboard)/recipes/components/RecipeForm/IngredientsTab'
 import { getIngredients } from '@/services/ingredientService'
 import { PicturesTab } from '@/app/(dashboard)/recipes/components/RecipeForm/PicturesTab'
+import { getRecipes } from '@/services/recipeService'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
 import { MainTab } from '@/app/(dashboard)/recipes/components/RecipeForm/MainTab'
@@ -35,10 +35,10 @@ interface RecipeFormProps {
     onIngredientRowChange: (id: UUID, name: 'amount' | 'unit', value?: string) => void
     onInputChange: (e: ChangeEvent<unknown> | SelectChangeEvent<unknown>) => void
     setRecipeForm: (value: SetStateAction<RecipeFormData>) => void
-    onSave: () => Promise<void>
     onDelete: () => void
     onClose: () => void
     errors: ValidationError | null
+    onSave: () => Promise<void>
 }
 
 export const RecipeForm = ({
@@ -57,26 +57,56 @@ export const RecipeForm = ({
     const ignoreLoad = useRef(false)
     const [saving, setSaving] = useState(false)
     const [recipeTab, setRecipeTab] = useState(0)
-    const [ingredients, setIngredients] = useState<Ingredient[] | null>(null)
+    const [ingredients, setIngredients] = useState<(Ingredient | GetRecipeDTO)[] | null>(
+        null
+    )
     const [hoveredErroredField, setHoveredErroredField] = useState<
         keyof RecipeFormData | undefined
     >(undefined)
 
     const handleSave = () => {
         setSaving(true)
-        onSave().then(() => setSaving(false))
+        onSave().then(() => {
+            loadIngredients().then(() => setSaving(false))
+        })
     }
 
     const loadIngredients = async () => {
         try {
-            const newIngredients = await getIngredients(getSession())
-            if (newIngredients instanceof SessionError) {
+            const session = getSession()
+            if ('errorType' in session) {
                 router.push('/login?reason=expired')
                 return
             }
+
+            const newIngredients = await getIngredients(session)
+            const recipes = await getRecipes(session)
+
+            if ('errorType' in newIngredients || 'errorType' in recipes) {
+                if (
+                    ('errorType' in newIngredients &&
+                        newIngredients.errorType === 'SessionError') ||
+                    ('errorType' in recipes && recipes.errorType === 'SessionError')
+                )
+                    router.push('/login?reason=expired')
+                else if ('errorType' in recipes && recipes.errorType === 'DataError')
+                    toast.show(recipes.message, {
+                        severity: 'error',
+                        autoHideDuration,
+                    })
+                else
+                    toast.show(unknownErrorMessage, {
+                        severity: 'error',
+                        autoHideDuration,
+                    })
+                return
+            }
+
             if (!ignoreLoad.current)
                 setIngredients(() =>
-                    newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1))
+                    [...newIngredients, ...recipes].toSorted((a, b) =>
+                        a.name > b.name ? 1 : -1
+                    )
                 )
         } catch {
             toast.show(unknownErrorMessage, {

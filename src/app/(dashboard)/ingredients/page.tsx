@@ -18,13 +18,11 @@ import { emptyForm, massUnits, newForm, volumeUnits } from '@/constants/ingredie
 import { Ingredient, IngredientFormData, MassUnit } from '@/types/Ingredient'
 import { SelectChangeEvent } from '@mui/material'
 import { ValidationError } from '@/errors/ValidationError'
-import { SessionError } from '@/errors/SessionError'
-import { DataError } from '@/errors/DataError'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { IngredientSelectableList } from '@/app/(dashboard)/ingredients/components/IngredientSelectableList'
+import { SafeDeletionModal } from '@/components/SafeDeletionModal'
 import { selectOutOfScope } from '@/app/(dashboard)/ingredients/utils'
 import { useNotifications } from '@toolpad/core'
-import { IngredientModal } from '@/app/(dashboard)/ingredients/components/IngredientModal'
 import { IngredientForm } from '@/app/(dashboard)/ingredients/components/IngredientForm/IngredientForm'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
@@ -79,16 +77,12 @@ const Ingredients = () => {
                 [event.target.name]: event.target.value,
             } as IngredientFormData
             if (errors) {
-                try {
-                    if (selectedIngredient) formToPatchIngredientDTO(newForm)
-                    else formToCreateIngredientDTO(newForm)
+                const result = selectedIngredient
+                    ? formToPatchIngredientDTO(newForm)
+                    : formToCreateIngredientDTO(newForm)
 
-                    setErrors(null)
-                } catch (e) {
-                    if (e instanceof ValidationError) {
-                        setErrors(e)
-                    }
-                }
+                if ('errorType' in result) setErrors(result)
+                else setErrors(null)
             }
             return newForm
         })
@@ -97,39 +91,46 @@ const Ingredients = () => {
     const handleSave = async () => {
         try {
             const session = getSession()
+            if ('errorType' in session) {
+                router.push('/login?reason=expired')
+                return
+            }
+
             if (selectedIngredient) {
                 const dto = formToPatchIngredientDTO(ingredientForm)
-                if (dto instanceof ValidationError) {
+                if ('errorType' in dto) {
                     setErrors(dto)
                     return
                 }
-                if ((await patchIngredient(dto, session)) instanceof SessionError) {
-                    router.push('/login?reason=expired')
+                const result = await patchIngredient(dto, session)
+                if ('errorType' in result) {
+                    if (result.errorType === 'SessionError')
+                        router.push('/login?reason=expired')
+                    else
+                        toast.show(result.message, {
+                            severity: 'error',
+                            autoHideDuration,
+                        })
                     return
                 }
             } else {
                 const dto = formToCreateIngredientDTO(ingredientForm)
-                if (dto instanceof ValidationError) {
+                if ('errorType' in dto) {
                     setErrors(dto)
                     return
                 }
-                if ((await createIngredient(dto, session)) instanceof SessionError) {
+                if ('errorType' in (await createIngredient(dto, session))) {
                     router.push('/login?reason=expired')
                     return
                 }
             }
             setLoading(true)
             loadIngredients()
-        } catch (e) {
-            if (e instanceof SessionError) {
-                router.push('/login?reason=expired')
-            } else {
-                console.log(e)
-                toast.show(unknownErrorMessage, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            }
+        } catch {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
         }
     }
 
@@ -138,16 +139,22 @@ const Ingredients = () => {
         setLoading(true)
         try {
             const session = getSession()
+            if ('errorType' in session) {
+                router.push('/login?reason=expired')
+                return
+            }
+
             if (selectedIngredient?.id) {
                 const recipes = await safeIngredientDeletion(
                     selectedIngredient.id,
                     session,
                     !!recipesWithIngredient.length
                 )
-                if (recipes instanceof SessionError) {
+                if ('errorType' in recipes) {
                     router.push('/login?reason=expired')
                     return
                 }
+
                 if (recipes.length) {
                     setRecipesWithIngredient(recipes)
                     setLoading(false)
@@ -159,30 +166,26 @@ const Ingredients = () => {
 
             setSelectedIngredient(null)
             loadIngredients()
-        } catch (e) {
-            if (e instanceof DataError) {
-                toast.show(e.message, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            } else if (e instanceof SessionError) {
-                router.push('/login?reason=expired')
-            } else {
-                console.log(e)
-                toast.show(unknownErrorMessage, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            }
-            setLoading(false)
+        } catch {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
         }
+
+        setLoading(false)
     }
 
     const loadIngredients = () => {
-        getIngredients(getSession())
+        const session = getSession()
+        if ('errorType' in session) {
+            router.push('/login?reason=expired')
+            return
+        }
+
+        getIngredients(session)
             .then((newIngredients) => {
-                if (newIngredients instanceof SessionError)
-                    router.push('/login?reason=expired')
+                if ('errorType' in newIngredients) router.push('/login?reason=expired')
                 else
                     setIngredients(() =>
                         newIngredients.toSorted((a, b) => (a.name > b.name ? 1 : -1))
@@ -250,13 +253,14 @@ const Ingredients = () => {
                 )}
             </Grid>
 
-            <IngredientModal
+            <SafeDeletionModal
                 which={recipesWithIngredient.length ? 2 : 1}
-                open={modalOpen}
+                elementName={selectedIngredient?.name}
+                recipes={recipesWithIngredient}
                 onClose={handleModalClose}
                 onAction={handleDelete}
-                ingredientName={selectedIngredient?.name}
-                recipes={recipesWithIngredient}
+                elementType="składnik"
+                open={modalOpen}
             />
         </Grid>
     )

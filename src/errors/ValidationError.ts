@@ -1,10 +1,15 @@
 import { ValidationErrorPayload } from '@/types/default'
 
-export class ValidationError extends Error {
+export const validationError = (message: string, payload: ValidationErrorPayload) => {
+    return {
+        errorType: 'ValidationError',
+        message,
+        payload,
+    } as ValidationError
+}
+
+export interface ValidationError {
+    errorType: 'ValidationError'
+    message: string
     payload: ValidationErrorPayload
-    constructor(message: string, payload: ValidationErrorPayload) {
-        super(message)
-        this.name = 'ValidationError'
-        this.payload = payload
-    }
 }

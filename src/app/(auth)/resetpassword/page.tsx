@@ -2,28 +2,28 @@
 
 import LoginRegister from '@/app/(auth)/LoginRegisterPage'
 import { Spinner } from '@/components/Spinner'
+import { validationError } from '@/errors/ValidationError'
 import { passwordValidation } from '@/utils/validate'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { changePassword, resetPasswordRequest } from '@/services/authService'
 import { emptyUUID, unknownErrorMessage } from '@/constants/general'
 import { AuthProvider, AuthResponse } from '@toolpad/core'
-import { ValidationError } from '@/errors/ValidationError'
 import { UUID } from 'crypto'
 
 const providers = [{ id: 'nodemailer', name: 'Email' }]
 
 const validatePasswords = (password?: string, secondPassword?: string) => {
     if (!password || !secondPassword) {
-        throw new ValidationError('Pola nie mogą być puste', {})
+        throw validationError('Pola nie mogą być puste', {})
     }
 
     if (password !== secondPassword) {
-        throw new ValidationError('Hasła muszą być identyczne', {})
+        throw validationError('Hasła muszą być identyczne', {})
     }
 
     if (!passwordValidation(password)) {
-        throw new ValidationError(
+        throw validationError(
             'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
             {}
         )
@@ -52,11 +52,9 @@ const ResetPassword = () => {
                 token ? (token as UUID) : emptyUUID,
                 password
             )
-            if (passwordChanged instanceof Error) {
-                return {
-                    type: 'error',
-                    error: passwordChanged.message,
-                }
+
+            if (passwordChanged.error) {
+                return passwordChanged
             }
         } catch (e) {
             if (e instanceof Error) {
@@ -87,11 +85,8 @@ const ResetPassword = () => {
                 window.location.origin
             )
             setPending(false)
-            if (request instanceof Error) {
-                return {
-                    type: 'error',
-                    error: request.message,
-                }
+            if (request.error) {
+                return request
             }
         } catch (e) {
             setPending(false)

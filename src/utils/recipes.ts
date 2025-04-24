@@ -1,4 +1,4 @@
-import { ValidationErrorPayload } from '@/types/default'
+import { Success, ValidationErrorPayload } from '@/types/default'
 import {
     CreateRecipeDTO,
     GetRecipeDTO,
@@ -9,9 +9,11 @@ import {
 } from '@/types/Recipe'
 import { UUID } from 'crypto'
 import { positiveFloatValidation } from './validate'
-import { ValidationError } from '@/errors/ValidationError'
+import { validationError } from '@/errors/ValidationError'
 import { saveImage } from './file'
 import { emptyUUID } from '@/constants/general'
+import { Session } from '@/types/Auth'
+import { deleteRecipe, getCompressedRecipes, patchRecipe } from '@/services/recipeService'
 
 export const recipeToForm = (recipe: GetRecipeDTO) => {
     return {
@@ -94,15 +96,20 @@ const validateFormData = (form: RecipeFormData) => {
     }
 
     if (Object.keys(errors).length) {
-        return new ValidationError('Napraw błędne pola', errors)
+        return validationError('Napraw błędne pola', errors)
     }
 
-    return {}
+    return [] as Success
 }
 
 export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
+    form.ingredients = form.ingredients?.map((ingredient) => ({
+        ...ingredient,
+        amount: ingredient.amount?.replace(',', '.'),
+    }))
+    form.cost = form.cost?.replace(',', '.')
     const validation = validateFormData(form)
-    if (validation instanceof ValidationError) {
+    if ('errorType' in validation) {
         return validation
     }
     const savedPictures = await Promise.all(
@@ -137,8 +144,13 @@ export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
 }
 
 export const formToPatchRecipeDTO = async (form: RecipeFormData) => {
+    form.ingredients = form.ingredients?.map((ingredient) => ({
+        ...ingredient,
+        amount: ingredient.amount?.replace(',', '.'),
+    }))
+    form.cost = form.cost?.replace(',', '.')
     const validation = validateFormData(form)
-    if (validation instanceof ValidationError) {
+    if ('errorType' in validation) {
         return validation
     }
     const savedPictures = await Promise.all(
@@ -174,4 +186,39 @@ export const formToPatchRecipeDTO = async (form: RecipeFormData) => {
             ? ['name', ...(form.publicResources as string[])]
             : [],
     } as PatchRecipeDTO
+}
+
+export const safeRecipeDeletion = async (
+    recipeId: UUID,
+    session: Session,
+    commitDeletion?: boolean
+) => {
+    const recipes = await getCompressedRecipes(session)
+    if ('errorType' in recipes) {
+        return recipes
+    }
+    const recipesWithIngredients = recipes.filter(
+        (recipe) =>
+            recipe.ingredients.filter((ingredient) => ingredient.id === recipeId).length
+    )
+    if (!commitDeletion) {
+        return recipesWithIngredients.reduce(
+            (prev, curr) => [...prev, curr.name],
+            [] as string[]
+        )
+    }
+
+    recipesWithIngredients.forEach((recipe) =>
+        patchRecipe(
+            {
+                ...recipe,
+                ingredients: recipe.ingredients.filter(
+                    (ingredient) => ingredient.id !== recipeId
+                ),
+            },
+            session
+        )
+    )
+    await deleteRecipe(recipeId, session)
+    return [] as string[]
 }

@@ -9,6 +9,8 @@ import { signOut } from '@/services/authService'
 const handleLogout = async () => {
     const session = getSession()
     removeSession()
+    if ('errorType' in session) return
+
     await signOut(session)
 }
 

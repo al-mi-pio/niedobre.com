@@ -1,4 +1,4 @@
-import { IngredientAmount, MissingValues } from '@/types/Ingredient'
+import { FlatIngredientAmount, MissingValues } from '@/types/Ingredient'
 import { GetRecipeDTO } from '@/types/Recipe'
 
 export const createSelectedRecipeStructure = (recipes: GetRecipeDTO[]) =>
@@ -23,7 +23,7 @@ export const createSelectedRecipeStructure = (recipes: GetRecipeDTO[]) =>
         : {}
 
 export const missingIngredientAndNutritionalValues = (
-    ingredients: IngredientAmount[]
+    ingredients: FlatIngredientAmount[]
 ): MissingValues => {
     return {
         cost: ingredients.reduce(

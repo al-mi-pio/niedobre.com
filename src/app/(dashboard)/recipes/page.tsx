@@ -4,8 +4,6 @@ import { autoHideDuration, unknownErrorMessage } from '@/constants/general'
 import { emptyForm, newForm } from '@/constants/recipes'
 import { Grid } from '@mui/system'
 import { UUID } from 'crypto'
-import { DataError } from '@/errors/DataError'
-import { SessionError } from '@/errors/SessionError'
 import { ValidationError } from '@/errors/ValidationError'
 import { SelectChangeEvent } from '@mui/material'
 import { GetRecipeDTO, RecipeFormData } from '@/types/Recipe'
@@ -13,7 +11,6 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { createIngredientRowsStructure } from '@/app/(dashboard)/recipes/utils'
 import { RecipeSelectableList } from '@/app/(dashboard)/recipes/components/RecipeSelectableList'
 import { useNotifications } from '@toolpad/core'
-import { RecipeModal } from '@/app/(dashboard)/recipes/components/RecipeModal'
 import { RecipeForm } from '@/app/(dashboard)/recipes/components/RecipeForm/RecipeForm'
 import { getSession } from '@/utils/session'
 import { useRouter } from 'next/navigation'
@@ -21,6 +18,7 @@ import { Spinner } from '@/components/Spinner'
 import {
     formToCreateRecipeDTO,
     formToPatchRecipeDTO,
+    safeRecipeDeletion,
     recipeToForm,
 } from '@/utils/recipes'
 import {
@@ -29,12 +27,14 @@ import {
     getRecipes,
     patchRecipe,
 } from '@/services/recipeService'
+import { SafeDeletionModal } from '@/components/SafeDeletionModal'
 
 const Recipes = () => {
     const router = useRouter()
     const toast = useNotifications()
     const [errors, setErrors] = useState<ValidationError | null>(null)
     const [recipes, setRecipes] = useState<GetRecipeDTO[]>([])
+    const [recipesWithRecipe, setRecipesWithRecipe] = useState<string[]>([])
     const [selectedRecipe, setSelectedRecipe] = useState<GetRecipeDTO | null>(null)
     const [recipeForm, setRecipeForm] = useState<RecipeFormData>(emptyForm)
     const [modalOpen, setModalOpen] = useState(false)
@@ -55,15 +55,14 @@ const Recipes = () => {
         setRecipeForm(newForm)
     }
 
-    const handleError = (error: unknown) => {
-        if (error instanceof ValidationError) {
-            setErrors(error)
-        } else {
-            toast.show(unknownErrorMessage, {
-                severity: 'error',
-                autoHideDuration,
-            })
-        }
+    const handleError = (result: ValidationError | object) => {
+        if ('errorType' in result) setErrors(result)
+        else setErrors(null)
+    }
+
+    const handleModalClose = () => {
+        setModalOpen(false)
+        setTimeout(() => setRecipesWithRecipe([]), 200)
     }
 
     const handleIngredientRowChange = (
@@ -84,13 +83,8 @@ const Recipes = () => {
             } as RecipeFormData
             if (errors) {
                 if (selectedRecipe)
-                    formToPatchRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
-                else
-                    formToCreateRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
+                    formToPatchRecipeDTO(newForm).then((result) => handleError(result))
+                else formToCreateRecipeDTO(newForm).then((result) => handleError(result))
             }
             return newForm
         })
@@ -116,13 +110,8 @@ const Recipes = () => {
             } as RecipeFormData
             if (errors) {
                 if (selectedRecipe)
-                    formToPatchRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
-                else
-                    formToCreateRecipeDTO(newForm)
-                        .then(() => setErrors(null))
-                        .catch(handleError)
+                    formToPatchRecipeDTO(newForm).then((result) => handleError(result))
+                else formToCreateRecipeDTO(newForm).then((result) => handleError(result))
             }
             return newForm
         })
@@ -131,24 +120,35 @@ const Recipes = () => {
     const handleSave = async () => {
         try {
             const session = getSession()
+            if ('errorType' in session) {
+                router.push('/login?reason=expired')
+                return
+            }
 
             if (selectedRecipe) {
                 const dto = await formToPatchRecipeDTO(recipeForm)
-                if (dto instanceof ValidationError) {
+                if ('errorType' in dto) {
                     setErrors(dto)
                     return
                 }
-                if ((await patchRecipe(dto, session)) instanceof SessionError) {
-                    router.push('/login?reason=expired')
+                const result = await patchRecipe(dto, session)
+                if ('errorType' in result) {
+                    if (result.errorType === 'SessionError')
+                        router.push('/login?reason=expired')
+                    else
+                        toast.show(result.message, {
+                            severity: 'error',
+                            autoHideDuration,
+                        })
                     return
                 }
             } else {
                 const dto = await formToCreateRecipeDTO(recipeForm)
-                if (dto instanceof ValidationError) {
+                if ('errorType' in dto) {
                     setErrors(dto)
                     return
                 }
-                if ((await createRecipe(dto, session)) instanceof SessionError) {
+                if ('errorType' in (await createRecipe(dto, session))) {
                     router.push('/login?reason=expired')
                     return
                 }
@@ -156,15 +156,11 @@ const Recipes = () => {
 
             setLoading(true)
             loadRecipes()
-        } catch (e) {
-            if (e instanceof SessionError) {
-                router.push('/login?reason=expired')
-            } else {
-                toast.show(unknownErrorMessage, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            }
+        } catch {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
         }
     }
 
@@ -173,47 +169,66 @@ const Recipes = () => {
         setLoading(true)
         try {
             const session = getSession()
+            if ('errorType' in session) {
+                router.push('/login?reason=expired')
+                return
+            }
+
             if (selectedRecipe?.id) {
+                const badRecipes = await safeRecipeDeletion(
+                    selectedRecipe.id,
+                    session,
+                    !!recipesWithRecipe.length
+                )
+                if ('errorType' in badRecipes) {
+                    router.push('/login?reason=expired')
+                    return
+                }
+                if (badRecipes.length) {
+                    setRecipesWithRecipe(badRecipes)
+                    setLoading(false)
+                    setModalOpen(true)
+                    return
+                }
                 await deleteRecipe(selectedRecipe.id, session)
             }
 
             setSelectedRecipe(null)
             loadRecipes()
-        } catch (e) {
-            if (e instanceof DataError) {
-                toast.show(e.message, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            } else if (e instanceof SessionError) {
-                router.push('/login?reason=expired')
-            } else {
-                toast.show(unknownErrorMessage, {
-                    severity: 'error',
-                    autoHideDuration,
-                })
-            }
-            setLoading(false)
+        } catch {
+            toast.show(unknownErrorMessage, {
+                severity: 'error',
+                autoHideDuration,
+            })
         }
+
+        setLoading(false)
     }
 
     const loadRecipes = () => {
-        getRecipes(getSession())
+        const session = getSession()
+        if ('errorType' in session) {
+            router.push('/login?reason=expired')
+            return
+        }
+
+        getRecipes(session)
             .then((newRecipes) => {
-                if (newRecipes instanceof SessionError)
-                    router.push('/login?reason=expired')
-                else if (newRecipes instanceof DataError)
-                    toast.show(newRecipes.message, {
-                        severity: 'error',
-                        autoHideDuration,
-                    })
-                else
+                if ('errorType' in newRecipes) {
+                    if (newRecipes.message === 'SessionError')
+                        router.push('/login?reason=expired')
+                    else
+                        toast.show(newRecipes.message, {
+                            severity: 'error',
+                            autoHideDuration,
+                        })
+                } else
                     setRecipes(() =>
                         (newRecipes ?? []).toSorted((a, b) => (a.name > b.name ? 1 : -1))
                     )
             })
             .catch((e) =>
-                toast.show(`Problem z załadowaniem przepisów: ${e.message}`, {
+                toast.show(e.message, {
                     severity: 'error',
                     autoHideDuration,
                 })
@@ -274,11 +289,14 @@ const Recipes = () => {
                 )}
             </Grid>
 
-            <RecipeModal
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
+            <SafeDeletionModal
+                which={recipesWithRecipe.length ? 2 : 1}
+                elementName={selectedRecipe?.name}
+                recipes={recipesWithRecipe}
+                onClose={handleModalClose}
                 onAction={handleDelete}
-                recipeName={selectedRecipe?.name}
+                elementType="przepis"
+                open={modalOpen}
             />
         </Grid>
     )
