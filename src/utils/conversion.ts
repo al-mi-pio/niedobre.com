@@ -201,29 +201,67 @@ export const calculateNutrients = async (
             flattenRecipes(ingredients, allIngredients, allRecipes)
         )
         return {
-            kcal: flattenedRecipe
-                .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0), 0)
-                .toFixed(0)
-                .replace('.', ','),
-            protein: flattenedRecipe
-                .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.protein ?? 0), 0)
-                .toFixed(0)
-                .replace('.', ','),
-            fat: flattenedRecipe
-                .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.fat ?? 0), 0)
-                .toFixed(0)
-                .replace('.', ','),
-            carbohydrates: flattenedRecipe
-                .reduce(
-                    (acc, ing) => acc + ing.amount * (ing.ingredient.carbohydrates ?? 0),
-                    0
-                )
-                .toFixed(0)
-                .replace('.', ','),
-            salt: flattenedRecipe
-                .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.salt ?? 0), 0)
-                .toFixed(0)
-                .replace('.', ','),
+            kcal: flattenedRecipe.reduce(
+                (acc, ing) => (acc ? true : ing.ingredient.kcal !== undefined),
+                false
+            )
+                ? flattenedRecipe
+                      .reduce(
+                          (acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0),
+                          0
+                      )
+                      .toFixed(0)
+                      .replace('.', ',')
+                : '',
+            protein: flattenedRecipe.reduce(
+                (acc, ing) => (acc ? true : ing.ingredient.protein !== undefined),
+                false
+            )
+                ? flattenedRecipe
+                      .reduce(
+                          (acc, ing) => acc + ing.amount * (ing.ingredient.protein ?? 0),
+                          0
+                      )
+                      .toFixed(0)
+                      .replace('.', ',')
+                : '',
+            fat: flattenedRecipe.reduce(
+                (acc, ing) => (acc ? true : ing.ingredient.fat !== undefined),
+                false
+            )
+                ? flattenedRecipe
+                      .reduce(
+                          (acc, ing) => acc + ing.amount * (ing.ingredient.fat ?? 0),
+                          0
+                      )
+                      .toFixed(0)
+                      .replace('.', ',')
+                : '',
+            carbohydrates: flattenedRecipe.reduce(
+                (acc, ing) => (acc ? true : ing.ingredient.carbohydrates !== undefined),
+                false
+            )
+                ? flattenedRecipe
+                      .reduce(
+                          (acc, ing) =>
+                              acc + ing.amount * (ing.ingredient.carbohydrates ?? 0),
+                          0
+                      )
+                      .toFixed(0)
+                      .replace('.', ',')
+                : '',
+            salt: flattenedRecipe.reduce(
+                (acc, ing) => (acc ? true : ing.ingredient.salt !== undefined),
+                false
+            )
+                ? flattenedRecipe
+                      .reduce(
+                          (acc, ing) => acc + ing.amount * (ing.ingredient.salt ?? 0),
+                          0
+                      )
+                      .toFixed(0)
+                      .replace('.', ',')
+                : '',
         } as NutrientValues
     } catch (e) {
         if (e instanceof Object && 'errorType' in e && e.errorType === 'DataError') {

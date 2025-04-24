@@ -49,49 +49,59 @@ export const PropertiesList = ({
     missingIngredientValues,
 }: PropertiesListProps) => (
     <>
-        <Property
-            missingIngredientValues={missingIngredientValues}
-            secondary={`${properties.kcal} kcal`}
-            titleName="podanej wartości kalorycznej"
-            primary="Wartość kaloryczna"
-            properties={properties}
-            property="kcal"
-        />
+        {properties.kcal && (
+            <Property
+                missingIngredientValues={missingIngredientValues}
+                secondary={`${properties.kcal} kcal`}
+                titleName="podanej wartości kalorycznej"
+                primary="Wartość kaloryczna"
+                properties={properties}
+                property="kcal"
+            />
+        )}
 
-        <Property
-            missingIngredientValues={missingIngredientValues}
-            secondary={`${properties.fat} g`}
-            titleName="podanej zawartości tłuszczu"
-            primary="Tłuszcz"
-            properties={properties}
-            property="fat"
-        />
+        {properties.fat && (
+            <Property
+                missingIngredientValues={missingIngredientValues}
+                secondary={`${properties.fat} g`}
+                titleName="podanej zawartości tłuszczu"
+                primary="Tłuszcz"
+                properties={properties}
+                property="fat"
+            />
+        )}
 
-        <Property
-            missingIngredientValues={missingIngredientValues}
-            secondary={`${properties.carbohydrates} g`}
-            titleName="podanej zawartości węglowodanów"
-            primary="Węglowodany"
-            properties={properties}
-            property="carbohydrates"
-        />
+        {properties.carbohydrates && (
+            <Property
+                missingIngredientValues={missingIngredientValues}
+                secondary={`${properties.carbohydrates} g`}
+                titleName="podanej zawartości węglowodanów"
+                primary="Węglowodany"
+                properties={properties}
+                property="carbohydrates"
+            />
+        )}
 
-        <Property
-            missingIngredientValues={missingIngredientValues}
-            secondary={`${properties.protein} g`}
-            titleName="podanej zawartości białka"
-            primary="Białko"
-            properties={properties}
-            property="protein"
-        />
+        {properties.protein && (
+            <Property
+                missingIngredientValues={missingIngredientValues}
+                secondary={`${properties.protein} g`}
+                titleName="podanej zawartości białka"
+                primary="Białko"
+                properties={properties}
+                property="protein"
+            />
+        )}
 
-        <Property
-            missingIngredientValues={missingIngredientValues}
-            secondary={`${properties.salt} g`}
-            titleName="podanej zawartości soli"
-            primary="Sól"
-            properties={properties}
-            property="salt"
-        />
+        {properties.salt && (
+            <Property
+                missingIngredientValues={missingIngredientValues}
+                secondary={`${properties.salt} g`}
+                titleName="podanej zawartości soli"
+                primary="Sól"
+                properties={properties}
+                property="salt"
+            />
+        )}
     </>
 )
