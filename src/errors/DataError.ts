@@ -1,6 +1,11 @@
-export class DataError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'DataError'
-    }
+export const dataError = (message: string) => {
+    return {
+        errorType: 'DataError',
+        message,
+    } as DataError
+}
+
+export interface DataError {
+    errorType: 'DataError'
+    message: string
 }
