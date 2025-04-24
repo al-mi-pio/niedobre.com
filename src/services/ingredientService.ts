@@ -1,6 +1,6 @@
 'use server'
-import { DataError } from '@/errors/DataError'
-import { SessionError } from '@/errors/SessionError'
+import { dataError } from '@/errors/DataError'
+
 import { Session } from '@/types/Auth'
 import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
 import { verifySession } from '@/utils/auth'
@@ -48,7 +48,7 @@ export const createIngredient = async (
         protein,
     }
     const ingredients = await getIngredients(session)
-    if (ingredients instanceof SessionError) {
+    if ('errorType' in ingredients) {
         return ingredients
     }
     const newIngredients = [...ingredients, ingredient]
@@ -67,7 +67,7 @@ export const getIngredients = async (session: Session) => {
     )
 
     const verifiedSession = await verifySession(session)
-    if (verifiedSession instanceof SessionError) {
+    if ('errorType' in verifiedSession) {
         return verifiedSession
     }
 
@@ -77,12 +77,12 @@ export const getIngredients = async (session: Session) => {
 
 export const getIngredientById = async (id: UUID, session: Session) => {
     const ingredients = await getIngredients(session)
-    if (ingredients instanceof SessionError) {
+    if ('errorType' in ingredients) {
         return ingredients
     }
     const ingredient = ingredients.find((ingredient) => ingredient.id === id)
     if (ingredient === undefined) {
-        return new DataError(`Składnik z id ${id} nie istnieje`)
+        return dataError(`Składnik z id ${id} nie istnieje`)
     }
     return ingredient
 }
@@ -97,7 +97,7 @@ export const deleteIngredient = async (id: UUID, session: Session) => {
         'ingredients.json'
     )
     const ingredients = await getIngredients(session)
-    if (ingredients instanceof SessionError) {
+    if ('errorType' in ingredients) {
         return ingredients
     }
     const newIngredients = ingredients.filter((ingredient) => ingredient.id !== id)
@@ -129,13 +129,13 @@ export const patchIngredient = async (
         'ingredients.json'
     )
     const ingredients = await getIngredients(session)
-    if (ingredients instanceof SessionError) {
+    if ('errorType' in ingredients) {
         return ingredients
     }
     const unchangedIngredients = ingredients.filter((ingredient) => ingredient.id !== id)
     const toPatchIngredient = ingredients.find((ingredient) => ingredient.id === id)
     if (!toPatchIngredient) {
-        return new DataError(`Składnik z id ${id} nie istnieje`)
+        return dataError(`Składnik z id ${id} nie istnieje`)
     }
 
     toPatchIngredient.name = name ?? toPatchIngredient.name

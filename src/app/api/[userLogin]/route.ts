@@ -1,7 +1,7 @@
 import { GetRecipeDTO, PublicRecipe, Recipe } from '@/types/Recipe'
 import { NextResponse } from 'next/server'
 import { Ingredient } from '@/types/Ingredient'
-import { DataError } from '@/errors/DataError'
+import { dataError } from '@/errors/DataError'
 import { emptyUUID } from '@/constants/general'
 import { join } from 'path'
 import { getFromFile } from '@/utils/file'
@@ -44,9 +44,7 @@ export async function GET(
                 if (ingredient === undefined) {
                     const recipe = recipes.find((rec) => rec.id === ingredientId.id)
                     if (recipe === undefined) {
-                        throw new DataError(
-                            `Składnik z id ${ingredientId.id} nie istnieje`
-                        )
+                        throw dataError(`Składnik z id ${ingredientId.id} nie istnieje`)
                     }
 
                     return {
@@ -129,7 +127,7 @@ export async function GET(
             ),
         })
     } catch (e) {
-        if (e instanceof DataError) {
+        if (e instanceof Object && 'errorType' in e && e.errorType === 'DataError') {
             return NextResponse.json(e)
         }
     }

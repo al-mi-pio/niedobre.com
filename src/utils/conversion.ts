@@ -1,7 +1,7 @@
 'use server'
 import { massUnits, volumeUnits } from '@/constants/ingredients'
 import { measurements } from '@/constants/measurements'
-import { ConversionError } from '@/errors/ConversionError'
+import { conversionError } from '@/errors/ConversionError'
 import {
     FlatIngredientAmount,
     Ingredient,
@@ -235,7 +235,7 @@ const convertToBaseMeasurement = (ingredient: IngredientAmount): FlatIngredientA
             volumeUnits.includes(ingredient.unit as VolumeUnit) &&
             ingredient.ingredient.conversion === undefined
         ) {
-            throw new ConversionError('Brak przelicznika z masy na objętość')
+            throw conversionError('Brak przelicznika z masy na objętość')
         }
         const amount = volumeUnits.includes(ingredient.unit as VolumeUnit)
             ? baseAmount * ingredient.ingredient.conversion!
@@ -255,7 +255,7 @@ const convertToBaseMeasurement = (ingredient: IngredientAmount): FlatIngredientA
             massUnits.includes(ingredient.unit as MassUnit) &&
             ingredient.ingredient.conversion === undefined
         ) {
-            throw new ConversionError('Brak przelicznika z objętośći na masę')
+            throw conversionError('Brak przelicznika z objętośći na masę')
         }
         const amount = massUnits.includes(ingredient.unit as MassUnit)
             ? baseAmount * ingredient.ingredient.conversion!
@@ -268,7 +268,7 @@ const convertToBaseMeasurement = (ingredient: IngredientAmount): FlatIngredientA
         }
     }
     if (ingredient.unit !== 'szt.') {
-        throw new ConversionError('Nie można konwertować policzalnych składników')
+        throw conversionError('Nie można konwertować policzalnych składników')
     }
     return {
         ingredient: {

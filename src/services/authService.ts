@@ -10,7 +10,6 @@ import { createTransport } from 'nodemailer'
 import get from '@/utils/config'
 import { appName } from '@/constants/general'
 import { passwordValidation } from '@/utils/validate'
-import { SessionError } from '@/errors/SessionError'
 
 export const signIn = async ({ login, password }: SignInDTO) => {
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
@@ -45,7 +44,7 @@ export const signIn = async ({ login, password }: SignInDTO) => {
 
 export const signOut = async (session: Session) => {
     const verifiedSession = await verifySession(session)
-    if (verifiedSession instanceof SessionError) {
+    if ('errorType' in verifiedSession) {
         return verifiedSession
     }
 
@@ -84,30 +83,30 @@ export const resetPasswordRequest = async (login: string, url: string) => {
             timestamp: Date.now() + 10 * 60 * 1000,
         }
         await setToFile(filePath, user)
-    }
 
-    const email = 'niedobre.com@gmail.com'
-    const link = `${url}/resetpassword?token=${passwordResetToken}&login=${login}`
-    const transporter = createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-            user: email,
-            pass: get.mailPassword(),
-        },
-    })
-    const date = new Date(Date.now())
-    const mailOptions = {
-        from: email,
-        to: user.email,
-        subject: `${appName} reset hasła`,
-        html: `<p>Otrzymaliśmy prośbę o zresetowanie twojego hasła ${date.toLocaleDateString('pl-Pl')} o ${date.toLocaleTimeString('pl-PL')}</p><br/>
+        const email = 'niedobre.com@gmail.com'
+        const link = `${url}/resetpassword?token=${passwordResetToken}&login=${login}`
+        const transporter = createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: email,
+                pass: get.mailPassword(),
+            },
+        })
+        const date = new Date(Date.now())
+        const mailOptions = {
+            from: email,
+            to: user.email,
+            subject: `${appName} reset hasła`,
+            html: `<p>Otrzymaliśmy prośbę o zresetowanie twojego hasła ${date.toLocaleDateString('pl-Pl')} o ${date.toLocaleTimeString('pl-PL')}</p><br/>
                 <p>Kliknij <a href="${link}">następujący link</a>, aby zresetować twoje hasło</p><br/>
                 <p>Link straci ważność o ${new Date(Date.now() + 10 * 60 * 1000).toLocaleTimeString('pl-PL')}. Nikomu nie podawaj tego linku!</p>`,
-    }
+        }
 
-    await transporter.sendMail(mailOptions)
+        await transporter.sendMail(mailOptions)
+    }
     return {}
 }
 

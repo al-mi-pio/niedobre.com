@@ -1,5 +1,5 @@
 'use server'
-import { DataError } from '@/errors/DataError'
+import { dataError } from '@/errors/DataError'
 import { randomUUID } from 'crypto'
 import fs from 'fs'
 import { join } from 'path'
@@ -14,7 +14,7 @@ export const setToFile = async (filePath: string, file: object) => {
 
 export const saveImage = async (image: File) => {
     if (!image.name) {
-        return new DataError(`Błędna nazwa zdjęcia`)
+        return dataError(`Błędna nazwa zdjęcia`)
     }
     const imageId = randomUUID()
     const folderPath = join(process.cwd(), 'public', 'pictures', imageId)

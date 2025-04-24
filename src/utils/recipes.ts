@@ -1,4 +1,4 @@
-import { ValidationErrorPayload } from '@/types/default'
+import { Success, ValidationErrorPayload } from '@/types/default'
 import {
     CreateRecipeDTO,
     GetRecipeDTO,
@@ -9,12 +9,11 @@ import {
 } from '@/types/Recipe'
 import { UUID } from 'crypto'
 import { positiveFloatValidation } from './validate'
-import { ValidationError } from '@/errors/ValidationError'
+import { validationError } from '@/errors/ValidationError'
 import { saveImage } from './file'
 import { emptyUUID } from '@/constants/general'
 import { Session } from '@/types/Auth'
 import { deleteRecipe, getCompressedRecipes, patchRecipe } from '@/services/recipeService'
-import { SessionError } from '@/errors/SessionError'
 
 export const recipeToForm = (recipe: GetRecipeDTO) => {
     return {
@@ -97,10 +96,10 @@ const validateFormData = (form: RecipeFormData) => {
     }
 
     if (Object.keys(errors).length) {
-        return new ValidationError('Napraw błędne pola', errors)
+        return validationError('Napraw błędne pola', errors)
     }
 
-    return {}
+    return [] as Success
 }
 
 export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
@@ -110,7 +109,7 @@ export const formToCreateRecipeDTO = async (form: RecipeFormData) => {
     }))
     form.cost = form.cost?.replace(',', '.')
     const validation = validateFormData(form)
-    if (validation instanceof ValidationError) {
+    if ('errorType' in validation) {
         return validation
     }
     const savedPictures = await Promise.all(
@@ -151,7 +150,7 @@ export const formToPatchRecipeDTO = async (form: RecipeFormData) => {
     }))
     form.cost = form.cost?.replace(',', '.')
     const validation = validateFormData(form)
-    if (validation instanceof ValidationError) {
+    if ('errorType' in validation) {
         return validation
     }
     const savedPictures = await Promise.all(
@@ -195,7 +194,7 @@ export const safeRecipeDeletion = async (
     commitDeletion?: boolean
 ) => {
     const recipes = await getCompressedRecipes(session)
-    if (recipes instanceof SessionError) {
+    if ('errorType' in recipes) {
         return recipes
     }
     const recipesWithIngredients = recipes.filter(

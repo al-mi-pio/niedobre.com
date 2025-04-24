@@ -6,7 +6,8 @@ import { getFromFile, removeImage, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
 import { getIngredientById } from '@/services/ingredientService'
-import { DataError } from '@/errors/DataError'
+import { DataError, dataError } from '@/errors/DataError'
+import { Success } from '@/types/default'
 import { SessionError } from '@/errors/SessionError'
 
 export const createRecipe = async (
@@ -42,7 +43,7 @@ export const createRecipe = async (
         publicResources: publicResources?.length ? publicResources : [],
     }
     const recipes = await getCompressedRecipes(session)
-    if (recipes instanceof SessionError) {
+    if ('errorType' in recipes) {
         return recipes
     }
     const newRecipes = [...recipes, recipe]
@@ -61,7 +62,7 @@ export const getCompressedRecipes = async (session: Session) => {
     )
 
     const verifiedSession = await verifySession(session)
-    if (verifiedSession instanceof SessionError) {
+    if ('errorType' in verifiedSession) {
         return verifiedSession
     }
 
@@ -71,7 +72,7 @@ export const getCompressedRecipes = async (session: Session) => {
 
 export const getRecipes = async (session: Session) => {
     const compressedRecipes = await getCompressedRecipes(session)
-    if (compressedRecipes instanceof SessionError) {
+    if ('errorType' in compressedRecipes) {
         return compressedRecipes
     }
     try {
@@ -89,22 +90,22 @@ export const getRecipes = async (session: Session) => {
                             ingredient.id,
                             session
                         )
-                        if (fullIngredient instanceof SessionError) {
+                        if (
+                            'errorType' in fullIngredient &&
+                            fullIngredient.errorType === 'SessionError'
+                        ) {
                             throw fullIngredient
                         }
-                        if (fullIngredient instanceof DataError) {
+                        if ('errorType' in fullIngredient) {
                             const recipes = (await getCompressedRecipes(session)) ?? []
-                            if (
-                                recipes instanceof DataError ||
-                                recipes instanceof SessionError
-                            ) {
+                            if ('errorType' in recipes) {
                                 throw recipes
                             }
                             const recipe = recipes.find(
                                 (recipe) => recipe.id === ingredient.id
                             )
                             if (!recipe) {
-                                throw new DataError(
+                                throw dataError(
                                     `Przepis z id ${ingredient.id} nie istnieje`
                                 )
                             }
@@ -127,8 +128,11 @@ export const getRecipes = async (session: Session) => {
         )
         return recipes
     } catch (e) {
-        if (e instanceof DataError || e instanceof SessionError) {
-            return e
+        if (e instanceof Object && 'errorType' in e && e.errorType === 'DataError') {
+            return e as DataError
+        }
+        if (e instanceof Object && 'errorType' in e && e.errorType === 'SessionError') {
+            return e as SessionError
         }
     }
     return []
@@ -175,13 +179,13 @@ export const patchRecipe = async (
     )
 
     const recipes = await getCompressedRecipes(session)
-    if (recipes instanceof SessionError) {
+    if ('errorType' in recipes) {
         return recipes
     }
     const unchangedRecipes = recipes.filter((recipe) => recipe.id !== id)
     const toPatchRecipe = recipes.find((recipe) => recipe.id === id)
     if (!toPatchRecipe) {
-        return new DataError(`Przepis z id ${id} nie istnieje`)
+        return dataError(`Przepis z id ${id} nie istnieje`)
     }
 
     if (!!pictures) {
@@ -193,10 +197,10 @@ export const patchRecipe = async (
 
     if (ingredients) {
         if (ingredients.find((ingredient) => ingredient.id === toPatchRecipe.id)) {
-            return new DataError(`Nie można dawać placka do siebie samego`)
+            return dataError(`Nie można dawać placka do siebie samego`)
         }
         const fullRecipes = await getRecipes(session)
-        if (fullRecipes instanceof Error) {
+        if ('errorType' in fullRecipes) {
             return fullRecipes
         }
         try {
@@ -206,7 +210,7 @@ export const patchRecipe = async (
                 }
             })
         } catch {
-            return new DataError(`Nie można dawać placka do siebie samego`)
+            return dataError(`Nie można dawać placka do siebie samego`)
         }
     }
 
@@ -220,6 +224,7 @@ export const patchRecipe = async (
 
     const newRecipes = [...unchangedRecipes, toPatchRecipe]
     await setToFile(filePath, newRecipes)
+    return [] as Success
 }
 
 const findRecipeLoops = (

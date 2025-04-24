@@ -1,6 +1,6 @@
 'use client'
 
-import { SessionError } from '@/errors/SessionError'
+import { sessionError } from '@/errors/SessionError'
 import { Session } from '@/types/Auth'
 import { UUID } from 'crypto'
 
@@ -8,7 +8,7 @@ export const getSession = (): Session => {
     const sessionId = localStorage.getItem('session_id')
     const login = localStorage.getItem('user_login')
     if (sessionId == null || login == null) {
-        throw new SessionError('Brak sesji')
+        throw sessionError('Brak sesji')
     }
     return {
         sessionId: sessionId as UUID,

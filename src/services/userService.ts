@@ -7,10 +7,10 @@ import { CreateUserDTO, PatchUserDTO, User } from '@/types/User'
 import { Session } from '@/types/Auth'
 import { getFromFile, setToFile } from '@/utils/file'
 import { baseIngredients } from '@/constants/baseIngredients'
-import { DataError } from '@/errors/DataError'
+import { dataError } from '@/errors/DataError'
 import { emailValidation, loginValidation, passwordValidation } from '@/utils/validate'
-import { ValidationError } from '@/errors/ValidationError'
-import { SessionError } from '@/errors/SessionError'
+import { validationError } from '@/errors/ValidationError'
+import { Success } from '@/types/default'
 
 export const createUser = async ({
     login,
@@ -92,11 +92,11 @@ export const getUser = async (session: Session) => {
     try {
         user = await getFromFile(filePath)
     } catch {
-        return new DataError(`Użytkownik z loginem ${session.login} nie istnieje`)
+        return dataError(`Użytkownik z loginem ${session.login} nie istnieje`)
     }
 
     const verifiedSession = await verifySession(session)
-    if (verifiedSession instanceof SessionError) {
+    if ('errorType' in verifiedSession) {
         return verifiedSession
     }
 
@@ -106,11 +106,12 @@ export const getUser = async (session: Session) => {
 export const deleteUser = async (session: Session) => {
     const folderPath = join(process.cwd(), 'src', 'data', 'users', session.login)
     const verifiedSession = await verifySession(session)
-    if (verifiedSession instanceof SessionError) {
+    if ('errorType' in verifiedSession) {
         return verifiedSession
     }
 
     fs.rmdirSync(folderPath, { recursive: true })
+    return [] as Success
 }
 
 export const patchUser = async (
@@ -120,7 +121,7 @@ export const patchUser = async (
     let filePath = join(process.cwd(), 'src', 'data', 'users', session.login, 'user.json')
 
     const user = await getUser(session)
-    if (user instanceof SessionError || user instanceof DataError) {
+    if ('errorType' in user) {
         return user
     }
 
@@ -129,7 +130,7 @@ export const patchUser = async (
 
     if (password !== undefined) {
         if (!passwordValidation(password)) {
-            return new ValidationError(
+            return validationError(
                 'Hasło musi zawierać: przynajmniej 8 liter, duża literę, małą literę oraz liczbę',
                 {}
             )
@@ -142,7 +143,7 @@ export const patchUser = async (
     }
 
     const verifiedSession = await verifySession(session)
-    if (verifiedSession instanceof SessionError) {
+    if ('errorType' in verifiedSession) {
         return verifiedSession
     }
 
@@ -155,9 +156,10 @@ export const patchUser = async (
         try {
             fs.renameSync(oldFolderPath, newFolderPath)
         } catch {
-            return new DataError(`Użytkownik z loginem ${session.login} już istnieje`)
+            return dataError(`Użytkownik z loginem ${session.login} już istnieje`)
         }
         filePath = newFilePath
     }
     await setToFile(filePath, user)
+    return [] as Success
 }
