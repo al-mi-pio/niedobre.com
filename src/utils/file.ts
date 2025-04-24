@@ -28,6 +28,6 @@ export const saveImage = async (image: File) => {
 export const removeImage = async (imagePath: string) => {
     const folderPath = join(process.cwd(), 'public', 'pictures', imagePath.split('/')[0])
     try {
-        fs.rmdirSync(folderPath, { recursive: true })
+        fs.rmSync(folderPath, { recursive: true })
     } catch {}
 }

@@ -110,7 +110,7 @@ export const deleteUser = async (session: Session) => {
         return verifiedSession
     }
 
-    fs.rmdirSync(folderPath, { recursive: true })
+    fs.rmSync(folderPath, { recursive: true })
     return [] as Success
 }
 
