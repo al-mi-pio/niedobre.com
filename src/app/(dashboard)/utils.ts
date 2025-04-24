@@ -27,28 +27,55 @@ export const missingIngredientAndNutritionalValues = (
 ): MissingValues => {
     return {
         cost: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.cost && !!curr.amount),
+            (prev, curr) =>
+                prev
+                    ? true
+                    : curr.ingredient.cost !== 0 &&
+                      !curr.ingredient.cost &&
+                      !!curr.amount,
             false
         ),
         kcal: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.kcal && !!curr.amount),
+            (prev, curr) =>
+                prev
+                    ? true
+                    : curr.ingredient.kcal !== 0 &&
+                      !curr.ingredient.kcal &&
+                      !!curr.amount,
             false
         ),
         protein: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.protein && !!curr.amount),
+            (prev, curr) =>
+                prev
+                    ? true
+                    : curr.ingredient.protein !== 0 &&
+                      !curr.ingredient.protein &&
+                      !!curr.amount,
             false
         ),
         fat: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.fat && !!curr.amount),
+            (prev, curr) =>
+                prev
+                    ? true
+                    : curr.ingredient.fat !== 0 && !curr.ingredient.fat && !!curr.amount,
             false
         ),
         carbohydrates: ingredients.reduce(
             (prev, curr) =>
-                prev ? true : !curr.ingredient.carbohydrates && !!curr.amount,
+                prev
+                    ? true
+                    : curr.ingredient.carbohydrates !== 0 &&
+                      !curr.ingredient.carbohydrates &&
+                      !!curr.amount,
             false
         ),
         salt: ingredients.reduce(
-            (prev, curr) => (prev ? true : !curr.ingredient.salt && !!curr.amount),
+            (prev, curr) =>
+                prev
+                    ? true
+                    : curr.ingredient.salt !== 0 &&
+                      !curr.ingredient.salt &&
+                      !!curr.amount,
             false
         ),
     }
