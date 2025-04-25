@@ -200,6 +200,21 @@ export const calculateNutrients = async (
         const flattenedRecipe = combineIngredients(
             flattenRecipes(ingredients, allIngredients, allRecipes)
         )
+        console.log(flattenedRecipe)
+        console.log(
+            flattenedRecipe.reduce(
+                (acc, ing) => (acc ? true : ing.ingredient.kcal !== undefined),
+                false
+            )
+                ? flattenedRecipe
+                      .reduce(
+                          (acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0),
+                          0
+                      )
+                      .toFixed(0)
+                      .replace('.', ',')
+                : ''
+        )
         return {
             kcal: flattenedRecipe.reduce(
                 (acc, ing) => (acc ? true : ing.ingredient.kcal !== undefined),
@@ -329,12 +344,7 @@ const convertToBaseMeasurement = (ingredient: IngredientAmount): FlatIngredientA
         throw conversionError('Nie można konwertować policzalnych składników')
     }
     return {
-        ingredient: {
-            id: ingredient.ingredient.id,
-            name: ingredient.ingredient.name,
-            type: 'amount',
-            foodGroup: 'inne',
-        },
+        ingredient: ingredient.ingredient,
         amount: ingredient.amount,
         unit: 'szt.',
     }
