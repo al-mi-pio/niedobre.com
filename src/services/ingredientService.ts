@@ -4,7 +4,7 @@ import { dataError } from '@/errors/DataError'
 import { Session } from '@/types/Auth'
 import { Success } from '@/types/default'
 import { CreateIngredientDTO, Ingredient, PatchIngredientDTO } from '@/types/Ingredient'
-import { verifySession } from '@/utils/auth'
+import { rateLimit, verifySession } from '@/utils/auth'
 import { getFromFile, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 
@@ -59,6 +59,10 @@ export const createIngredient = async (
 }
 
 export const getIngredients = async (session: Session) => {
+    const rateLimited = await rateLimit()
+    if (rateLimited) {
+        return rateLimited
+    }
     const filePath = join(
         process.cwd(),
         'src',

@@ -1,5 +1,5 @@
 'use server'
-import { hashString, verifySession } from '@/utils/auth'
+import { authRateLimit, hashString, verifySession } from '@/utils/auth'
 import { randomUUID } from 'crypto'
 import { join } from 'path'
 import fs from 'fs'
@@ -18,6 +18,10 @@ export const createUser = async ({
     keepBaseIngredients,
     email,
 }: CreateUserDTO) => {
+    const rateLimited = await authRateLimit()
+    if (rateLimited) {
+        return rateLimited
+    }
     const userId = randomUUID()
     const folderPath = join(process.cwd(), 'src', 'data', 'users', login)
     const hashedPassword = await hashString(password)

@@ -1,7 +1,7 @@
 'use server'
 import { Session } from '@/types/Auth'
 import { CreateRecipeDTO, Recipe, PatchRecipeDTO, GetRecipeDTO } from '@/types/Recipe'
-import { verifySession } from '@/utils/auth'
+import { rateLimit, verifySession } from '@/utils/auth'
 import { getFromFile, removeImage, setToFile } from '@/utils/file'
 import { randomUUID, UUID } from 'crypto'
 import { join } from 'path'
@@ -54,6 +54,10 @@ export const createRecipe = async (
 }
 
 export const getCompressedRecipes = async (session: Session) => {
+    const rateLimited = await rateLimit()
+    if (rateLimited) {
+        return rateLimited
+    }
     const filePath = join(
         process.cwd(),
         'src',

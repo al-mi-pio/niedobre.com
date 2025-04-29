@@ -3,7 +3,7 @@ import { Session, SignInDTO } from '@/types/Auth'
 import { join } from 'path'
 import { randomUUID, UUID } from 'crypto'
 import { User } from '@/types/User'
-import { hashString, verifyHash, verifySession } from '@/utils/auth'
+import { authRateLimit, hashString, verifyHash, verifySession } from '@/utils/auth'
 import { patchUser } from '@/services/userService'
 import { getFromFile, setToFile } from '@/utils/file'
 import { createTransport } from 'nodemailer'
@@ -12,6 +12,11 @@ import { appName } from '@/constants/general'
 import { passwordValidation } from '@/utils/validate'
 
 export const signIn = async ({ login, password }: SignInDTO) => {
+    const rateLimited = await authRateLimit()
+    if (rateLimited) {
+        return rateLimited
+    }
+
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     if (!login)
         return {
@@ -43,6 +48,10 @@ export const signIn = async ({ login, password }: SignInDTO) => {
 }
 
 export const signOut = async (session: Session) => {
+    const rateLimited = await authRateLimit()
+    if (rateLimited) {
+        return rateLimited
+    }
     const verifiedSession = await verifySession(session)
     if ('errorType' in verifiedSession) {
         return verifiedSession
@@ -52,6 +61,10 @@ export const signOut = async (session: Session) => {
 }
 
 export const resetPasswordRequest = async (login: string, url: string) => {
+    const rateLimited = await authRateLimit()
+    if (rateLimited) {
+        return rateLimited
+    }
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     if (!login)
         return {
@@ -115,6 +128,10 @@ export const changePassword = async (
     passwordResetToken: UUID,
     newPassword: string
 ) => {
+    const rateLimited = await authRateLimit()
+    if (rateLimited) {
+        return rateLimited
+    }
     const filePath = join(process.cwd(), 'src', 'data', 'users', login, 'user.json')
     if (!login)
         return {
