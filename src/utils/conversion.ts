@@ -200,21 +200,6 @@ export const calculateNutrients = async (
         const flattenedRecipe = combineIngredients(
             flattenRecipes(ingredients, allIngredients, allRecipes)
         )
-        console.log(flattenedRecipe)
-        console.log(
-            flattenedRecipe.reduce(
-                (acc, ing) => (acc ? true : ing.ingredient.kcal !== undefined),
-                false
-            )
-                ? flattenedRecipe
-                      .reduce(
-                          (acc, ing) => acc + ing.amount * (ing.ingredient.kcal ?? 0),
-                          0
-                      )
-                      .toFixed(0)
-                      .replace('.', ',')
-                : ''
-        )
         return {
             kcal: flattenedRecipe.reduce(
                 (acc, ing) => (acc ? true : ing.ingredient.kcal !== undefined),
