@@ -20,6 +20,7 @@
     "babel-plugin-react-compiler": "^19.0.0-beta-40c6c23-20250301",
     "next": "^15.2.4",
     "nodemailer": "^6.10.0",
+    "rate-limiter-flexible": "^7.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
