@@ -6,11 +6,16 @@ import { emptyUUID } from '@/constants/general'
 import { join } from 'path'
 import { getFromFile } from '@/utils/file'
 import { calculateNutrients } from '@/utils/conversion'
+import { rateLimit } from '@/utils/auth'
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ userLogin: string }> }
 ) {
+    const rateLimited = await rateLimit()
+    if (rateLimited) {
+        return NextResponse.json(rateLimited)
+    }
     const userLogin = (await params).userLogin
     const recipeFilePath = join(
         process.cwd(),
