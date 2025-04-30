@@ -9,7 +9,7 @@ import { SessionError, sessionError } from '@/errors/SessionError'
 import { Success } from '@/types/default'
 import { headers } from 'next/headers'
 import { authRateLimiter, rateLimiter } from '@/constants/general'
-import { dataError } from '@/errors/DataError'
+import { DataError, dataError } from '@/errors/DataError'
 
 export const hashString = async (text: string) => {
     const salt = crypto.randomBytes(16).toString('hex')
@@ -73,6 +73,6 @@ export const rateLimit = async () => {
     try {
         await rateLimiter.consume(ip)
     } catch {
-        return dataError('Zbyt wiele akcji. Spróbuj ponownie później')
+        return dataError('Zbyt wiele akcji. Spróbuj ponownie później') as DataError
     }
 }
