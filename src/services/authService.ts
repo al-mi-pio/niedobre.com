@@ -120,7 +120,7 @@ export const resetPasswordRequest = async (login: string, url: string) => {
 
         await transporter.sendMail(mailOptions)
     }
-    return {}
+    return { type: undefined, error: undefined }
 }
 
 export const changePassword = async (
@@ -167,5 +167,5 @@ export const changePassword = async (
             error: 'Link wygasł',
         }
     }
-    return {}
+    return { type: undefined, error: undefined }
 }
