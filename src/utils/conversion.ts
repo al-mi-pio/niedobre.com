@@ -154,7 +154,7 @@ export const calculateIngredients = async (
                 }
             }
         )
-        const sum = ingredientAmount
+        const sum = flattenedRecipe
             .reduce((acc, ing) => acc + ing.amount * (ing.ingredient.cost ?? 0), 0)
             .toFixed(2)
             .replace('.', ',')
